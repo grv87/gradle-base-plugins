@@ -3,7 +3,7 @@
  * Specification for org.fidata.project Gradle plugin
  * Copyright © 2017  Basil Peace
  *
- * This file is part of gradle-fidata-plugin.
+ * This file is part of gradle-base-plugins.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,44 +16,32 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied. See the License for the specific language governing
  * permissions and limitations under the License.
-*/
+ */
 package org.fidata.gradle
 
 import spock.lang.Specification
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
-import org.gradle.testkit.runner.GradleRunner
-import org.gradle.testkit.runner.BuildResult
-import org.gradle.testkit.runner.TaskOutcome
+import org.gradle.api.Project
+import org.gradle.testfixtures.ProjectBuilder
+import org.gradle.api.Task
+import org.gradle.api.plugins.quality.CodeNarc
 
 /**
- * Specification for {@link FIDATAProjectPlugin} class
+ * Specification for {@link org.fidata.project.ProjectPlugin} class
  */
-class FIDATAProjectPluginSpecification extends Specification {
+class ProjectPluginSpecification extends Specification {
   // fields
-
   @Rule
   TemporaryFolder testProjectDir = new TemporaryFolder()
 
-  File buildFile
-
-  File propertiesFile
+  Project project
 
   // fixture methods
 
   // run before every feature method
   void setup() {
-    buildFile = testProjectDir.newFile('build.gradle')
-    propertiesFile = testProjectDir.newFile('gradle.properties')
-    /*
-     * BLOCKED:
-     * https://github.com/tschulte/gradle-semantic-release-plugin/issues/24
-     * https://github.com/tschulte/gradle-semantic-release-plugin/issues/25
-     */
-    [
-      'git init',
-      'git commit --message "Initial commit" --allow-empty',
-    ].each { it.execute(null, testProjectDir.root).waitFor() }
+    project = ProjectBuilder.builder().withProjectDir(testProjectDir.root).build()
   }
 
   // run after every feature method
@@ -70,25 +58,19 @@ class FIDATAProjectPluginSpecification extends Specification {
   // feature methods
 
   void "provides codenarcBuildSrc task"() {
-    given:
-    'build file without any extra configuration'
-    buildFile << '''
-      plugins {
-          id 'org.fidata.project'
-      }
-    '''
-
     when:
-    'codenarcBuildSrc task is run'
-    BuildResult result = build('--dry-run', 'codenarcBuildSrc')
+    'plugin is applied'
+    // project.apply plugin: 'org.fidata.plugin'
+    project.apply plugin: org.fidata.gradle.ProjectPlugin
 
     then:
-    'it succeeds'
-    List<String> output = skippedTaskPathsGradleBugWorkaround(result.output)
-    output.any { it == ':codenarcBuildSrc' }
+    'codenarcBuildSrc task exists'
+    Task task = project.tasks.findByName('codenarcBuildSrc')
+    and: 'codenarcBuildSrc task is an instance of CodeNarc'
+    CodeNarc.class.isInstance(task)
   }
 
-  void "configures check task dependencies"() {
+  /*void "configures check task dependencies"() {
     given:
     'build file without any extra configuration'
     buildFile << '''
@@ -104,7 +86,8 @@ class FIDATAProjectPluginSpecification extends Specification {
     then:
     'codenarcBuildSrc task is also run'
     List<String> output = skippedTaskPathsGradleBugWorkaround(result.output)
-    output.any { it == ':codenarcBuildSrc' }
+    output.contains ':codenarcBuildSrc'
+    // output.any { it == ':codenarcBuildSrc' }
     // output.any { it == ':jacoco' } TODO
   }
 
@@ -125,27 +108,10 @@ class FIDATAProjectPluginSpecification extends Specification {
     'check task is also run'
     and: 'test task is also run'
     List<String> output = skippedTaskPathsGradleBugWorkaround(result.output)
-    output.any { it == ':check' }
-    output.any { it == ':test' }
-    /*output.with {
-       any { taskName -> taskName == ':check' }
-       any { taskName -> taskName == ':test' }
-    }*/
-  }
+    output.contains ':build'
+    output.contains ':check'
+  }*/
 
   // helper methods
 
-  protected BuildResult build(String... arguments) {
-    GradleRunner.create()
-      .withGradleVersion(System.getProperty('compat.gradle.version'))
-      .withProjectDir(testProjectDir.root)
-      .withArguments([*arguments, '--stacktrace', '--refresh-dependencies'])
-      .withPluginClasspath()
-      .build()
-  }
-
-  protected List<String> skippedTaskPathsGradleBugWorkaround(String output) {
-    //Due to https://github.com/gradle/gradle/issues/2732 no tasks are returned in dry-run mode. When fixed ".taskPaths(SKIPPED)" should be used directly
-    return output.readLines().findAll { it.endsWith(" SKIPPED") }.collect { it.substring(0, it.lastIndexOf(" "))}
-  }
 }

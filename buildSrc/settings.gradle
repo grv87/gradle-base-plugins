@@ -1,9 +1,9 @@
 #!/usr/bin/env groovy
 /*
- * Gradle Settings file for gradle-fidata-plugin 1st-level buildSrc
+ * Gradle Settings file for gradle-base-plugins 1st-level buildSrc
  * Copyright © 2017  Basil Peace
  *
- * This file is part of gradle-fidata-plugin.
+ * This file is part of gradle-base-plugins.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,5 +16,5 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied. See the License for the specific language governing
  * permissions and limitations under the License.
-*/
+ */
 apply from: '../settings.gradle'

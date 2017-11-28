@@ -1,6 +1,5 @@
-#!/usr/bin/env groovy
 /*
- * Gradle Settings file for gradle-base-plugins 2nd-level buildSrc
+ * CodeNarc disabled rules template
  * Copyright © 2017  Basil Peace
  *
  * This file is part of gradle-base-plugins.
@@ -17,4 +16,12 @@
  * implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-apply from: '../settings.gradle'
+
+List disabledRules = $disabledRules
+ruleset {
+  for (Object rule in ruleSet.rules) {
+    rule.with {
+      if (disabledRules.contains(name)) { enabled = false }
+    }
+  }
+}

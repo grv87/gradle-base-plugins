@@ -1,9 +1,9 @@
 #!/usr/bin/env groovy
 /*
- * Compile dependencies for gradle-fidata-plugin
+ * Compile dependencies for gradle-base-plugins
  * Copyright © 2017  Basil Peace
  *
- * This file is part of gradle-fidata-plugin.
+ * This file is part of gradle-base-plugins.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,24 +16,18 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied. See the License for the specific language governing
  * permissions and limitations under the License.
-*/
-repositories {
-  maven {
-    url 'https://plugins.gradle.org/m2/'
-  }
-  jcenter()
-}
+ */
 
 dependencies {
-  compile localGroovy()
-  compile gradleApi()
-
-  Closure addPluginDependencies = { Map plugins ->
-    plugins.each { id, depNotation ->
-      compile(
-        group: depNotation['group'],
-        name: depNotation['name'],
-        version: depNotation.get('version', 'latest.release')
+  Closure addDependencies = { List dependencies ->
+    for (Map depNotation in dependencies) {
+      add(
+        depNotation['configurationName'],
+        [
+          group: depNotation['group'],
+          name: depNotation['name'],
+          version: depNotation.get('version', 'latest.release')
+        ]
       ) {
         depNotation.get('excludes', []).each { exclNotation ->
           exclude(
@@ -45,7 +39,8 @@ dependencies {
     }
   }
 
-  addPluginDependencies(org.fidata.gradle.FIDATAProjectPlugins.THIRDPARTY_PLUGINS)
-  addPluginDependencies(org.fidata.gradle.FIDATAGroovyProjectPlugins.THIRDPARTY_PLUGINS)
-  addPluginDependencies(org.fidata.gradle.FIDATAGradlePluginPlugins.THIRDPARTY_PLUGINS)
+  addDependencies org.fidata.gradle.ProjectPluginDependencies.DEPENDENCIES
+  addDependencies org.fidata.gradle.JDKProjectPluginDependencies.DEPENDENCIES
+  addDependencies org.fidata.gradle.GroovyProjectPluginDependencies.DEPENDENCIES
+  addDependencies org.fidata.gradle.GradlePluginPluginDependencies.DEPENDENCIES
 }

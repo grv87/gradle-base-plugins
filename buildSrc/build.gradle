@@ -1,9 +1,9 @@
 #!/usr/bin/env groovy
 /*
- * Build script for gradle-fidata-plugin 1st-level buildSrc
+ * Build script for gradle-base-plugins 1st-level buildSrc
  * Copyright © 2017  Basil Peace
  *
- * This file is part of gradle-fidata-plugin.
+ * This file is part of gradle-base-plugins.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,21 +16,51 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied. See the License for the specific language governing
  * permissions and limitations under the License.
-*/
+ */
+// Minimal set of plugins enough to compile plugins
 plugins {
-  id 'com.gradle.build-scan' version '1.10'
+  id 'nebula.dependency-lock' version '4.9.5'
   id 'groovy'
+  id 'java-library'
+  id 'java-gradle-plugin'
 }
 
-buildScan {
-  licenseAgreementUrl = 'https://gradle.com/terms-of-service'
-  licenseAgree = 'yes'
-}
+group = 'org.fidata.gradle'
 
 ext.rootDir = '..'
 
+dependencyLock.lockFile = "${project.ext.rootDir}/dependencies.lock"
+
+repositories {
+  maven {
+    url 'https://fidata.jfrog.io/fidata/plugins-release'
+    credentials {
+      username = artifactoryUser
+      password = artifactoryPassword
+    }
+  }
+}
+
 apply from: "${project.ext.rootDir}/dependencies-compile.gradle"
 
-sourceSets.main.groovy.srcDirs = ["${project.ext.rootDir}/src/dependencies", "${project.ext.rootDir}/src/main"]
+sourceSets.main {
+  groovy.srcDirs = ["${project.ext.rootDir}/src/dependencies/groovy", "${project.ext.rootDir}/src/main/groovy"]
+  resources.srcDirs = ["${project.ext.rootDir}/src/main/resources"]
+}
 
-dependencies.runtime project(path)
+task('inputsOutputs').doLast {
+  for (t in tasks) {
+    if (t.inputs.hasInputs) {
+      for (f in t.inputs.files) {
+        logger.lifecycle(sprintf('%s input:\t%s', [t.name, f.path]))
+      }
+    }
+    if (t.outputs.hasOutput) {
+      for (f in t.outputs.files) {
+        logger.lifecycle(sprintf('%s output:\t%s', [t.name, f.path]))
+      }
+    }
+  }
+}
+tasks['check'].enabled = false
+tasks['test'].enabled = false

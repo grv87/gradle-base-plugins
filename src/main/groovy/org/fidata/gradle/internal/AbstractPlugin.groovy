@@ -1,6 +1,6 @@
 #!/usr/bin/env groovy
 /*
- * Gradle Settings file for gradle-base-plugins 2nd-level buildSrc
+ * AbstractPlugin class
  * Copyright © 2017  Basil Peace
  *
  * This file is part of gradle-base-plugins.
@@ -17,4 +17,33 @@
  * implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-apply from: '../settings.gradle'
+package org.fidata.gradle.internal
+
+import groovy.transform.CompileStatic
+import org.gradle.api.Plugin
+import org.gradle.api.Project
+import org.gradle.api.Task
+
+/**
+ * Base class for plugins
+ */
+@CompileStatic
+@SuppressWarnings('AbstractClassWithoutAbstractMethod')
+abstract class AbstractPlugin implements Plugin<Project> {
+  private Project project
+
+  /**
+   * Gets project which this plugin instance is applied to
+   */
+  protected final Project getProject() {
+    project
+  }
+
+  /**
+   * Applies the plugin to the project
+   */
+  void apply(Project project) {
+    this.project = project
+  }
+
+}

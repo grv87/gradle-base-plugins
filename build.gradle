@@ -1,9 +1,9 @@
 #!/usr/bin/env groovy
 /*
- * Build script for gradle-fidata-plugin
+ * Build script for gradle-base-plugins
  * Copyright © 2017  Basil Peace
  *
- * This file is part of gradle-fidata-plugin.
+ * This file is part of gradle-base-plugins.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,22 +16,25 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied. See the License for the specific language governing
  * permissions and limitations under the License.
-*/
+ */
 plugins {
-  id 'com.gradle.build-scan' version '1.10'
-  id 'com.dorongold.task-tree' version '1.3'
+  id 'org.fidata.project.groovy'
+  id 'org.fidata.plugin'
 }
 
-buildScan {
-  licenseAgreementUrl = 'https://gradle.com/terms-of-service'
-  licenseAgree = 'yes'
-}
+group = 'org.fidata.gradle'
 
 ext.rootDir = '.'
 
-apply plugin: org.fidata.gradle.FIDATAGradlePluginPlugin
+license = 'Apache-2.0'
+publicReleases = false
 
-fidata.publicReleases = false
+jdk {
+  version = 1.8
+}
+stutter {
+  supports '4.3.1', '4.2.1', '4.1'
+}
 
 contacts {
   'grv87@yandex.ru' {
@@ -44,4 +47,58 @@ contacts {
 
 apply from: "${project.ext.rootDir}/dependencies-compile.gradle"
 
-sourceSets.main.groovy.srcDirs = ["${project.ext.rootDir}/src/dependencies", "${project.ext.rootDir}/src/main"]
+sourceSets.main.groovy.srcDirs << ["${project.ext.rootDir}/src/dependencies/groovy", "${project.ext.rootDir}/src/main/groovy"]
+
+tasks['groovydoc'].with {
+  Closure addLinks = { List dependencies ->
+    for (Map depNotation in dependencies) {
+      if (depNotation['configurationName'] == 'api' && depNotation.containsKey('groovydoc')) {
+        link depNotation['groovydoc'], "${ depNotation['group'] }."
+      }
+    }
+  }
+
+  addLinks org.fidata.gradle.ProjectPluginDependencies.DEPENDENCIES
+  addLinks org.fidata.gradle.JDKProjectPluginDependencies.DEPENDENCIES
+  addLinks org.fidata.gradle.GroovyProjectPluginDependencies.DEPENDENCIES
+  addLinks org.fidata.gradle.GradlePluginPluginDependencies.DEPENDENCIES
+
+  use = true // TOTEST
+}
+
+tasks['codenarcMain'].ext.disabledRules = ['JavaIoPackageAccess']
+
+task('codenarcMainResources', type: CodeNarc) {
+  for (File srcDir in sourceSets.main.resources.srcDirs) {
+    source project.fileTree(dir: srcDir, includes: ['**/*.groovy'])
+  }
+}
+
+dependencies {
+  testImplementation group: 'pl.pragmatists', name: 'JUnitParams', version: 'latest.release'
+}
+
+sourceSets {
+  integTest {
+  	groovy.srcDir 'src/integTest/groovy'
+    compileClasspath += sourceSets.main.output + configurations.testCompileClasspath
+    runtimeClasspath += output + compileClasspath + configurations.testRuntimeClasspath
+  }
+}
+
+task('integTest', type: Test) {
+  testClassesDirs = sourceSets['integTest'].output.classesDirs
+  classpath = sourceSets['integTest'].runtimeClasspath
+  reports.with {
+    junitXml.destination = new File(xmlReportsDir, 'integTest')
+	html.destination = new File(htmlReportsDir, 'integTest')
+	// html.enabled = false
+  }
+  systemProperty 'com.athaydes.spockframework.report.outputDir', new File(htmlReportsDir, 'spock/integTest').absolutePath
+}
+
+test {
+    testLogging {
+        exceptionFormat = 'full'
+    }
+}
