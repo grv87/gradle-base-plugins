@@ -1,4 +1,3 @@
-#!/usr/bin/env groovy
 /*
  * org.fidata.plugin Gradle plugin
  * Copyright © 2017  Basil Peace
@@ -17,47 +16,54 @@
  * implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-package org.fidata.gradle
+package org.fidata.gradle;
 
-import static org.gradle.internal.FileUtils.toSafeFileName
-import org.fidata.gradle.internal.AbstractPlugin
-import org.gradle.api.Project
-import com.gradle.publish.PublishPlugin
-import org.gradle.api.tasks.testing.Test
-import org.gradle.plugin.devel.tasks.ValidateTaskProperties
-import org.gradle.api.tasks.javadoc.Groovydoc
-import java.beans.PropertyChangeListener
-import java.beans.PropertyChangeEvent
-// import org.gradle.api.publish.maven.MavenPublication
+import static org.gradle.internal.FileUtils.toSafeFileName;
+import org.fidata.gradle.internal.AbstractPlugin;
+import org.gradle.api.Project;
+import org.gradle.api.plugins.PluginManager;
+import org.gradle.api.tasks.TaskContainer;
+import com.gradle.publish.PublishPlugin;
+import org.gradle.api.tasks.testing.Test;
+import org.gradle.api.Action;
+import org.gradle.plugin.devel.tasks.ValidateTaskProperties;
+import org.gradle.api.tasks.javadoc.Groovydoc;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
+// import org.gradle.api.publish.maven.MavenPublication;
 
 /**
  * Provides an environment for a Gradle plugin project
  */
-final class GradlePluginPlugin extends AbstractPlugin implements PropertyChangeListener {
+public final class GradlePluginPlugin extends AbstractPlugin implements PropertyChangeListener {
   @Override
-  void apply(Project project) {
-    super.apply(project)
-    project.with {
-      apply plugin: ProjectPlugin
-      for (String id in GradlePluginPluginDependencies.DEFAULT_PLUGINS) {
-        plugins.apply id
-      }
+  public void apply(Project project) {
+    super.apply(project);
+    PluginManager plugins = project.getPluginManager();
 
-      convention.getPlugin(ProjectConvention).addPropertyChangeListener this
-      configurePublicReleases()
+    plugins.apply(ProjectPlugin.class);
 
-      tasks.withType(Test) { Test task ->
-        task.with {
-          if (name.startsWith('compatTest')) {
-            String reportDirName = "compatTest/${ toSafeFileName((name - ~/^compatTest/).uncapitalize()) }" /* uncapitalize requires Groovy >= 2.4.8, i.e. Gradle >= 3.5 */
-            reports.junitXml.destination = new File(project.xmlReportsDir, reportDirName)
-            if (project.plugins.hasPlugin(GroovyProjectPlugin)) {
-              reports.html.enabled = false
-              systemProperty 'com.athaydes.spockframework.report.outputDir', new File(project.htmlReportsDir, "${ GroovyProjectPlugin.SPOCK_REPORTS_DIR_NAME }/$reportDirName").absolutePath
-            }
+    for (String id : GradlePluginPluginDependencies.getDEFAULT_PLUGINS()) {
+      plugins.apply(id);
+    }
+
+    project.getConvention().getPlugin(ProjectConvention.class).addPropertyChangeListener(this);
+    configurePublicReleases();
+
+    TaskContainer tasks = project.getTasks();
+
+    tasks.withType(Test.class, new Action<Test>() {
+      public void execute(Test task) {
+        if (task.name.startsWith('compatTest')) {
+          String reportDirName = "compatTest/${ toSafeFileName((name - ~/^compatTest/).uncapitalize()) }" /* uncapitalize requires Groovy >= 2.4.8, i.e. Gradle >= 3.5 */
+          task.reports.junitXml.destination = new File(project.xmlReportsDir, reportDirName)
+          if (task.project.plugins.hasPlugin(GroovyProjectPlugin)) {
+            reports.html.enabled = false
+            task.systemProperty('com.athaydes.spockframework.report.outputDir', new File(task.project.htmlReportsDir, "${ GroovyProjectPlugin.SPOCK_REPORTS_DIR_NAME }/$reportDirName").absolutePath)
           }
         }
       }
+    })
       tasks.withType(ValidateTaskProperties) { ValidateTaskProperties task ->
         task.with {
           outputFile = new File(project.txtReportsDir, "${ toSafeFileName(name) }.txt")

@@ -17,20 +17,20 @@
  * implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-package org.fidata.gradle
+package org.fidata.gradle.internal
 
 import groovy.transform.CompileStatic
 
 /**
- * List of dependencies of org.fidata.project.groovy plugin
+ * Dependency
  */
 @CompileStatic
-final class GroovyProjectPluginDependencies {
+class Dependency {
   /**
    * List of plugin dependencies with IDs
    */
   static final Map<String, ? extends Map> PLUGIN_DEPENDENCIES = [
-    'org.gradle.groovy': [:],
+	'org.gradle.groovy': [:],
   ]
 
   /**
@@ -47,21 +47,16 @@ final class GroovyProjectPluginDependencies {
    * List of non-plugin dependencies
    */
   static final List<? extends Map> NON_PLUGIN_DEPENDENCIES = [
-    [
-      configurationName: 'api',
-      group: 'org.codehaus.groovy',
-      name: 'groovy-all',
-      version: GROOVY_VERSION
-    ],
+	[
+	  configurationName: 'api',
+	  group: 'org.codehaus.groovy',
+	  name: 'groovy-all',
+	  version: GROOVY_VERSION
+	],
   ]
 
   /**
    * Total list of dependencies
    */
-  static final List<? extends Map> DEPENDENCIES = PLUGIN_DEPENDENCIES.findAll { !it.key.startsWith('org.gradle.') }.collect { [configurationName: 'runtimeOnly'] + it.value } + NON_PLUGIN_DEPENDENCIES
-
-  // Suppress default constructor for noninstantiability
-  private GroovyProjectPluginDependencies() {
-    throw new AssertionError()
-  }
+  static final List<? extends Map> DEPENDENCIES = PLUGIN_DEPENDENCIES.findAll { !it.key.startsWith('org.gradle.') }.collect { [configurationName: 'implementation'] + it.value } + NON_PLUGIN_DEPENDENCIES
 }

@@ -1,4 +1,3 @@
-#!/usr/bin/env groovy
 /*
  * ResignGitCommit task class
  * Copyright © 2017  Basil Peace
@@ -17,10 +16,10 @@
  * implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-package org.fidata.gradle.tasks
+package org.fidata.gradle.tasks;
 
-import org.gradle.api.DefaultTask
-import org.gradle.api.tasks.TaskAction
+import org.gradle.api.DefaultTask;
+import org.gradle.api.tasks.TaskAction;
 
 /**
  * Amend previous git commit adding sign to it ("resign" commit)
@@ -28,14 +27,14 @@ import org.gradle.api.tasks.TaskAction
  * This is necessary since JGit doesn't support signed commits yet.
  * See https://bugs.eclipse.org/bugs/show_bug.cgi?id=382212
  */
-class ResignGitCommit extends DefaultTask {
+public class ResignGitCommit extends DefaultTask {
   /**
    * Resigns previous git commit
    */
   @TaskAction
   void resign() {
     project.exec {
-      commandLine 'git', 'commit', '--amend', '--no-edit', '--gpg-sign'
+      commandLine 'git', 'commit', '--amend', '--no-edit', '--gpg-sign';
     }
   }
 }

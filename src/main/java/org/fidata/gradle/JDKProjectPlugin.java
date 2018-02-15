@@ -1,4 +1,3 @@
-#!/usr/bin/env groovy
 /*
  * org.fidata.project.jdk Gradle plugin
  * Copyright © 2017  Basil Peace
@@ -17,19 +16,19 @@
  * implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-package org.fidata.gradle
+package org.fidata.gradle;
 
-import org.fidata.gradle.internal.AbstractPlugin
-import org.gradle.api.Project
-import org.gradle.api.tasks.testing.Test
-import org.gradle.language.jvm.tasks.ProcessResources
-import java.beans.PropertyChangeListener
-import java.beans.PropertyChangeEvent
+import org.fidata.gradle.internal.AbstractPlugin;
+import org.gradle.api.Project;
+import org.gradle.api.tasks.testing.Test;
+import org.gradle.language.jvm.tasks.ProcessResources;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 
 /**
  * Provides an environment for a JDK project
  */
-final class JDKProjectPlugin extends AbstractPlugin implements PropertyChangeListener {
+public final class JDKProjectPlugin extends AbstractPlugin implements PropertyChangeListener {
   /**
    * Name of functional test source set
    */
@@ -48,7 +47,7 @@ final class JDKProjectPlugin extends AbstractPlugin implements PropertyChangeLis
   public static final String FUNCTIONAL_TEST_REPORTS_DIR_NAME = 'functionalTest'
 
   @Override
-  void apply(Project project) {
+  public void apply(Project project) {
     super.apply(project)
     project.with {
       apply plugin: ProjectPlugin

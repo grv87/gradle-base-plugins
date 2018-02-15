@@ -18,6 +18,7 @@
  * permissions and limitations under the License.
  */
 plugins {
+  id 'org.fidata.project.jdk'
   id 'org.fidata.project.groovy'
   id 'org.fidata.plugin'
 }
@@ -33,7 +34,7 @@ jdk {
   version = 1.8
 }
 stutter {
-  supports '4.3.1', '4.2.1', '4.1'
+  supports '4.5.1', '4.4.1', '4.3.1', '4.2.1', '4.1'
 }
 
 contacts {
@@ -47,9 +48,9 @@ contacts {
 
 apply from: "${project.ext.rootDir}/dependencies-compile.gradle"
 
-sourceSets.main.groovy.srcDirs << ["${project.ext.rootDir}/src/dependencies/groovy", "${project.ext.rootDir}/src/main/groovy"]
+sourceSets.main.groovy.srcDirs << ["${project.ext.rootDir}/src/dependencies/groovy"]
 
-tasks['groovydoc'].with {
+/*tasks['groovydoc'].with {
   Closure addLinks = { List dependencies ->
     for (Map depNotation in dependencies) {
       if (depNotation['configurationName'] == 'api' && depNotation.containsKey('groovydoc')) {
@@ -64,7 +65,7 @@ tasks['groovydoc'].with {
   addLinks org.fidata.gradle.GradlePluginPluginDependencies.DEPENDENCIES
 
   use = true // TOTEST
-}
+}*/
 
 tasks['codenarcMain'].ext.disabledRules = ['JavaIoPackageAccess']
 

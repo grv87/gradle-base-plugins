@@ -1,4 +1,3 @@
-#!/usr/bin/env groovy
 /*
  * InputsOutputs task class
  * Copyright © 2015-2017  Basil Peace
@@ -17,41 +16,42 @@
  * implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-package org.fidata.gradle.tasks
+package org.fidata.gradle.tasks;
 
-import org.gradle.api.DefaultTask
-import org.gradle.api.tasks.OutputFile
-import org.gradle.api.tasks.TaskAction
-import javax.validation.constraints.NotNull
-import org.gradle.api.Task
+import java.io.File;
+import org.gradle.api.DefaultTask;
+import org.gradle.api.tasks.OutputFile;
+import org.gradle.api.tasks.TaskAction;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.gradle.api.Task;
 
 /**
  * Generates reports about all task file inputs and outputs
  */
-class InputsOutputs extends DefaultTask {
+public class InputsOutputs extends DefaultTask {
   /**
    * InputsOutputs default output file name
    */
-  public static final String DEFAULT_OUTPUT_FILE_NAME = 'inputsOutputs.txt'
+  public static final String DEFAULT_OUTPUT_FILE_NAME = 'inputsOutputs.txt';
 
-  @NotNull
-  private File outputFile
+  @NonNull
+  private File outputFile;
 
   /**
    * Gets output file
    */
   @OutputFile
-  @NotNull
+  @NonNull
   File getOutputFile() {
-    outputFile ?: project.reporting.file(DEFAULT_OUTPUT_FILE_NAME)
+    outputFile ?: project.reporting.file(DEFAULT_OUTPUT_FILE_NAME);
   }
 
   /**
    * Sets output file
    * By default it is '${reporting.baseDir}/inputsOutputs.txt`
    */
-  void setOutputFile(@NotNull File outputFile) {
-    this.outputFile = outputFile
+  void setOutputFile(@NonNull File outputFile) {
+    this.outputFile = outputFile;
   }
 
   /**
@@ -63,12 +63,12 @@ class InputsOutputs extends DefaultTask {
       for (Task t in project.tasks) {
         if (t.inputs.hasInputs) {
           for (File f in t.inputs.sourceFiles) {
-            writer.println sprintf('%s input:\t%s', [t.path, f.path])
+            writer.println sprintf('%s input:\t%s', [t.path, f.path]);
           }
         }
         if (t.outputs.hasOutput) {
           for (File f in t.outputs.files) {
-            writer.println sprintf('%s output:\t%s', [t.path, f.path])
+            writer.println sprintf('%s output:\t%s', [t.path, f.path]);
           }
         }
       }
@@ -76,6 +76,6 @@ class InputsOutputs extends DefaultTask {
   }
 
   InputsOutputs() {
-    outputs.upToDateWhen { false }
+    outputs.upToDateWhen { false };
   }
 }

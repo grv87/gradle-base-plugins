@@ -32,6 +32,15 @@ final class JDKProjectPluginDependencies {
   static final Map<String, ? extends Map> PLUGIN_DEPENDENCIES = [
     'org.gradle.java': [:],
     'org.gradle.java-library': [:],
+    'com.jaredsburrows.checkerframework': [
+      configurationName: 'api',
+      group: 'com.jaredsburrows',
+      name: 'gradle-checker-framework-plugin'
+    ],
+    'org.danilopianini.javadoc.io-linker': [
+      group: 'org.danilopianini',
+      name: 'javadoc.io-linker'
+    ],
     'org.gradle.maven': [:],
     'com.jfrog.bintray': [
       group: 'com.jfrog.bintray.gradle',
@@ -54,12 +63,18 @@ final class JDKProjectPluginDependencies {
   /**
    * List of non-plugin dependencies
    */
-  static final List<? extends Map> NON_PLUGIN_DEPENDENCIES = []
+  static final List<? extends Map> NON_PLUGIN_DEPENDENCIES = [
+    [
+      configurationName: 'compileOnly',
+      group: 'org.checkerframework',
+      name: 'checker-qual'
+    ],
+  ]
 
   /**
    * Total list of dependencies
    */
-  static final List<? extends Map> DEPENDENCIES = PLUGIN_DEPENDENCIES.findAll { !it.key.startsWith('org.gradle.') }.collect { [configurationName: 'implementation'] + it.value } + NON_PLUGIN_DEPENDENCIES
+  static final List<? extends Map> DEPENDENCIES = PLUGIN_DEPENDENCIES.findAll { !it.key.startsWith('org.gradle.') }.collect { [configurationName: 'runtimeOnly'] + it.value } + NON_PLUGIN_DEPENDENCIES
 
   // Suppress default constructor for noninstantiability
   private JDKProjectPluginDependencies() {

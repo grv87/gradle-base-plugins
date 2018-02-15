@@ -1,4 +1,3 @@
-#!/usr/bin/env groovy
 /*
  * ProjectConvention class
  * Copyright © 2017  Basil Peace
@@ -17,87 +16,80 @@
  * implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-package org.fidata.gradle
+package org.fidata.gradle;
 
-import org.fidata.gradle.internal.AbstractExtension
-import org.gradle.api.Project
-import javax.validation.constraints.NotNull
-import de.gliderpilot.gradle.semanticrelease.SemanticReleaseChangeLogService
-import com.github.zafarkhaja.semver.Version
-import org.spdx.rdfparser.license.LicenseInfoFactory
-import org.spdx.rdfparser.license.AnyLicenseInfo
+import org.fidata.gradle.internal.AbstractExtension;
+import org.gradle.api.Project;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import de.gliderpilot.gradle.semanticrelease.SemanticReleaseChangeLogService;
+import com.github.zafarkhaja.semver.Version;
+import org.spdx.rdfparser.license.LicenseInfoFactory;
+import org.spdx.rdfparser.license.AnyLicenseInfo;
 
 /**
  * Provides additional properties to the project
  */
-final class ProjectConvention extends AbstractExtension {
-  @NotNull
-  private final boolean isRelease
+public final class ProjectConvention extends AbstractExtension {
+  private final boolean isRelease;
 
   /**
    * Gets whether this run has release version (not snapshot)
    */
-  @NotNull
-  boolean getIsRelease() {
-    isRelease
+  public boolean getIsRelease() {
+    return isRelease;
   }
 
-  @NotNull
-  private final String changeLog
+  private final @NonNull String changeLog;
 
   /**
    * Gets changelog since last release
    */
-  @NotNull
-  String getChangeLog() {
-    changeLog
+  @NonNull
+  public String getChangeLog() {
+    return changeLog
   }
 
-  @NotNull
-  private final File reportsDir
+  private final @NonNull File reportsDir;
 
   /**
    * Gets parent output directory for reports
    */
-  @NotNull
-  File getReportsDir() {
-    reportsDir
+  @NonNull
+  public File getReportsDir() {
+    return reportsDir;
   }
 
-  @NotNull
-  private final File htmlReportsDir
+  private final @NonNull File htmlReportsDir
 
   /**
    * Gets output directory for HTML reports
    */
-  @NotNull
-  File getHtmlReportsDir() {
-    htmlReportsDir
+  @NonNull
+  public File getHtmlReportsDir() {
+    return htmlReportsDir;
   }
 
-  @NotNull
-  private final File xmlReportsDir
+  private final @NonNull File xmlReportsDir;
 
   /**
    * Gets output directory for XML reports
    */
-  @NotNull
-  File getXmlReportsDir() {
-    xmlReportsDir
+  @NonNull
+  public File getXmlReportsDir() {
+    return xmlReportsDir;
   }
 
-  @NotNull
-  private final File txtReportsDir
+  private final @NonNull File txtReportsDir;
 
   /**
    * Gets output directory for text reports
    */
-  @NotNull
+  @NonNull
   File getTxtReportsDir() {
     txtReportsDir
   }
 
-  ProjectConvention(Project project) {
+  ProjectConvention(@NonNull Project project) {
     super()
 
     Object version = project.version
@@ -111,55 +103,53 @@ final class ProjectConvention extends AbstractExtension {
     txtReportsDir = new File(reportsDir, 'txt')
   }
 
-  private String license
+  private String license;
 
   /**
    * Gets the project license
    * @return SPDX license identifier
    */
-  String getLicense() {
-    license
+  public String getLicense() {
+    return license;
   }
 
   /**
    * Sets the project license
    * @param newValue SPDX license identifier
    */
-  void setLicense(String newValue) {
-    String oldLicense = license
-    AnyLicenseInfo oldLicenseInfo = licenseInfo
-    license = newValue
-    licenseInfo = LicenseInfoFactory.parseSPDXLicenseString(license)
-    propertyChangeSupport.firePropertyChange('license', oldLicense, newValue)
-    propertyChangeSupport.firePropertyChange('licenseInfo', oldLicenseInfo, licenseInfo)
+  public void setLicense(String newValue) {
+    String oldLicense = license;
+    AnyLicenseInfo oldLicenseInfo = licenseInfo;
+    license = newValue;
+    this.licenseInfo = LicenseInfoFactory.parseSPDXLicenseString(license);
+    propertyChangeSupport.firePropertyChange('license', oldLicense, newValue);
+    propertyChangeSupport.firePropertyChange('licenseInfo', oldLicenseInfo, licenseInfo);
   }
 
-  private AnyLicenseInfo licenseInfo
+  private AnyLicenseInfo licenseInfo;
 
   /**
    * Gets the project license information
    */
-  String getLicenseInfo() {
-    licenseInfo
+  AnyLicenseInfo getLicenseInfo() {
+    return licenseInfo;
   }
 
-  @NotNull
-  private boolean publicReleases = false
+  private boolean publicReleases = false;
 
   /**
    * Gets whether releases of this project are public
    */
-  @NotNull
   boolean getPublicReleases() {
-    publicReleases
+    return publicReleases;
   }
 
   /**
    * Sets whether releases of this project are public
    */
-  void setPublicReleases(@NotNull boolean newValue) {
-    boolean oldValue = publicReleases
-    publicReleases = newValue
-    propertyChangeSupport.firePropertyChange('publicReleases', oldValue, newValue)
+  void setPublicReleases(boolean newValue) {
+    boolean oldValue = publicReleases;
+    publicReleases = newValue;
+    propertyChangeSupport.firePropertyChange('publicReleases', oldValue, newValue);
   }
 }

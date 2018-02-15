@@ -48,6 +48,7 @@ final class GradlePluginPluginDependencies {
       name: 'gradletest'
     ],
     'com.gradle.plugin-publish': [
+      configurationName: 'implementation',
       group: 'com.gradle.publish',
       name: 'plugin-publish-plugin',
       version: '0.9.9',
@@ -70,7 +71,7 @@ final class GradlePluginPluginDependencies {
   /**
    * Total list of dependencies
    */
-  static final List<? extends Map> DEPENDENCIES = PLUGIN_DEPENDENCIES.findAll { !it.key.startsWith('org.gradle.') }.collect { [configurationName: 'implementation'] + it.value } + NON_PLUGIN_DEPENDENCIES
+  static final List<? extends Map> DEPENDENCIES = PLUGIN_DEPENDENCIES.findAll { !it.key.startsWith('org.gradle.') }.collect { [configurationName: 'runtimeOnly'] + it.value } + NON_PLUGIN_DEPENDENCIES
 
   // Suppress default constructor for noninstantiability
   private GradlePluginPluginDependencies() {

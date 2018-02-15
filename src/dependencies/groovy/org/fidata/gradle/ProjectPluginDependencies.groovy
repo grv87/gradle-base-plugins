@@ -45,6 +45,7 @@ final class ProjectPluginDependencies {
       name: 'gradle-contacts-plugin'
     ],
     'nebula.dependency-lock': [
+      configurationName: 'implementation',
       group: 'com.netflix.nebula',
       name: 'gradle-dependency-lock-plugin',
       excludes: [
@@ -55,6 +56,7 @@ final class ProjectPluginDependencies {
       ]
     ],
     'com.github.ben-manes.versions': [
+      configurationName: 'implementation',
       group: 'com.github.ben-manes',
       name: 'gradle-versions-plugin'
     ],
@@ -70,10 +72,12 @@ final class ProjectPluginDependencies {
     ],
     'org.gradle.signing': [:],
     'de.gliderpilot.semantic-release': [
+      configurationName: 'implementation',
       group: 'de.gliderpilot.gradle.semantic-release',
       name: 'gradle-semantic-release-plugin'
     ],
     'org.ajoberstar.git-publish': [
+      configurationName: 'implementation',
       group: 'org.ajoberstar',
       name: 'gradle-git-publish'
     ],
@@ -113,13 +117,6 @@ final class ProjectPluginDependencies {
     ],
     [
       configurationName: 'api',
-      group: 'javax.validation',
-      name: 'validation-api',
-      version: '2.0+',
-      groovydoc: 'https://docs.jboss.org/hibernate/beanvalidation/spec/2.0/api/'
-    ],
-    [
-      configurationName: 'api',
       group: 'org.spdx',
       name: 'spdx-tools'
     ],
@@ -128,7 +125,7 @@ final class ProjectPluginDependencies {
   /**
    * Total list of dependencies
    */
-  static final List<? extends Map> DEPENDENCIES = PLUGIN_DEPENDENCIES.findAll { !it.key.startsWith('org.gradle.') }.collect { [configurationName: 'implementation'] + it.value } + NON_PLUGIN_DEPENDENCIES
+  static final List<? extends Map> DEPENDENCIES = PLUGIN_DEPENDENCIES.findAll { !it.key.startsWith('org.gradle.') }.collect { [configurationName: 'runtimeOnly'] + it.value } + NON_PLUGIN_DEPENDENCIES
 
   // Suppress default constructor for noninstantiability
   private ProjectPluginDependencies() {

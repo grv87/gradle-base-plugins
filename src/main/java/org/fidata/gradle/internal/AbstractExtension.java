@@ -1,4 +1,3 @@
-#!/usr/bin/env groovy
 /*
  * AbstractExtension class
  * Copyright © 2017  Basil Peace
@@ -17,37 +16,35 @@
  * implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-package org.fidata.gradle.internal
+package org.fidata.gradle.internal;
 
-import groovy.transform.CompileStatic
-import javax.validation.constraints.NotNull
-import java.beans.PropertyChangeSupport
-import java.beans.PropertyChangeListener
+import org.checkerframework.checker.nullness.qual.NonNull;
+import java.beans.PropertyChangeSupport;
+import java.beans.PropertyChangeListener;
 
 /**
  * Base class for extensions and conventions
  */
-@CompileStatic
 @SuppressWarnings('AbstractClassWithoutAbstractMethod')
-abstract class AbstractExtension {
+public abstract class AbstractExtension {
   /**
    * List of property change listeners
    */
-  protected final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this)
+  protected final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
   /**
    * Adds a property change listener.
    * @param listener The {@link PropertyChangeListener} to be added.
    */
-  void addPropertyChangeListener(@NotNull final PropertyChangeListener listener) {
-    propertyChangeSupport.addPropertyChangeListener(listener)
+  public void addPropertyChangeListener(final @NonNull PropertyChangeListener listener) {
+    propertyChangeSupport.addPropertyChangeListener(listener);
   }
 
   /**
    * Removes a property change listener.
    * @param listener The {@link PropertyChangeListener} to be removed
    */
-  void removePropertyChangeListener(@NotNull final PropertyChangeListener listener) {
-    propertyChangeSupport.removePropertyChangeListener(listener)
+  public void removePropertyChangeListener(final @NonNull PropertyChangeListener listener) {
+    propertyChangeSupport.removePropertyChangeListener(listener);
   }
 }

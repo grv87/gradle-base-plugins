@@ -1,4 +1,3 @@
-#!/usr/bin/env groovy
 /*
  * JDKExtension class
  * Copyright © 2017  Basil Peace
@@ -17,16 +16,16 @@
  * implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-package org.fidata.gradle
+package org.fidata.gradle;
 
-import groovy.transform.CompileStatic
-import org.fidata.gradle.internal.AbstractExtension
+import groovy.transform.CompileStatic;
+import org.fidata.gradle.internal.AbstractExtension;
 
 /**
  * Provides JDK choice
  */
 @CompileStatic
-class JDKExtension extends AbstractExtension {
+public class JDKExtension extends AbstractExtension {
   private String sourceVersion
   private String targetVersion
 

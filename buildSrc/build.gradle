@@ -20,6 +20,7 @@
 // Minimal set of plugins enough to compile plugins
 plugins {
   id 'nebula.dependency-lock' version '4.9.5'
+  id 'java'
   id 'groovy'
   id 'java-library'
   id 'java-gradle-plugin'
@@ -44,7 +45,8 @@ repositories {
 apply from: "${project.ext.rootDir}/dependencies-compile.gradle"
 
 sourceSets.main {
-  groovy.srcDirs = ["${project.ext.rootDir}/src/dependencies/groovy", "${project.ext.rootDir}/src/main/groovy"]
+  java.srcDirs = ["${project.ext.rootDir}/src/main/java"]
+  groovy.srcDirs = ["${project.ext.rootDir}/src/dependencies/groovy"]
   resources.srcDirs = ["${project.ext.rootDir}/src/main/resources"]
 }
 
@@ -64,3 +66,8 @@ task('inputsOutputs').doLast {
 }
 tasks['check'].enabled = false
 tasks['test'].enabled = false
+
+/*
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+*/

@@ -1,4 +1,3 @@
-#!/usr/bin/env groovy
 /*
  * org.fidata.project.groovy Gradle plugin
  * Copyright © 2017  Basil Peace
@@ -17,19 +16,19 @@
  * implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-package org.fidata.gradle
+package org.fidata.gradle;
 
-import org.fidata.gradle.internal.AbstractPlugin
-import org.gradle.api.Project
-import org.gradle.api.tasks.javadoc.Groovydoc
-import org.gradle.api.JavaVersion
-import org.gradle.internal.jvm.Jvm
-import org.gradle.api.artifacts.type.ArtifactTypeDefinition
+import org.fidata.gradle.internal.AbstractPlugin;
+import org.gradle.api.Project;
+import org.gradle.api.tasks.javadoc.Groovydoc;
+import org.gradle.api.JavaVersion;
+import org.gradle.internal.jvm.Jvm;
+import org.gradle.api.artifacts.type.ArtifactTypeDefinition;
 
 /**
  * Provides an environment for a Groovy project
  */
-final class GroovyProjectPlugin extends AbstractPlugin {
+public final class GroovyProjectPlugin extends AbstractPlugin {
   public static final GROOVY_VERSION = GroovySystem.version
 
   /**
@@ -43,7 +42,7 @@ final class GroovyProjectPlugin extends AbstractPlugin {
   public static final List<String> SPOCK_DISABLED_CODENARC_RULES = ['MethodName', 'FactoryMethodName']
 
   @Override
-  void apply(Project project) {
+  public void apply(Project project) {
     super.apply(project)
     project.with {
       apply plugin: JDKProjectPlugin

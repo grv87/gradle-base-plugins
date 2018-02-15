@@ -1,4 +1,3 @@
-#!/usr/bin/env groovy
 /*
  * NoJekyll task class
  * Copyright © 2017  Basil Peace
@@ -17,53 +16,52 @@
  * implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-package org.fidata.gradle.tasks
+package org.fidata.gradle.tasks;
 
-import groovy.transform.CompileStatic
-import org.gradle.api.DefaultTask
-import org.gradle.api.tasks.CacheableTask
-import org.gradle.api.tasks.OutputFile
-import org.gradle.api.tasks.Internal
-import org.gradle.api.tasks.TaskAction
-import javax.validation.constraints.NotNull
+import java.io.File;
+import org.gradle.api.DefaultTask;
+import org.gradle.api.tasks.CacheableTask;
+import org.gradle.api.tasks.OutputFile;
+import org.gradle.api.tasks.Internal;
+import org.gradle.api.tasks.TaskAction;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 /**
  * Generates .nojekyll file in specified location
  */
 @CacheableTask
-@CompileStatic
-class NoJekyll extends DefaultTask {
+public class NoJekyll extends DefaultTask {
   /**
    * NoJekyll file name
    */
-  public static final String FILE_NAME = '.nojekyll'
+  public static final String FILE_NAME = '.nojekyll';
 
-  private File destinationDir
+  private File destinationDir;
 
   /**
    * Gets a dir where to generate a file
    */
   @Internal
   File getDestinationDir() {
-    destinationDir
+    return destinationDir;
   }
 
   /**
    * Sets a dir where to generate a file
    */
-  void setDestinationDir(@NotNull File newValue) {
-    this.destinationDir = newValue
-    destinationFile = new File(destinationDir, FILE_NAME)
+  void setDestinationDir(@NonNull File newValue) {
+    this.destinationDir = newValue;
+    this.destinationFile = new File(destinationDir, FILE_NAME);
   }
 
-  private File destinationFile
+  private File destinationFile;
 
   /**
    * Gets a file that to be generated
    */
   @OutputFile
   File getDestinationFile() {
-    destinationFile
+    return destinationFile;
   }
 
   /**
@@ -71,6 +69,6 @@ class NoJekyll extends DefaultTask {
    */
   @TaskAction
   void generate() {
-    destinationFile.text = ''
+    destinationFile.text = '';
   }
 }

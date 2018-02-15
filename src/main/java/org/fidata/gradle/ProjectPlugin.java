@@ -1,4 +1,3 @@
-#!/usr/bin/env groovy
 /*
  * org.fidata.project Gradle plugin
  * Copyright © 2017  Basil Peace
@@ -17,55 +16,55 @@
  * implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-package org.fidata.gradle
+package org.fidata.gradle;
 
-import static org.gradle.internal.FileUtils.toSafeFileName
-import org.fidata.gradle.internal.AbstractPlugin
-import org.gradle.api.Project
-import org.gradle.initialization.DefaultSettings
-import org.gradle.language.base.plugins.LifecycleBasePlugin
-import nebula.plugin.dependencylock.DependencyLockTaskConfigurer
-import org.ajoberstar.gradle.git.release.base.BaseReleasePlugin
-import org.ajoberstar.gradle.git.publish.GitPublishPlugin
-import org.gradle.api.plugins.ProjectReportsPlugin
-import org.gradle.api.Task
-import nebula.plugin.dependencylock.tasks.GenerateLockTask
-import nebula.plugin.dependencylock.tasks.UpdateLockTask
-import nebula.plugin.dependencylock.tasks.SaveLockTask
-import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
-import org.gradle.api.tasks.testing.Test
-import org.fidata.gradle.tasks.NoJekyll
-import org.fidata.gradle.tasks.ResignGitCommit
-import org.gradle.api.plugins.quality.CodeNarc
-import org.gradle.api.tasks.diagnostics.BuildEnvironmentReportTask
-import org.gradle.api.reporting.components.ComponentReport
-import org.gradle.api.tasks.diagnostics.DependencyReportTask
-import org.gradle.api.tasks.diagnostics.DependencyInsightReportTask
-import org.gradle.api.reporting.dependents.DependentComponentsReport
-import org.gradle.api.reporting.model.ModelReport
-import org.gradle.api.tasks.diagnostics.ProjectReportTask
-import org.gradle.api.tasks.diagnostics.PropertyReportTask
-import org.gradle.api.reporting.dependencies.HtmlDependencyReportTask
-import org.gradle.api.tasks.diagnostics.TaskReportTask
-import org.fidata.gradle.tasks.InputsOutputs
-import org.gradle.api.artifacts.ComponentMetadataDetails
-import org.gradle.api.artifacts.ComponentSelection
-import org.gradle.api.file.FileTreeElement
-import javax.annotation.Nullable
-import javax.annotation.NotNull
-import com.github.zafarkhaja.semver.Version
-import com.github.zafarkhaja.semver.ParseException
-import groovy.text.StreamingTemplateEngine
-import groovy.text.Template
-import com.google.common.io.Resources
-import com.google.common.base.Charsets
-import org.gradle.api.logging.LogLevel
-import org.fidata.gradle.ProjectPluginDependencies
+import static org.gradle.internal.FileUtils.toSafeFileName;
+import org.fidata.gradle.internal.AbstractPlugin;
+import org.gradle.api.Project;
+import org.gradle.initialization.DefaultSettings;
+import org.gradle.language.base.plugins.LifecycleBasePlugin;
+import nebula.plugin.dependencylock.DependencyLockTaskConfigurer;
+import org.ajoberstar.gradle.git.release.base.BaseReleasePlugin;
+import org.ajoberstar.gradle.git.publish.GitPublishPlugin;
+import org.gradle.api.plugins.ProjectReportsPlugin;
+import org.gradle.api.Task;
+import nebula.plugin.dependencylock.tasks.GenerateLockTask;
+import nebula.plugin.dependencylock.tasks.UpdateLockTask;
+import nebula.plugin.dependencylock.tasks.SaveLockTask;
+import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask;
+import org.gradle.api.tasks.testing.Test;
+import org.fidata.gradle.tasks.NoJekyll;
+import org.fidata.gradle.tasks.ResignGitCommit;
+import org.gradle.api.plugins.quality.CodeNarc;
+import org.gradle.api.tasks.diagnostics.BuildEnvironmentReportTask;
+import org.gradle.api.reporting.components.ComponentReport;
+import org.gradle.api.tasks.diagnostics.DependencyReportTask;
+import org.gradle.api.tasks.diagnostics.DependencyInsightReportTask;
+import org.gradle.api.reporting.dependents.DependentComponentsReport;
+import org.gradle.api.reporting.model.ModelReport;
+import org.gradle.api.tasks.diagnostics.ProjectReportTask;
+import org.gradle.api.tasks.diagnostics.PropertyReportTask;
+import org.gradle.api.reporting.dependencies.HtmlDependencyReportTask;
+import org.gradle.api.tasks.diagnostics.TaskReportTask;
+import org.fidata.gradle.tasks.InputsOutputs;
+import org.gradle.api.artifacts.ComponentMetadataDetails;
+import org.gradle.api.artifacts.ComponentSelection;
+import org.gradle.api.file.FileTreeElement;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import com.github.zafarkhaja.semver.Version;
+import com.github.zafarkhaja.semver.ParseException;
+import groovy.text.StreamingTemplateEngine;
+import groovy.text.Template;
+import com.google.common.io.Resources;
+import com.google.common.base.Charsets;
+import org.gradle.api.logging.LogLevel;
+import org.fidata.gradle.ProjectPluginDependencies;
 
 /**
  * Provides an environment for a general, language-agnostic project
  */
-final class ProjectPlugin extends AbstractPlugin {
+public final class ProjectPlugin extends AbstractPlugin {
   static final Template COMMIT_MESSAGE_TEMPLATE = new StreamingTemplateEngine().createTemplate(
     '''
       $type: $subject
@@ -91,7 +90,7 @@ final class ProjectPlugin extends AbstractPlugin {
 
   @Override
   @SuppressWarnings('CouldBeElvis')
-  void apply(Project project) {
+  public void apply(Project project) {
     super.apply(project)
     project.with {
       for (String id in ProjectPluginDependencies.DEFAULT_PLUGINS) {
@@ -250,7 +249,7 @@ final class ProjectPlugin extends AbstractPlugin {
     }
   }
 
-  @NotNull
+  @NonNull
   static Boolean isPreReleaseVersion(@Nullable String version) {
     if (!version) {
       return null
