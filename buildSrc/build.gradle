@@ -23,6 +23,7 @@ plugins {
   id 'java'
   id 'groovy'
   id 'java-library'
+  id 'io.franzbecker.gradle-lombok' version '1.11'
   id 'java-gradle-plugin'
 }
 
@@ -46,7 +47,7 @@ apply from: "${project.ext.rootDir}/dependencies-compile.gradle"
 
 sourceSets.main {
   java.srcDirs = ["${project.ext.rootDir}/src/main/java"]
-  groovy.srcDirs = ["${project.ext.rootDir}/src/dependencies/groovy"]
+  groovy.srcDirs = ["${project.ext.rootDir}/src/plugin-dependencies/groovy", "${project.ext.rootDir}/src/main/groovy"]
   resources.srcDirs = ["${project.ext.rootDir}/src/main/resources"]
 }
 

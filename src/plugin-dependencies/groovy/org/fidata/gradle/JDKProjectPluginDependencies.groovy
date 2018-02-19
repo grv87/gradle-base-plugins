@@ -37,6 +37,10 @@ final class JDKProjectPluginDependencies {
       group: 'com.jaredsburrows',
       name: 'gradle-checker-framework-plugin'
     ],
+    'io.franzbecker.gradle-lombok': [
+      group: 'io.franzbecker',
+      name: 'gradle-lombok'
+    ],
     'org.danilopianini.javadoc.io-linker': [
       group: 'org.danilopianini',
       name: 'javadoc.io-linker'
@@ -54,27 +58,6 @@ final class JDKProjectPluginDependencies {
       enabled: false
     ],
   ]
-
-  /**
-   * List of IDs of plugins enabled by default
-   */
-  static final List<String> DEFAULT_PLUGINS = PLUGIN_DEPENDENCIES.findAll { it.value.get('enabled', true) } *.key
-
-  /**
-   * List of non-plugin dependencies
-   */
-  static final List<? extends Map> NON_PLUGIN_DEPENDENCIES = [
-    [
-      configurationName: 'compileOnly',
-      group: 'org.checkerframework',
-      name: 'checker-qual'
-    ],
-  ]
-
-  /**
-   * Total list of dependencies
-   */
-  static final List<? extends Map> DEPENDENCIES = PLUGIN_DEPENDENCIES.findAll { !it.key.startsWith('org.gradle.') }.collect { [configurationName: 'runtimeOnly'] + it.value } + NON_PLUGIN_DEPENDENCIES
 
   // Suppress default constructor for noninstantiability
   private JDKProjectPluginDependencies() {

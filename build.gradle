@@ -48,7 +48,7 @@ contacts {
 
 apply from: "${project.ext.rootDir}/dependencies-compile.gradle"
 
-sourceSets.main.groovy.srcDirs << ["${project.ext.rootDir}/src/dependencies/groovy"]
+sourceSets.main.groovy.srcDirs << ["${project.ext.rootDir}/src/plugin-dependencies/groovy"]
 
 /*tasks['groovydoc'].with {
   Closure addLinks = { List dependencies ->

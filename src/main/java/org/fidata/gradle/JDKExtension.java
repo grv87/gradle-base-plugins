@@ -18,58 +18,52 @@
  */
 package org.fidata.gradle;
 
-import groovy.transform.CompileStatic;
 import org.fidata.gradle.internal.AbstractExtension;
+import lombok.Getter;
 
 /**
  * Provides JDK choice
  */
-@CompileStatic
 public class JDKExtension extends AbstractExtension {
-  private String sourceVersion
-  private String targetVersion
-
   /**
-   * Gets source JDK version
+   * Source JDK version
    */
-  String getSourceVersion() {
-    sourceVersion
-  }
+  @Getter
+  private String sourceVersion;
 
   /**
    * Sets source JDK version
    */
   void setSourceVersion(String newValue) {
-    String oldValue = sourceVersion
-    sourceVersion = newValue
-    propertyChangeSupport.firePropertyChange('sourceVersion', oldValue, newValue)
+    String oldValue = sourceVersion;
+    sourceVersion = newValue;
+    propertyChangeSupport.firePropertyChange("sourceVersion", oldValue, newValue);
   }
 
   /**
-   * Gets target JDK version
+   * Target JDK version
    */
-  String getTargetVersion() {
-    targetVersion
-  }
+  @Getter
+  private String targetVersion;
 
   /**
    * Sets target JDK version
    */
   void setTargetVersion(String newValue) {
-    String oldValue = targetVersion
-    targetVersion = newValue
-    propertyChangeSupport.firePropertyChange('targetVersion', oldValue, newValue)
+    String oldValue = targetVersion;
+    targetVersion = newValue;
+    propertyChangeSupport.firePropertyChange("targetVersion", oldValue, newValue);
   }
 
   /**
    * Sets both source and target JDK version to the same value
    */
   void setVersion(String newValue) {
-    String oldSourceValue = sourceVersion
-    String oldTargetValue = targetVersion
-    sourceVersion = newValue
-    targetVersion = newValue
-    propertyChangeSupport.firePropertyChange('sourceVersion', oldSourceValue, newValue)
-    propertyChangeSupport.firePropertyChange('targetVersion', oldTargetValue, newValue)
+    String oldSourceValue = sourceVersion;
+    String oldTargetValue = targetVersion;
+    sourceVersion = newValue;
+    targetVersion = newValue;
+    propertyChangeSupport.firePropertyChange("sourceVersion", oldSourceValue, newValue);
+    propertyChangeSupport.firePropertyChange("targetVersion", oldTargetValue, newValue);
   }
 }

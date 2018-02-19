@@ -1,6 +1,6 @@
 #!/usr/bin/env groovy
 /*
- * Test for ProjectPlugin.isPreReleaseVersion function
+ * Unit test for ProjectConvention.isPreReleaseVersion function
  * Copyright © 2017  Basil Peace
  *
  * This file is part of gradle-base-plugins.
@@ -32,15 +32,15 @@ import junitparams.naming.TestCaseName
  *
  */
 @RunWith(JUnitParamsRunner.class)
-public class ProjectPluginTest {
+public class ProjectConventionTest {
   /**
-   * Test method for {@link org.fidata.gradle.ProjectPlugin#isPreReleaseVersion(java.lang.String)}.
+   * Test method for {@link org.fidata.gradle.ProjectConvention#isPreReleaseVersion(java.lang.String)}.
    */
   @Test
   @Parameters
   @TestCaseName('{index}: isPreReleaseVersion({0}) == {1}')
   public void testIsPreReleaseVersion(final String version, final Boolean expectedResult) {
-    assertEquals expectedResult, ProjectPlugin.isPreReleaseVersion(version)
+    assertEquals expectedResult, ProjectConvention.isPreReleaseVersion(version)
   }
 
   public static Object[] parametersForTestIsPreReleaseVersion() {

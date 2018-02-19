@@ -19,17 +19,17 @@
  */
 
 dependencies {
-  Closure addDependencies = { List dependencies ->
-    for (Map depNotation in dependencies) {
+  Closure addPluginDependencies = { Map pluginDependencies ->
+    pluginDependencies.findAll { !it.key.startsWith('org.gradle.') }*.value.each { Map depNotation ->
       add(
-        depNotation['configurationName'],
+        depNotation.getOrDefault('configurationName', 'runtimeOnly'),
         [
           group: depNotation['group'],
           name: depNotation['name'],
-          version: depNotation.get('version', 'latest.release')
+          version: depNotation.getOrDefault('version', 'latest.release')
         ]
       ) {
-        depNotation.get('excludes', []).each { exclNotation ->
+        depNotation.get('excludes', []).each { Map exclNotation ->
           exclude(
             group: exclNotation['group'],
             module: exclNotation['module']
@@ -39,8 +39,15 @@ dependencies {
     }
   }
 
-  addDependencies org.fidata.gradle.ProjectPluginDependencies.DEPENDENCIES
-  addDependencies org.fidata.gradle.JDKProjectPluginDependencies.DEPENDENCIES
-  addDependencies org.fidata.gradle.GroovyProjectPluginDependencies.DEPENDENCIES
-  addDependencies org.fidata.gradle.GradlePluginPluginDependencies.DEPENDENCIES
+  addPluginDependencies org.fidata.gradle.ProjectPluginDependencies.PLUGIN_DEPENDENCIES
+  addPluginDependencies org.fidata.gradle.JDKProjectPluginDependencies.PLUGIN_DEPENDENCIES
+  addPluginDependencies org.fidata.gradle.GroovyProjectPluginDependencies.PLUGIN_DEPENDENCIES
+  addPluginDependencies org.fidata.gradle.GradlePluginPluginDependencies.PLUGIN_DEPENDENCIES
+
+  implementation(group: 'com.google.guava', name: 'guava', version: '23.5-jre')
+  implementation(group: 'com.github.zafarkhaja', name: 'java-semver', version: 'latest.release')
+  api(group: 'org.spdx', name: 'spdx-tools', version: 'latest.release') {
+    exclude group: 'xerces', module: 'xercesImpl'
+  }
+  compileOnly(group: 'org.checkerframework', name: 'checker-qual', version: 'latest.release')
 }

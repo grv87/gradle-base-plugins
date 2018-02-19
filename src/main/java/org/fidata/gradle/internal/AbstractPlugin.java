@@ -20,12 +20,11 @@ package org.fidata.gradle.internal;
 
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
-import org.gradle.api.Task;
 
 /**
  * Base class for plugins
  */
-@SuppressWarnings('AbstractClassWithoutAbstractMethod')
+@SuppressWarnings("AbstractClassWithoutAbstractMethod")
 public abstract class AbstractPlugin implements Plugin<Project> {
   private Project project;
 

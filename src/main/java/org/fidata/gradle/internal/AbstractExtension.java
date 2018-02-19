@@ -25,7 +25,7 @@ import java.beans.PropertyChangeListener;
 /**
  * Base class for extensions and conventions
  */
-@SuppressWarnings('AbstractClassWithoutAbstractMethod')
+@SuppressWarnings("AbstractClassWithoutAbstractMethod")
 public abstract class AbstractExtension {
   /**
    * List of property change listeners

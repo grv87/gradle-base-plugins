@@ -28,8 +28,8 @@ import groovy.transform.CompileStatic
 final class ProjectPluginDependencies {
   /*
    * BLOCKED: https://github.com/gradle/gradle/issues/1050
-   * Some plugins are published to Gradle Plugins portal and doesn't
-   * exist in JCenter.
+   * Some plugins are published to Gradle Plugins portal only
+   * and don't exist in JCenter or Maven Central.
    * Gradle Plugins portal doesn't provide maven-metadata,
    * so Gradle can't detect latest version.
    * We have to provide specific versions for such plugins <>
@@ -61,6 +61,7 @@ final class ProjectPluginDependencies {
       name: 'gradle-versions-plugin'
     ],
     'com.jfrog.artifactory': [
+      configurationName: 'implementation',
       group: 'org.jfrog.buildinfo',
       name: 'build-info-extractor-gradle',
       excludes: [
@@ -85,6 +86,7 @@ final class ProjectPluginDependencies {
     'org.gradle.codenarc': [:],
     'org.gradle.project-report': [:],
     'cz.malohlava': [
+      configurationName: 'implementation',
       group: 'cz.malohlava',
       name: 'visteg'
     ],
@@ -94,38 +96,6 @@ final class ProjectPluginDependencies {
       version: '1.3'
     ],
   ]
-
-  /**
-   * List of IDs of plugins enabled by default
-   */
-  static final List<String> DEFAULT_PLUGINS = PLUGIN_DEPENDENCIES.findAll { it.value.get('enabled', true) } *.key
-
-  /**
-   * List of non-plugin dependencies
-   */
-  static final List<? extends Map> NON_PLUGIN_DEPENDENCIES = [
-    [
-      configurationName: 'implementation',
-      group: 'com.google.guava',
-      name: 'guava',
-      version: '23.5-jre'
-    ],
-    [
-      configurationName: 'implementation',
-      group: 'com.github.zafarkhaja',
-      name: 'java-semver'
-    ],
-    [
-      configurationName: 'api',
-      group: 'org.spdx',
-      name: 'spdx-tools'
-    ],
-  ]
-
-  /**
-   * Total list of dependencies
-   */
-  static final List<? extends Map> DEPENDENCIES = PLUGIN_DEPENDENCIES.findAll { !it.key.startsWith('org.gradle.') }.collect { [configurationName: 'runtimeOnly'] + it.value } + NON_PLUGIN_DEPENDENCIES
 
   // Suppress default constructor for noninstantiability
   private ProjectPluginDependencies() {

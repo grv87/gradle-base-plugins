@@ -1,6 +1,6 @@
 #!/usr/bin/env groovy
 /*
- * GroovyProjectPluginDependencies class
+ * GradlePluginPluginDependencies class
  * Copyright © 2017  Basil Peace
  *
  * This file is part of gradle-base-plugins.
@@ -22,46 +22,42 @@ package org.fidata.gradle
 import groovy.transform.CompileStatic
 
 /**
- * List of dependencies of org.fidata.project.groovy plugin
+ * List of dependencies of org.fidata.plugin plugin
  */
 @CompileStatic
-final class GroovyProjectPluginDependencies {
+final class GradlePluginPluginDependencies {
+  /*
+   * BLOCKED: https://github.com/gradle/gradle/issues/1050
+   * Some plugins are published to Gradle Plugins portal only
+   * and don't exist in JCenter or Maven Central.
+   * Gradle Plugins portal doesn't provide maven-metadata,
+   * so Gradle can't detect latest version.
+   * We have to provide specific versions for such plugins <>
+   */
   /**
    * List of plugin dependencies with IDs
    */
   static final Map<String, ? extends Map> PLUGIN_DEPENDENCIES = [
-    'org.gradle.groovy': [:],
-  ]
-
-  /**
-   * List of IDs of plugins enabled by default
-   */
-  static final List<String> DEFAULT_PLUGINS = PLUGIN_DEPENDENCIES.findAll { it.value.get('enabled', true) } *.key
-
-  /**
-   * Groovy version
-   */
-  static final String GROOVY_VERSION = GroovySystem.version
-
-  /**
-   * List of non-plugin dependencies
-   */
-  static final List<? extends Map> NON_PLUGIN_DEPENDENCIES = [
-    [
-      configurationName: 'api',
-      group: 'org.codehaus.groovy',
-      name: 'groovy-all',
-      version: GROOVY_VERSION
+    'org.gradle.java-gradle-plugin': [:],
+    'org.ajoberstar.stutter': [
+      group: 'org.ajoberstar',
+      name: 'gradle-stutter'
+    ],
+    'org.ysb33r.gradletest': [
+      group: 'gradle.plugin.org.ysb33r.gradle',
+      name: 'gradletest'
+    ],
+    'com.gradle.plugin-publish': [
+      configurationName: 'implementation',
+      group: 'com.gradle.publish',
+      name: 'plugin-publish-plugin',
+      version: '0.9.9',
+      enabled: false
     ],
   ]
 
-  /**
-   * Total list of dependencies
-   */
-  static final List<? extends Map> DEPENDENCIES = PLUGIN_DEPENDENCIES.findAll { !it.key.startsWith('org.gradle.') }.collect { [configurationName: 'runtimeOnly'] + it.value } + NON_PLUGIN_DEPENDENCIES
-
   // Suppress default constructor for noninstantiability
-  private GroovyProjectPluginDependencies() {
+  private GradlePluginPluginDependencies() {
     throw new AssertionError()
   }
 }
