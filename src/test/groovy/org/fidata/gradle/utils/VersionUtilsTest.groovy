@@ -1,6 +1,6 @@
 #!/usr/bin/env groovy
 /*
- * Unit test for ProjectConvention.isPreReleaseVersion function
+ * Unit test for VersionUtils class
  * Copyright © 2017  Basil Peace
  *
  * This file is part of gradle-base-plugins.
@@ -17,7 +17,7 @@
  * implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-package org.fidata.gradle
+package org.fidata.gradle.utils
 
 import static org.junit.Assert.assertEquals
 import static org.junit.Assert.assertNull
@@ -32,7 +32,7 @@ import junitparams.naming.TestCaseName
  *
  */
 @RunWith(JUnitParamsRunner.class)
-public class ProjectConventionTest {
+public class VersionUtilsTest {
   /**
    * Test method for {@link org.fidata.gradle.ProjectConvention#isPreReleaseVersion(java.lang.String)}.
    */
@@ -40,7 +40,7 @@ public class ProjectConventionTest {
   @Parameters
   @TestCaseName('{index}: isPreReleaseVersion({0}) == {1}')
   public void testIsPreReleaseVersion(final String version, final Boolean expectedResult) {
-    assertEquals expectedResult, ProjectConvention.isPreReleaseVersion(version)
+    assertEquals expectedResult, VersionUtils.isPreReleaseVersion(version)
   }
 
   public static Object[] parametersForTestIsPreReleaseVersion() {
@@ -51,6 +51,7 @@ public class ProjectConventionTest {
       ['1.0.0'                , false],
       ['1.0.0+20130313144700' , false],
       ['0.1.0'                , false], // We don't follow Magic Zero rule
+      ['1.0.1-SNAPSHOT'       , true],
       ['1.0.0-alpha+001'      , true],
       ['1.0.0-alpha'          , true],
       // Java

@@ -17,18 +17,29 @@
  * implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-rootProject.name = 'gradle-base-plugins'
 
-if (hasProperty('artifactoryUser') && hasProperty('artifactoryPassword')) {
-  buildCache {
-    local.enabled = false
-    remote(HttpBuildCache) {
-      url = 'https://fidata.jfrog.io/fidata/local.gradle.cache/'
+pluginManagement {
+  repositories {
+    maven {
+      url 'https://fidata.jfrog.io/fidata/plugins-release/'
       credentials {
         username = getProperty('artifactoryUser')
         password = getProperty('artifactoryPassword')
       }
-      push = System.getenv().with { containsKey('CI') || containsKey('JENKINS_URL') }
     }
+  }
+}
+
+rootProject.name = 'gradle-base-plugins'
+
+buildCache {
+  local.enabled = false
+  remote(HttpBuildCache) {
+    url = 'https://fidata.jfrog.io/fidata/local.gradle.cache/'
+    credentials {
+      username = getProperty('artifactoryUser')
+      password = getProperty('artifactoryPassword')
+    }
+    push = System.getenv().with { containsKey('CI') || containsKey('JENKINS_URL') }
   }
 }

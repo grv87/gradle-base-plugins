@@ -19,6 +19,9 @@
  */
 package org.fidata.gradle
 
+import static GradlePluginPluginDependencies.PLUGIN_DEPENDENCIES
+import static GroovyProjectPlugin.SPOCK_DISABLED_CODENARC_RULES
+import static GroovyProjectPlugin.SPOCK_REPORTS_DIR_NAME
 import static org.gradle.internal.FileUtils.toSafeFileName
 import groovy.transform.CompileStatic
 import groovy.transform.CompileDynamic
@@ -34,7 +37,6 @@ import org.gradle.api.tasks.testing.Test
 // import org.gradle.api.tasks.testing.TestTaskReports
 import org.gradle.plugin.devel.tasks.ValidateTaskProperties
 import org.gradle.api.tasks.javadoc.Groovydoc
-
 import java.util.Map
 import java.util.regex.Matcher
 import java.beans.PropertyChangeListener
@@ -57,7 +59,7 @@ final class GradlePluginPlugin extends AbstractPlugin implements PropertyChangeL
       plugins.with {
         apply ProjectPlugin
 
-        GradlePluginPluginDependencies.PLUGIN_DEPENDENCIES.findAll() { Map.Entry<String, ? extends Map> depNotation -> depNotation.value.getOrDefault('enabled', true) }.keySet().each { String id ->
+        PLUGIN_DEPENDENCIES.findAll() { Map.Entry<String, ? extends Map> depNotation -> depNotation.value.getOrDefault('enabled', true) }.keySet().each { String id ->
           apply id
         }
       }
@@ -74,19 +76,19 @@ final class GradlePluginPlugin extends AbstractPlugin implements PropertyChangeL
             // Project project = task.project
             String reportDirName = "compatTest/${ toSafeFileName(compatTestMatcher.group(1).uncapitalize()) }" /* uncapitalize requires Groovy >= 2.4.8, i.e. Gradle >= 3.5 */
             // TestTaskReports reports = task.getReports()
-            // reports.junitXml.destination = new File(projectconvention.getPlugin(ProjectConvention).xmlReportsDir, reportDirName) // TODO: Cannot set read-only property: destination
+            // reports.junitXml.destination = new File(project.convention.getPlugin(ProjectConvention).xmlReportsDir, reportDirName) // TODO: Cannot set read-only property: destination
             if (project.plugins.hasPlugin(GroovyProjectPlugin)) {
               reports.html.enabled = false
               // Map<String, File> systemProperties = new Map<String, File>()
-              // systemProperties.put('com.athaydes.spockframework.report.outputDir', new File(project.getConvention().getPlugin(ProjectConvention.class).getHtmlReportsDir(), "${ GroovyProjectPlugin.SPOCK_REPORTS_DIR_NAME }/$reportDirName").absolutePath)
-              systemProperty 'com.athaydes.spockframework.report.outputDir', new File(project.convention.getPlugin(ProjectConvention).htmlReportsDir, "${ GroovyProjectPlugin.SPOCK_REPORTS_DIR_NAME }/$reportDirName").absolutePath
+              // systemProperties.put('com.athaydes.spockframework.report.outputDir', new File(project.convention.getPlugin(ProjectConvention.class).getHtmlReportsDir(), "${ GroovyProjectPlugin.SPOCK_REPORTS_DIR_NAME }/$reportDirName").absolutePath)
+              systemProperty 'com.athaydes.spockframework.report.outputDir', new File(project.convention.getPlugin(ProjectConvention).htmlReportsDir, "${ SPOCK_REPORTS_DIR_NAME }/$reportDirName").absolutePath
             }
           }
         }
       }
       tasks.withType(ValidateTaskProperties) { ValidateTaskProperties task ->
         task.with {
-          outputFile = new File(project.convention.getPlugin(ProjectConvention).txtReportsDir, "${ toSafeFileName(name) }.txt")
+          outputFile.set new File(project.convention.getPlugin(ProjectConvention).txtReportsDir, "${ toSafeFileName(name) }.txt")
           failOnWarning = true
         }
       }
@@ -101,12 +103,15 @@ final class GradlePluginPlugin extends AbstractPlugin implements PropertyChangeL
         add('testImplementation', gradleTestKit())
       }
 
-      convention.getByType(JavaPluginConvention).sourceSets.getByName('compatTest') { SourceSet sourceSet ->
-        sourceSet.compileClasspath += convention.getByType(JavaPluginConvention).sourceSets.getByName('main').output + configurations.getByName('testCompileClasspath')
-        sourceSet.runtimeClasspath += sourceSet.output + sourceSet.compileClasspath + configurations.getByName('testRuntimeClasspath')
-      }
+    }
 
-      tasks.getByName('codenarcCompatTest').setProperty 'disabledRules', GroovyProjectPlugin.SPOCK_DISABLED_CODENARC_RULES
+    project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName('compatTest') { SourceSet sourceSet ->
+      sourceSet.compileClasspath += project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName('main').output + project.configurations.getByName('testCompileClasspath')
+      sourceSet.runtimeClasspath += sourceSet.output + sourceSet.compileClasspath + project.configurations.getByName('testRuntimeClasspath')
+    }
+
+    project.with {
+      tasks.getByName('codenarcCompatTest').extensions.extraProperties['disabledRules'] = SPOCK_DISABLED_CODENARC_RULES
 
       configureArtifactory()
     }
@@ -129,17 +134,17 @@ final class GradlePluginPlugin extends AbstractPlugin implements PropertyChangeL
 
   private void configurePublicReleases() {
     project.with {
-      if (convention.getByType(ProjectConvention).publicReleases) {
+      if (convention.getPlugin(ProjectConvention).publicReleases) {
         plugins.apply 'com.gradle.plugin-publish'
         extensions.getByType(PluginBundleExtension).with {
-          website = "https://github.com/FIDATA/$name"
-          vcsUrl = "https://github.com/FIDATA/$name"
-          description = convention.getByType(ProjectConvention).changeLog.toString()
+          website = project.convention.getPlugin(ProjectConvention).websiteUrl
+          vcsUrl = project.convention.getPlugin(ProjectConvention).vcsUrl
+          description = project.convention.getPlugin(ProjectConvention).changeLog.toString()
           mavenCoordinates { MavenCoordinates mavenCoordinates
             mavenCoordinates.groupId = group
           }
         }
-        tasks.getByName(/*PublishPlugin.PUBLISH_TASK_NAME*/ 'publishPlugins').onlyIf { convention.getByType(ProjectConvention).isRelease }
+        tasks.getByName(/*PublishPlugin.PUBLISH_TASK_NAME*/ 'publishPlugins').onlyIf { project.convention.getPlugin(ProjectConvention).isRelease }
         tasks.getByName('release').finalizedBy 'publishPlugins'
       }
     }
@@ -147,7 +152,7 @@ final class GradlePluginPlugin extends AbstractPlugin implements PropertyChangeL
 
   /*
    * CAVEAT:
-   * Conventions and extensions in JFrog Gradle plugins have package scopes,
+   * project.Conventions and extensions in JFrog Gradle plugins have package scopes,
    * so we can't use static compilation
    * <grv87 2018-02-18>
    */
@@ -158,12 +163,12 @@ final class GradlePluginPlugin extends AbstractPlugin implements PropertyChangeL
         artifactory {
           resolve {
             repository {
-              repoKey = convention.getByType(ProjectConvention).isRelease ? 'plugins-release' : 'plugins-snapshot'
+              repoKey = project.convention.getPlugin(ProjectConvention).isRelease ? 'plugins-release' : 'plugins-snapshot'
             }
           }
           publish {
             repository {
-              repoKey = convention.getByType(ProjectConvention).isRelease ? 'plugins-release-local' : 'plugins-snapshot-local'
+              repoKey = project.convention.getPlugin(ProjectConvention).isRelease ? 'plugins-release-local' : 'plugins-snapshot-local'
             }
           }
         }

@@ -19,6 +19,8 @@
  */
 package org.fidata.gradle
 
+import static JDKProjectPluginDependencies.PLUGIN_DEPENDENCIES
+import static ProjectPlugin.LICENSE_FILE_NAMES
 import groovy.transform.CompileStatic
 import groovy.transform.CompileDynamic
 import org.fidata.gradle.internal.AbstractPlugin
@@ -29,7 +31,11 @@ import java.beans.PropertyChangeListener
 import java.beans.PropertyChangeEvent
 import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.tasks.SourceSet
+import org.gradle.api.reporting.ReportingExtension
 // import org.jfrog.gradle.plugin.artifactory.task.BuildInfoBaseTask // TODO
+// import org.ajoberstar.gradle.git.publish.GitPublishExtension
+import org.ajoberstar.gradle.git.ghpages.GithubPagesPluginExtension
+import org.ajoberstar.gradle.git.ghpages.GithubPagesPlugin
 
 /**
  * Provides an environment for a JDK project
@@ -60,7 +66,7 @@ final class JDKProjectPlugin extends AbstractPlugin implements PropertyChangeLis
       plugins.with {
         apply ProjectPlugin
 
-        JDKProjectPluginDependencies.PLUGIN_DEPENDENCIES.findAll() { Map.Entry<String, ? extends Map> depNotation -> depNotation.value.getOrDefault('enabled', true) }.keySet().each { String id ->
+        PLUGIN_DEPENDENCIES.findAll() { Map.Entry<String, ? extends Map> depNotation -> depNotation.value.getOrDefault('enabled', true) }.keySet().each { String id ->
           apply id
         }
       }
@@ -68,17 +74,15 @@ final class JDKProjectPlugin extends AbstractPlugin implements PropertyChangeLis
       convention.getPlugin(ProjectConvention).addPropertyChangeListener this
       configurePublicReleases()
 
-      extensions.create(JDKExtension, 'jdk', JDKExtension).addPropertyChangeListener this
+      JDKExtension jdkExtension = new JDKExtension()
+      project.extensions.add 'jdk', jdkExtension
+      jdkExtension.addPropertyChangeListener this
       configureJDKSourceVersion()
       configureJDKTargetVersion()
       configurePublicReleases()
 
       tasks.withType(ProcessResources) { ProcessResources task ->
-        task.with {
-          from(ProjectPlugin.LICENSE_FILE_NAMES) {
-            into 'META-INF'
-          }
-        }
+        task.from(LICENSE_FILE_NAMES).into 'META-INF'
       }
 
       dependencies.add('testImplementation', [
@@ -87,28 +91,31 @@ final class JDKProjectPlugin extends AbstractPlugin implements PropertyChangeLis
         version: 'latest.release'
       ])
 
-      convention.getByType(JavaPluginConvention).with {
-        testReportDirName = reporting.baseDir.toPath().relativize(new File(convention.getByType(ProjectConvention).htmlReportsDir, 'tests').toPath()).toString() // TODO: ???
+    }
 
-        sourceSets.create(FUNCTIONAL_TEST_SOURCE_SET_NAME) { SourceSet sourceSet ->
-          sourceSet.with {
-            java.srcDir file("src/$FUNCTIONAL_TEST_SRC_DIR_NAME/java")
-            resources.srcDir file("src/$FUNCTIONAL_TEST_SRC_DIR_NAME/resources")
-            compileClasspath += convention.getByType(JavaPluginConvention).sourceSets.getByName('main').output + configurations.getByName('testCompileClasspath')
-            runtimeClasspath += output + compileClasspath + configurations.getByName('testRuntimeClasspath')
-          }
-        }
+    // project.convention.getPlugin(JavaPluginConvention).with {
+      project.convention.getPlugin(JavaPluginConvention).testReportDirName = project.extensions.getByType(ReportingExtension).baseDir.toPath().relativize(new File(project.convention.getPlugin(ProjectConvention).htmlReportsDir, 'tests').toPath()).toString() // TODO: ???
+
+      project.convention.getPlugin(JavaPluginConvention).sourceSets.create(FUNCTIONAL_TEST_SOURCE_SET_NAME) { SourceSet sourceSet ->
+        // sourceSet.with {
+          sourceSet.java.srcDir project.file("src/$FUNCTIONAL_TEST_SRC_DIR_NAME/java")
+          sourceSet.resources.srcDir project.file("src/$FUNCTIONAL_TEST_SRC_DIR_NAME/resources")
+          sourceSet.compileClasspath += project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName('main').output + project.configurations.getByName('testCompileClasspath')
+          sourceSet.runtimeClasspath += sourceSet.output + sourceSet.compileClasspath + project.configurations.getByName('testRuntimeClasspath')
+        // }
       }
+    // }
 
+    project.with {
       task(FUNCTIONAL_TEST_TASK_NAME, type: Test) { Test task ->
         task.with {
           group = 'Verification'
           description = 'Runs functional tests'
-          testClassesDirs = convention.getByType(JavaPluginConvention).sourceSets.getByName(FUNCTIONAL_TEST_SOURCE_SET_NAME).output.classesDirs
-          classpath = convention.getByType(JavaPluginConvention).sourceSets.getByName(FUNCTIONAL_TEST_SOURCE_SET_NAME).runtimeClasspath
+          testClassesDirs = project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(FUNCTIONAL_TEST_SOURCE_SET_NAME).output.classesDirs
+          classpath = project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(FUNCTIONAL_TEST_SOURCE_SET_NAME).runtimeClasspath
           reports.with {
-            junitXml.destination = new File(convention.getByType(ProjectConvention).xmlReportsDir, FUNCTIONAL_TEST_REPORTS_DIR_NAME)
-            html.destination = new File(convention.getByType(ProjectConvention).htmlReportsDir, FUNCTIONAL_TEST_REPORTS_DIR_NAME)
+            junitXml.setDestination new File(project.convention.getPlugin(ProjectConvention).xmlReportsDir, FUNCTIONAL_TEST_REPORTS_DIR_NAME)
+            html.setDestination new File(project.convention.getPlugin(ProjectConvention).htmlReportsDir, FUNCTIONAL_TEST_REPORTS_DIR_NAME)
           }
         }
       }
@@ -142,11 +149,8 @@ final class JDKProjectPlugin extends AbstractPlugin implements PropertyChangeLis
 
       configureArtifactory()
 
-      gitPublish.contents {
-        from(javadoc) {
-          into "$version/javadoc"
-        }
-      }
+      // extensions.getByType(GitPublishExtension).contents.from(tasks.getByName('javadoc')).into "$version/javadoc"
+      extensions.getByType(GithubPagesPluginExtension).pages.from(tasks.getByName('javadoc')).into "$version/javadoc"
     }
   }
 
@@ -178,22 +182,20 @@ final class JDKProjectPlugin extends AbstractPlugin implements PropertyChangeLis
 
   private void configureJDKSourceVersion() {
     project.with {
-      convention.getByType(JavaPluginConvention).sourceCompatibility = extensions.getByType(JDKExtension).sourceVersion
+      convention.getPlugin(JavaPluginConvention).sourceCompatibility = extensions.getByType(JDKExtension).sourceVersion
     }
   }
 
   private void configureJDKTargetVersion() {
     project.with {
-      convention.getByType(JavaPluginConvention).targetCompatibility = extensions.getByType(JDKExtension).targetVersion
+      convention.getPlugin(JavaPluginConvention).targetCompatibility = extensions.getByType(JDKExtension).targetVersion
     }
   }
 
   @CompileDynamic
   private void configurePublicReleases() {
-    project.with {
-      if (convention.getPlugin(ProjectConvention).publicReleases) {
-        configureBintray()
-      }
+    if (project.convention.getPlugin(ProjectConvention).publicReleases) {
+      configureBintray()
     }
   }
 
@@ -210,7 +212,7 @@ final class JDKProjectPlugin extends AbstractPlugin implements PropertyChangeLis
         artifactory {
           publish {
             repository {
-              repoKey = convention.getByType(ProjectConvention).isRelease ? 'libs-release-local' : 'libs-snapshot-local'
+              repoKey = convention.getPlugin(ProjectConvention).isRelease ? 'libs-release-local' : 'libs-snapshot-local'
               username = project.getProperty('artifactoryUser')
               password = project.getProperty('artifactoryPassword')
               maven = true
@@ -239,7 +241,7 @@ final class JDKProjectPlugin extends AbstractPlugin implements PropertyChangeLis
           name = 'gradle-project'
           userOrg = 'bintray_user'
           licenses = ['Apache-2.0'] // TODO
-          vcsUrl = "https://github.com/FIDATA/$name"
+          vcsUrl = convention.getPlugin(ProjectConvention).vcsUrl
           desc = '' // Version description
           vcsTag = ''
           attributes //  Attributes to be attached to the version

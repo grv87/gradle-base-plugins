@@ -1,7 +1,7 @@
 #!/usr/bin/env groovy
 /*
  * ProjectPluginDependencies class
- * Copyright © 2017  Basil Peace
+ * Copyright © 2017-2018  Basil Peace
  *
  * This file is part of gradle-base-plugins.
  *
@@ -26,14 +26,6 @@ import groovy.transform.CompileStatic
  */
 @CompileStatic
 final class ProjectPluginDependencies {
-  /*
-   * BLOCKED: https://github.com/gradle/gradle/issues/1050
-   * Some plugins are published to Gradle Plugins portal only
-   * and don't exist in JCenter or Maven Central.
-   * Gradle Plugins portal doesn't provide maven-metadata,
-   * so Gradle can't detect latest version.
-   * We have to provide specific versions for such plugins <>
-   */
   /**
    * List of plugin dependencies with IDs
    */
@@ -77,10 +69,15 @@ final class ProjectPluginDependencies {
       group: 'de.gliderpilot.gradle.semantic-release',
       name: 'gradle-semantic-release-plugin'
     ],
-    'org.ajoberstar.git-publish': [
+    /*'org.ajoberstar.git-publish': [
       configurationName: 'implementation',
       group: 'org.ajoberstar',
       name: 'gradle-git-publish'
+    ],*/
+    'org.ajoberstar.github-pages': [
+      configurationName: 'implementation',
+      group: 'org.ajoberstar',
+      name: 'gradle-git'
     ],
     'org.gradle.reporting-base': [:],
     'org.gradle.codenarc': [:],
@@ -92,8 +89,7 @@ final class ProjectPluginDependencies {
     ],
     'com.dorongold.task-tree': [
       group: 'gradle.plugin.com.dorongold.plugins',
-      name: 'task-tree',
-      version: '1.3'
+      name: 'task-tree'
     ],
   ]
 

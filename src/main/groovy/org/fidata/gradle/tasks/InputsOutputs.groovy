@@ -4,7 +4,7 @@
  *
  * This file is part of gradle-base-plugins.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Apache License, Version 2.0 (the "License")
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
@@ -16,42 +16,42 @@
  * implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-package org.fidata.gradle.tasks;
+package org.fidata.gradle.tasks
 
-import java.io.File;
-import org.gradle.api.DefaultTask;
-import org.gradle.api.tasks.OutputFile;
-import org.gradle.api.tasks.TaskAction;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.gradle.api.Task;
+import groovy.transform.CompileStatic
+import java.io.File
+import org.gradle.api.DefaultTask
+import org.gradle.api.tasks.OutputFile
+import org.gradle.api.tasks.TaskAction
+import org.gradle.api.Task
+import org.gradle.api.reporting.ReportingExtension
 
 /**
  * Generates reports about all task file inputs and outputs
  */
+@CompileStatic
 public class InputsOutputs extends DefaultTask {
   /**
    * InputsOutputs default output file name
    */
-  public static final String DEFAULT_OUTPUT_FILE_NAME = 'inputsOutputs.txt';
+  public static final String DEFAULT_OUTPUT_FILE_NAME = 'inputsOutputs.txt'
 
-  @NonNull
-  private File outputFile;
+  private File outputFile
 
   /**
    * Gets output file
    */
   @OutputFile
-  @NonNull
   File getOutputFile() {
-    outputFile ?: project.reporting.file(DEFAULT_OUTPUT_FILE_NAME);
+    outputFile ?: project.extensions.getByType(ReportingExtension).file(DEFAULT_OUTPUT_FILE_NAME)
   }
 
   /**
    * Sets output file
    * By default it is '${reporting.baseDir}/inputsOutputs.txt`
    */
-  void setOutputFile(@NonNull File outputFile) {
-    this.outputFile = outputFile;
+  void setOutputFile(File outputFile) {
+    this.outputFile = outputFile
   }
 
   /**
@@ -63,12 +63,12 @@ public class InputsOutputs extends DefaultTask {
       for (Task t in project.tasks) {
         if (t.inputs.hasInputs) {
           for (File f in t.inputs.sourceFiles) {
-            writer.println sprintf('%s input:\t%s', [t.path, f.path]);
+            writer.println sprintf('%s input:\t%s', [t.path, f.path])
           }
         }
         if (t.outputs.hasOutput) {
           for (File f in t.outputs.files) {
-            writer.println sprintf('%s output:\t%s', [t.path, f.path]);
+            writer.println sprintf('%s output:\t%s', [t.path, f.path])
           }
         }
       }
@@ -76,6 +76,6 @@ public class InputsOutputs extends DefaultTask {
   }
 
   InputsOutputs() {
-    outputs.upToDateWhen { false };
+    outputs.upToDateWhen { false }
   }
 }

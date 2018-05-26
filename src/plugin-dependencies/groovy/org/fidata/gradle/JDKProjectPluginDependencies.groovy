@@ -41,10 +41,10 @@ final class JDKProjectPluginDependencies {
       group: 'io.franzbecker',
       name: 'gradle-lombok'
     ],
-    'org.danilopianini.javadoc.io-linker': [
+    /*'org.danilopianini.javadoc.io-linker': [
       group: 'org.danilopianini',
       name: 'javadoc.io-linker'
-    ],
+    ],*/
     'org.gradle.maven': [:],
     'com.jfrog.bintray': [
       group: 'com.jfrog.bintray.gradle',

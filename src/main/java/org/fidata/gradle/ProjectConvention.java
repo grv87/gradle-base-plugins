@@ -1,6 +1,6 @@
 /*
  * ProjectConvention class
- * Copyright © 2017  Basil Peace
+ * Copyright © 2017-2018  Basil Peace
  *
  * This file is part of gradle-base-plugins.
  *
@@ -25,19 +25,13 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import lombok.Getter;
 import lombok.Setter;
 import java.io.File;
+import com.github.zafarkhaja.semver.Version;
 import de.gliderpilot.gradle.semanticrelease.SemanticReleasePluginExtension;
 import de.gliderpilot.gradle.semanticrelease.SemanticReleaseChangeLogService;
 import org.ajoberstar.gradle.git.release.base.ReleaseVersion;
-import com.github.zafarkhaja.semver.Version;
-import com.github.zafarkhaja.semver.ParseException;
 import org.spdx.spdxspreadsheet.InvalidLicenseStringException;
 import org.spdx.rdfparser.license.LicenseInfoFactory;
 import org.spdx.rdfparser.license.AnyLicenseInfo;
-import com.google.common.base.Strings;
-import com.google.common.collect.Iterables;
-import com.google.common.base.Splitter;
-import com.google.common.base.CharMatcher;
-import com.google.common.base.Predicate;
 import groovy.lang.Writable;
 import java.lang.reflect.InvocationTargetException;
 import groovy.lang.GString;
@@ -45,7 +39,9 @@ import groovy.lang.GString;
 /**
  * Provides additional properties to the project
  */
-public final class ProjectConvention extends AbstractExtension {
+public class ProjectConvention extends AbstractExtension {
+  private Project project;
+
   /**
    * Whether this run has release version (not snapshot)
    */
@@ -55,8 +51,34 @@ public final class ProjectConvention extends AbstractExtension {
   /**
    * Changelog since last release
    */
-  @Getter
-  private final @NonNull Writable changeLog;
+  @Getter(lazy = true)
+  private final /*@NonNull TODOC: https://github.com/rzwitserloot/lombok/issues/1585*/ Writable changeLog = generateChangeLog();
+
+  // @CompileDynamic
+  private Writable generateChangeLog() {
+    SemanticReleaseChangeLogService changeLogService = project.getExtensions().getByType(SemanticReleasePluginExtension.class).getChangeLog();
+    Object version = project.getVersion();
+    /*
+     * CAVEAT:
+     * project.version is an instance of private class ReleasePluginExtension.DelayedVersion.
+     * See https://github.com/ajoberstar/gradle-git/issues/272
+     * We use Java reflection to get value of its fields
+     * <grv87 2018-02-17>
+     */
+    Writable changeLog;
+    try {
+      ReleaseVersion inferredVersion = (ReleaseVersion)version.getClass().getField("inferredVersion").get(version);
+      changeLog = changeLogService.getChangeLog().call(
+        new Object[]{changeLogService.getClass()
+        .getMethod("commits", new Class[]{Version.class})
+        .invoke(changeLogService, new Object[]{Version
+        .valueOf(inferredVersion.getPreviousVersion())}), inferredVersion});
+    } catch (NoSuchFieldException|IllegalAccessException|NoSuchMethodException|InvocationTargetException e) {
+      changeLog = GString.EMPTY;
+      project.getLogger().error("{}: Can't get project changelog. {}", this.getClass().getName(), e);
+    }
+    return changeLog;
+  }
 
   /**
    * Parent output directory for reports
@@ -82,54 +104,37 @@ public final class ProjectConvention extends AbstractExtension {
   @Getter
   private final @NonNull File txtReportsDir;
 
-  ProjectConvention(@NonNull Project project) {
+  public ProjectConvention(@NonNull Project project) {
     super();
 
-    Object version = project.getVersion();
-    isRelease = !version.toString().endsWith("-SNAPSHOT");
-    SemanticReleaseChangeLogService changeLogService = project.getExtensions().getByType(SemanticReleasePluginExtension.class).getChangeLog();
-    /*
-     * CAVEAT:
-     * project.version is an instance of private class ReleasePluginExtension.DelayedVersion.
-     * See https://github.com/ajoberstar/gradle-git/issues/272
-     * We use Java reflection to get value of its fields
-     * <grv87 2018-02-17>
-     */
-    Writable changeLog;
-    try {
-      ReleaseVersion inferredVersion = (ReleaseVersion)version.getClass().getField("inferredVersion").get(version);
-      changeLog = changeLogService.getChangeLog().call(
-        new Object[]{changeLogService.getClass()
-        .getMethod("commits", new Class[]{Version.class})
-        .invoke(changeLogService, new Object[]{Version
-        .valueOf(inferredVersion.getPreviousVersion())}), inferredVersion});
-    } catch (NoSuchFieldException|IllegalAccessException|NoSuchMethodException|InvocationTargetException e) {
-      changeLog = GString.EMPTY;
-      project.getLogger().error("%s: Can't get Project changelog", this.getClass().getName());
-    }
-    this.changeLog = changeLog;
+    this.project = project;
+
+    isRelease = !project.getVersion().toString().endsWith("-SNAPSHOT");
 
     reportsDir = new File(project.getBuildDir(), "reports");
     xmlReportsDir = new File(reportsDir, "xml");
     htmlReportsDir = new File(reportsDir, "html");
     txtReportsDir = new File(reportsDir, "txt");
+
+    websiteUrl = getVcsUrl();
+    issuesUrl = websiteUrl + "/issues";
   }
 
   /**
    * SPDX identifier of the project license
    */
   @Getter
-  private String license;
+  private @Nullable String license;
 
   /**
    * Sets the project license
    * @param newValue SPDX license identifier
    */
-  public void setLicense(String newValue) throws InvalidLicenseStringException {
+  public void setLicense(@Nullable String newValue) throws InvalidLicenseStringException {
     String oldLicense = license;
     AnyLicenseInfo oldLicenseInfo = licenseInfo;
     license = newValue;
-    this.licenseInfo = LicenseInfoFactory.parseSPDXLicenseString(license);
+    this.licenseInfo = LicenseInfoFactory.parseSPDXLicenseString(license); // TODO: Error handling
     propertyChangeSupport.firePropertyChange("license", oldLicense, newValue);
     propertyChangeSupport.firePropertyChange("licenseInfo", oldLicenseInfo, licenseInfo);
   }
@@ -155,20 +160,25 @@ public final class ProjectConvention extends AbstractExtension {
     propertyChangeSupport.firePropertyChange("publicReleases", oldValue, newValue);
   }
 
-  static @Nullable Boolean isPreReleaseVersion(@Nullable String version) {
-    if (Strings.isNullOrEmpty(version)) {
-      return null;
-    };
-    try {
-      return Version.valueOf(version).getPreReleaseVersion() != "";
-    }
-    catch (ParseException e) {
-      return Iterables.any(Splitter.on(CharMatcher.anyOf("-\\._")).split(version), new Predicate<String>() {
-        public boolean apply(String label) {
-          label = label.toUpperCase();
-          return label.startsWith("ALPHA") || label.startsWith("BETA") || label.startsWith("RC") || label.startsWith("CR") || label.startsWith("SNAPSHOT");
-        }
-      });
-    }
+  /**
+   * Project website URL
+   */
+  @Getter @Setter
+  private @NonNull String websiteUrl;
+
+  /**
+   * Issues URL
+   */
+  @Getter @Setter
+  private @NonNull String issuesUrl;
+
+
+  /**
+   * Project VCS URL
+   */
+
+  public @NonNull String getVcsUrl() {
+    return "https://github.com/FIDATA/" + project.getName();
   }
+
 }

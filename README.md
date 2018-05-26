@@ -24,23 +24,24 @@ General, language-agnostic project.
 
 Basic development cycle is `build` → `check` → `release`.
 
-`build, `check` and `clean` tasks are provided by applied `lifecycle-base`
-plugin. In original `lifecycle-base` plugin `build` task depends on `check`
-task. This plugin changes this behavior.
+`build`, `check` and `clean` tasks are provided by applied
+`lifecycle-base` plugin. In original `lifecycle-base` plugin
+`build` task depends on `check` task.
+This plugin changes this behavior.
 
 `check` task depends on all `Test` tasks and new `lint` task.
 
 `release` task is provided by applied
 [`de.gliderpilot.semantic-release` plugin](https://github.com/tschulte/gradle-semantic-release-plugin).
 
-### Prerequisites Lifecycle
+### Build Tools Lifecycle
 
-Plugin provides tasks for dealing with prerequisites managed by Gradle,
+Plugin provides tasks for dealing with build tools managed by Gradle,
 Bundler, NPM and similar tools:
-*	`prerequisitesInstall` - install prerequisites once after project clone.
-*	`prerequisitesUpdate` - updates prerequisites that could be updated
+*	`buildToolsInstall` - install build tools once after project clone.
+*	`buildToolsUpdate` - updates build tools that could be updated
 	automatically.
-*	`prerequisitesOutdated` - shows outdated prerequisites that could not be
+*	`buildToolsOutdated` - shows outdated build tools that could not be
 	updated automatically and/or have version restrictions. Developer
 	have to update them manually.
 
@@ -137,7 +138,8 @@ All these tasks are put into `Diagnostics` group.
 *	Applies
 	[`signing` plugin](https://docs.gradle.org/current/userguide/signing_plugin.html)
 
-*	Provides read-only `isRelease` and `changeLog` project properties for work with semantic release.
+*	Provides read-only `isRelease` and `changeLog` project properties
+	for work with semantic release.
 
 *	Provides `publicReleases` project property used by other plugins.
 
@@ -155,7 +157,8 @@ All these tasks are put into `Diagnostics` group.
 
 JDK-based project.
 
-Applies [`org.fidata.project` plugin](#orgfidataproject-plugin), and also:
+Applies [`org.fidata.project` plugin](#orgfidataproject-plugin),
+and also:
 
 *	Applies
 	[`java`](https://docs.gradle.org/current/userguide/java_plugin.html)
@@ -201,7 +204,8 @@ Applies [`org.fidata.project` plugin](#orgfidataproject-plugin), and also:
 
 Groovy language project.
 
-Applies [`org.fidata.project.jdk` plugin](#orgfidataprojectjdk-plugin), and also:
+Applies [`org.fidata.project.jdk` plugin](#orgfidataprojectjdk-plugin),
+and also:
 
 *	Applies
 	[`groovy` plugin](https://docs.gradle.org/current/userguide/groovy_plugin.html)
@@ -256,16 +260,16 @@ used in the project.
 
 # Development
 
-This is self-applying plugin. That means that build script requires the plugin
-itself (just compiled, not released to the repository). So, if there are
-any errors during compilation or plugin applying, Gradle build script
-just doesn't work.
-If it is a compilation error, you can run `gradle build`
+This is self-applying plugin. That means that build script requires
+the plugin itself (just compiled, not released to the repository).
+So, if there are any errors during compilation or plugin applying,
+Gradle build script just doesn't work.
+If it is a compilation error, you can run `../gradlew build`
 in `buildSrc` directory to figure out what's going on.
 
 
 ------------------------------------------------------------------------
-Copyright © 2017  Basil Peace
+Copyright © 2017-2018  Basil Peace
 
 This file is part of gradle-base-plugins.
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env groovy
 /*
  * GradlePluginPluginDependencies class
- * Copyright © 2017  Basil Peace
+ * Copyright © 2017-2018  Basil Peace
  *
  * This file is part of gradle-base-plugins.
  *
@@ -26,14 +26,6 @@ import groovy.transform.CompileStatic
  */
 @CompileStatic
 final class GradlePluginPluginDependencies {
-  /*
-   * BLOCKED: https://github.com/gradle/gradle/issues/1050
-   * Some plugins are published to Gradle Plugins portal only
-   * and don't exist in JCenter or Maven Central.
-   * Gradle Plugins portal doesn't provide maven-metadata,
-   * so Gradle can't detect latest version.
-   * We have to provide specific versions for such plugins <>
-   */
   /**
    * List of plugin dependencies with IDs
    */
@@ -51,7 +43,6 @@ final class GradlePluginPluginDependencies {
       configurationName: 'implementation',
       group: 'com.gradle.publish',
       name: 'plugin-publish-plugin',
-      version: '0.9.9',
       enabled: false
     ],
   ]

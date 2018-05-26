@@ -19,7 +19,7 @@
  */
 // Minimal set of plugins enough to compile plugins
 plugins {
-  id 'nebula.dependency-lock' version '4.9.5'
+  id 'nebula.dependency-lock' version '5.0.4'
   id 'java'
   id 'groovy'
   id 'java-library'
@@ -35,7 +35,7 @@ dependencyLock.lockFile = "${project.ext.rootDir}/dependencies.lock"
 
 repositories {
   maven {
-    url 'https://fidata.jfrog.io/fidata/plugins-release'
+    url 'https://fidata.jfrog.io/fidata/plugins-snapshot'
     credentials {
       username = artifactoryUser
       password = artifactoryPassword
