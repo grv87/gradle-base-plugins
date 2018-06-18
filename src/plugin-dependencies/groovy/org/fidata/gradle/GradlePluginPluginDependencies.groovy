@@ -33,11 +33,11 @@ final class GradlePluginPluginDependencies {
     'org.gradle.java-gradle-plugin': [:],
     'org.ajoberstar.stutter': [
       group: 'org.ajoberstar',
-      name: 'gradle-stutter'
+      name: 'gradle-stutter',
     ],
     'org.ysb33r.gradletest': [
       group: 'gradle.plugin.org.ysb33r.gradle',
-      name: 'gradletest'
+      name: 'gradletest',
     ],
     'com.gradle.plugin-publish': [
       configurationName: 'implementation',

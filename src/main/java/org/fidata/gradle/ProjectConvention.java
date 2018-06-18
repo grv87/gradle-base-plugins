@@ -65,19 +65,9 @@ public class ProjectConvention extends AbstractExtension {
      * We use Java reflection to get value of its fields
      * <grv87 2018-02-17>
      */
-    Writable changeLog;
-    try {
-      ReleaseVersion inferredVersion = (ReleaseVersion)version.getClass().getField("inferredVersion").get(version);
-      changeLog = changeLogService.getChangeLog().call(
-        new Object[]{changeLogService.getClass()
-        .getMethod("commits", new Class[]{Version.class})
-        .invoke(changeLogService, new Object[]{Version
-        .valueOf(inferredVersion.getPreviousVersion())}), inferredVersion});
-    } catch (NoSuchFieldException|IllegalAccessException|NoSuchMethodException|InvocationTargetException e) {
-      changeLog = GString.EMPTY;
-      project.getLogger().error("{}: Can't get project changelog. {}", this.getClass().getName(), e);
-    }
-    return changeLog;
+    /*ReleaseVersion inferredVersion = ((ReleaseVersion)version).inferredVersion;
+    return changeLogService.getChangeLog().call(changeLogService.commits(Version.valueOf(inferredVersion.getPreviousVersion())), inferredVersion);*/
+    return null;
   }
 
   /**

@@ -18,7 +18,6 @@
  * permissions and limitations under the License.
  */
 plugins {
-  id 'nebula.dependency-lock' version '4.9.5'
   id 'groovy'
   id 'java-library'
 }
@@ -27,7 +26,7 @@ group = 'org.fidata.gradle'
 
 ext.rootDir = '../..'
 
-dependencyLock.lockFile = "${project.ext.rootDir}/dependencies.lock"
+dependencyLocking.lockAllConfigurations()
 
 dependencies {
   api localGroovy()

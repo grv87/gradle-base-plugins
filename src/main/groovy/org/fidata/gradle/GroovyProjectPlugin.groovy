@@ -37,9 +37,7 @@ import org.gradle.api.internal.plugins.DslObject
 import org.gradle.api.tasks.GroovySourceSet
 import org.gradle.api.tasks.testing.Test
 import org.gradle.api.tasks.compile.GroovyCompile
-// import org.ajoberstar.gradle.git.publish.GitPublishExtension
-import org.ajoberstar.gradle.git.ghpages.GithubPagesPluginExtension
-import org.ajoberstar.gradle.git.ghpages.GithubPagesPlugin
+import org.ajoberstar.gradle.git.publish.GitPublishExtension
 import org.gradle.api.Action
 import org.gradle.api.file.CopySpec
 
@@ -143,8 +141,7 @@ public final class GroovyProjectPlugin extends AbstractPlugin {
         }
       }
 
-      // extensions.getByType(GitPublishExtension).contents.from(tasks.getByName('groovydoc')).into "$project.version/groovydoc"
-      extensions.getByType(GithubPagesPluginExtension).pages.from(tasks.getByName('groovydoc')).into "$project.version/groovydoc"
+      extensions.getByType(GitPublishExtension).contents.from(tasks.getByName('groovydoc')).into "$project.version/groovydoc"
     }
   }
 }

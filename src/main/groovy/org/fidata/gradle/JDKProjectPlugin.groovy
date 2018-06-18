@@ -33,9 +33,7 @@ import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.reporting.ReportingExtension
 // import org.jfrog.gradle.plugin.artifactory.task.BuildInfoBaseTask // TODO
-// import org.ajoberstar.gradle.git.publish.GitPublishExtension
-import org.ajoberstar.gradle.git.ghpages.GithubPagesPluginExtension
-import org.ajoberstar.gradle.git.ghpages.GithubPagesPlugin
+import org.ajoberstar.gradle.git.publish.GitPublishExtension
 
 /**
  * Provides an environment for a JDK project
@@ -149,8 +147,7 @@ final class JDKProjectPlugin extends AbstractPlugin implements PropertyChangeLis
 
       configureArtifactory()
 
-      // extensions.getByType(GitPublishExtension).contents.from(tasks.getByName('javadoc')).into "$version/javadoc"
-      extensions.getByType(GithubPagesPluginExtension).pages.from(tasks.getByName('javadoc')).into "$version/javadoc"
+      extensions.getByType(GitPublishExtension).contents.from(tasks.getByName('javadoc')).into "$version/javadoc"
     }
   }
 

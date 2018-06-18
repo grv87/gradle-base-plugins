@@ -1,0 +1,21 @@
+# This is a Gradle generated file for dependency locking.
+# Manual edits can break the build and are not advised.
+# This file is expected to be part of source control.
+com.jcraft:jsch.agentproxy.connector-factory:0.0.9
+com.jcraft:jsch.agentproxy.core:0.0.9
+com.jcraft:jsch.agentproxy.jsch:0.0.9
+com.jcraft:jsch.agentproxy.pageant:0.0.9
+com.jcraft:jsch.agentproxy.sshagent:0.0.9
+com.jcraft:jsch.agentproxy.usocket-jna:0.0.9
+com.jcraft:jsch.agentproxy.usocket-nc:0.0.9
+com.jcraft:jsch:0.1.54
+junit:junit:3.8.1
+net.java.dev.jna:jna-platform:4.1.0
+net.java.dev.jna:jna:4.1.0
+org.apache.maven.wagon:wagon-provider-api:3.1.0
+org.apache.maven.wagon:wagon-ssh-common:3.1.0
+org.apache.maven.wagon:wagon-ssh:3.1.0
+org.codehaus.plexus:plexus-classworlds:1.2-alpha-7
+org.codehaus.plexus:plexus-component-api:1.0-alpha-16
+org.codehaus.plexus:plexus-interactivity-api:1.0-alpha-6
+org.codehaus.plexus:plexus-utils:3.1.0

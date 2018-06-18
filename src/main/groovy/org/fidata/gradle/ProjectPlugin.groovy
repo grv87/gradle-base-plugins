@@ -22,9 +22,9 @@ package org.fidata.gradle
 import static ProjectPluginDependencies.PLUGIN_DEPENDENCIES
 import static org.gradle.language.base.plugins.LifecycleBasePlugin.CHECK_TASK_NAME
 import static org.gradle.language.base.plugins.LifecycleBasePlugin.BUILD_TASK_NAME
-// import static org.ajoberstar.gradle.git.release.base.BaseReleasePlugin.RELEASE_TASK_NAME
-import static nebula.plugin.dependencylock.DependencyLockTaskConfigurer.UPDATE_GLOBAL_LOCK_TASK_NAME
-import static nebula.plugin.dependencylock.DependencyLockTaskConfigurer.UPDATE_LOCK_TASK_NAME
+import static org.ajoberstar.gradle.git.release.base.BaseReleasePlugin.RELEASE_TASK_NAME
+/*import static nebula.plugin.dependencylock.DependencyLockTaskConfigurer.UPDATE_GLOBAL_LOCK_TASK_NAME
+import static nebula.plugin.dependencylock.DependencyLockTaskConfigurer.UPDATE_LOCK_TASK_NAME*/
 import static org.gradle.api.plugins.ProjectReportsPlugin.PROJECT_REPORT
 import static org.gradle.initialization.DefaultSettings.DEFAULT_BUILD_SRC_DIR
 import static org.gradle.api.Project.DEFAULT_BUILD_DIR_NAME
@@ -40,9 +40,9 @@ import org.gradle.api.Project
 // import org.ajoberstar.gradle.git.publish.GitPublishPlugin
 // import org.gradle.api.plugins.ProjectReportsPlugin
 import org.gradle.api.Task
-import nebula.plugin.dependencylock.tasks.GenerateLockTask
+/*import nebula.plugin.dependencylock.tasks.GenerateLockTask
 import nebula.plugin.dependencylock.tasks.UpdateLockTask
-import nebula.plugin.dependencylock.tasks.SaveLockTask
+import nebula.plugin.dependencylock.tasks.SaveLockTask*/
 import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 import org.gradle.api.tasks.testing.Test
 import de.gliderpilot.gradle.semanticrelease.SemanticReleasePluginExtension
@@ -77,15 +77,14 @@ import cz.malohlava.VisTegPluginExtension
 import org.gradle.plugins.ide.eclipse.model.EclipseModel
 import org.gradle.api.tasks.wrapper.Wrapper
 import org.gradle.api.reporting.ReportingExtension
-import nebula.plugin.dependencylock.DependencyLockExtension
-// import org.ajoberstar.gradle.git.publish.GitPublishExtension
-import org.ajoberstar.gradle.git.ghpages.GithubPagesPluginExtension
-import org.ajoberstar.gradle.git.ghpages.GithubPagesPlugin
+// import nebula.plugin.dependencylock.DependencyLockExtension
+import org.ajoberstar.gradle.git.publish.GitPublishExtension
+import org.ajoberstar.gradle.git.publish.GitPublishPlugin
 import org.gradle.api.tasks.util.PatternFilterable
 import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 import org.gradle.api.artifacts.ComponentSelectionRules
 import org.gradle.api.artifacts.ResolutionStrategy
-// TODO https://github.com/tschulte/gradle-semantic-release-plugin/issues/31 import de.gliderpilot.gradle.semanticrelease.UpdateGithubRelease
+import de.gliderpilot.gradle.semanticrelease.UpdateGithubRelease
 import org.gradle.api.Action
 
 /**
@@ -134,7 +133,7 @@ final class ProjectPlugin extends AbstractPlugin {
       tasks.withType(Wrapper) { Wrapper task ->
         task.with {
           group = 'Chore'
-          gradleVersion = '4.3.1'
+          gradleVersion = '4.8'
         }
       }
 
@@ -177,11 +176,11 @@ final class ProjectPlugin extends AbstractPlugin {
   private void configureLifecycle() {
     project.with {
       tasks.getByName(BUILD_TASK_NAME).dependsOn.remove CHECK_TASK_NAME
-      tasks.getByName(/*RELEASE_TASK_NAME*/ 'release').with {
+      tasks.getByName(RELEASE_TASK_NAME).with {
         // dependsOn BUILD_TASK_NAME TOTEST
         dependsOn(tasks.getByName(CHECK_TASK_NAME))
         if (project.convention.getPlugin(ProjectConvention).isRelease) {
-          dependsOn(tasks.getByName(/*GitPublishPlugin.PUSH_TASK*/ 'gitPublishPush'))
+          dependsOn(tasks.getByName(GitPublishPlugin.PUSH_TASK))
         }
       }
       Task lintTask = task(LINT_TASK_NAME) {
@@ -207,6 +206,10 @@ final class ProjectPlugin extends AbstractPlugin {
    * Name of buildToolsOutdated task
    */
   public static final String BUILD_TOOLS_OUTDATED_TASK_NAME = 'buildToolsOutdated'
+  /**
+   * Name of resolveAndLockAll task
+   */
+  public static final String RESOLVE_AND_LOCK_ALL_TASK_NAME = 'resolveAndLockAll'
 
   @SuppressWarnings('BracesForForLoop')
   private void configureBuildToolsLifecycle() {
@@ -251,8 +254,25 @@ final class ProjectPlugin extends AbstractPlugin {
           task.mustRunAfter buildToolsUpdate
         }
       }
-
-      tasks.withType(GenerateLockTask) { GenerateLockTask task ->
+      
+      dependencyLocking.lockAllConfigurations()
+      
+      task(RESOLVE_AND_LOCK_ALL_TASK_NAME) { Task task ->
+        task.with {
+          doFirst {
+              gradle.startParameter.writeDependencyLocks = true
+          }
+          doLast {
+            configurations.each {
+              if (it.canBeResolved) {
+                // Any any custome filtering on the to be resolved configurations
+                it.resolve()
+              }
+            }
+          }
+        }
+      }
+      /*tasks.withType(GenerateLockTask) { GenerateLockTask task ->
         task.group = null
         buildToolsInstall.mustRunAfter task
       }
@@ -277,7 +297,7 @@ final class ProjectPlugin extends AbstractPlugin {
         else {
           dependsOn tasks.getByName('saveLock')
         }
-      }
+      }*/
 
       tasks.withType(DependencyUpdatesTask) { DependencyUpdatesTask task ->
         task.group = 'Chore'
@@ -288,7 +308,7 @@ final class ProjectPlugin extends AbstractPlugin {
 
   private void configureDependencyResolution() {
     project.with {
-      extensions.getByType(DependencyLockExtension).includeTransitives = true
+      // extensions.getByType(DependencyLockExtension).includeTransitives = true
 
       dependencies.components.all { ComponentMetadataDetails details ->
         if (details.status == 'release' && isPreReleaseVersion(details.id.version)) {
@@ -368,8 +388,8 @@ final class ProjectPlugin extends AbstractPlugin {
   private void configureSemanticRelease() {
     if (project.hasProperty('ghToken')) {
       /*project.extensions.getByType(SemanticReleasePluginExtension.class)*/
-      // project.tasks.withType(UpdateGithubRelease).getByName('updateGithubRelease').repo.ghToken = project.property('ghToken').toString()
-      project.tasks.getByName('updateGithubRelease').repo.ghToken = project.property('ghToken').toString()
+      project.tasks.withType(UpdateGithubRelease).getByName('updateGithubRelease').repo.ghToken = project.property('ghToken').toString()
+      // project.tasks.getByName('updateGithubRelease').repo.ghToken = project.property('ghToken').toString()
     }
   }
 
@@ -380,38 +400,37 @@ final class ProjectPlugin extends AbstractPlugin {
 
   private void configureGitPublish() {
     project.with {
-      extensions.getByType(/*GitPublishExtension*/ GithubPagesPluginExtension).with {
-        targetBranch = 'gh-pages'
-        deleteExistingFiles = false
-        /*preserve { PatternFilterable preserve ->
+      extensions.getByType(GitPublishExtension).with {
+        branch = 'gh-pages'
+        preserve { PatternFilterable preserve ->
           preserve.with {
             include '**'
             exclude '*-SNAPSHOT/**' // TODO - keep other branches ?
           }
-        }*/
+        }
         commitMessage = COMMIT_MESSAGE_TEMPLATE.make(
           type: 'docs',
           subject: "publish documentation for version $version",
           generatedBy: 'org.ajoberstar:gradle-git-publish'
-        )
+        ).toString()
       }
 
+      // TODO
       NoJekyll noJekyllTask = tasks.create(NO_JEKYLL_TASK_NAME, NoJekyll)
       noJekyllTask.with {
         description = 'Generates .nojekyll file in gitPublish repository'
-        // destinationDir = project.extensions.getByType(GitPublishExtension).repoDir
-        destinationDir = project.file(project.extensions.getByType(GithubPagesPluginExtension).workingPath)
+        destinationDir = project.extensions.getByType(GitPublishExtension).repoDir.getAsFile().get()
       }
-      tasks.getByName(/*GitPublishPlugin.COMMIT_TASK*/ GithubPagesPlugin.PUBLISH_TASK_NAME).dependsOn noJekyllTask
+      tasks.getByName(GitPublishPlugin.COMMIT_TASK).dependsOn noJekyllTask
 
       /*
        * BLOCKED:
        * JGit doesn't support signed commits yet.
        * See https://bugs.eclipse.org/bugs/show_bug.cgi?id=382212 <>
        */
-      ResignGitCommit resignGitCommit = tasks.create("${ /*GitPublishPlugin.COMMIT_TASK*/ GithubPagesPlugin.PUBLISH_TASK_NAME }Resign", ResignGitCommit)
+      ResignGitCommit resignGitCommit = tasks.create("${ GitPublishPlugin.COMMIT_TASK }Resign", ResignGitCommit)
       resignGitCommit.description = 'Amend git publish commit adding sign to it'
-      tasks.getByName(/*GitPublishPlugin.COMMIT_TASK*/ GithubPagesPlugin.PUBLISH_TASK_NAME).finalizedBy resignGitCommit
+      tasks.getByName(GitPublishPlugin.COMMIT_TASK).finalizedBy resignGitCommit
     }
   }
 
@@ -441,7 +460,7 @@ final class ProjectPlugin extends AbstractPlugin {
             if (task.extensions.extraProperties.has('disabledRules')) {
               config = project.resources.text.fromString(
                 config.asString() +
-                CODENARC_DISABLED_RULES_CONFIG_TEMPLATE.make(disabledRules: task.extensions.extraProperties['disabledRules'].inspect())
+                CODENARC_DISABLED_RULES_CONFIG_TEMPLATE.make(disabledRules: task.extensions.extraProperties['disabledRules'].inspect()).toString()
               )
             }
           }

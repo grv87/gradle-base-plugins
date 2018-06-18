@@ -18,6 +18,8 @@
  * permissions and limitations under the License.
  */
 
+configurations.all { resolutionStrategy.cacheChangingModulesFor 0, 'seconds' }
+
 dependencies {
   Closure addPluginDependencies = { Map pluginDependencies ->
     pluginDependencies.findAll { !it.key.startsWith('org.gradle.') }*.value.each { Map depNotation ->

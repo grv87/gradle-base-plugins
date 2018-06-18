@@ -34,7 +34,12 @@ jdk {
   version = 1.8
 }
 stutter {
-  supports '4.5.1', '4.4.1', '4.3.1', '4.2.1', '4.1'
+  java(8) {
+    compatibleRange '4.8'
+  }
+  java(9) {
+    compatibleRange '4.8'
+  }
 }
 
 contacts {

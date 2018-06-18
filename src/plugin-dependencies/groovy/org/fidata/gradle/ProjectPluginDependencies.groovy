@@ -34,23 +34,12 @@ final class ProjectPluginDependencies {
     'org.gradle.lifecycle-base': [:],
     'nebula.contacts': [
       group: 'com.netflix.nebula',
-      name: 'gradle-contacts-plugin'
-    ],
-    'nebula.dependency-lock': [
-      configurationName: 'implementation',
-      group: 'com.netflix.nebula',
-      name: 'gradle-dependency-lock-plugin',
-      excludes: [
-        [
-          group: 'xerces',
-          module: 'xercesImpl'
-        ],
-      ]
+      name: 'gradle-contacts-plugin',
     ],
     'com.github.ben-manes.versions': [
       configurationName: 'implementation',
       group: 'com.github.ben-manes',
-      name: 'gradle-versions-plugin'
+      name: 'gradle-versions-plugin',
     ],
     'com.jfrog.artifactory': [
       configurationName: 'implementation',
@@ -67,29 +56,30 @@ final class ProjectPluginDependencies {
     'de.gliderpilot.semantic-release': [
       configurationName: 'implementation',
       group: 'de.gliderpilot.gradle.semantic-release',
-      name: 'gradle-semantic-release-plugin'
+      name: 'gradle-semantic-release-plugin',
+      version: '2.0.0-grgit2-FIDATA-SNAPSHOT'
     ],
-    /*'org.ajoberstar.git-publish': [
+    'org.ajoberstar.git-publish': [
       configurationName: 'implementation',
       group: 'org.ajoberstar',
-      name: 'gradle-git-publish'
+      name: 'gradle-git-publish',
+    ],
+    /*'org.ajoberstar.github-pages': [
+      configurationName: 'implementation',
+      group: 'org.ajoberstar',
+      name: 'gradle-git',
     ],*/
-    'org.ajoberstar.github-pages': [
-      configurationName: 'implementation',
-      group: 'org.ajoberstar',
-      name: 'gradle-git'
-    ],
     'org.gradle.reporting-base': [:],
     'org.gradle.codenarc': [:],
     'org.gradle.project-report': [:],
     'cz.malohlava': [
       configurationName: 'implementation',
       group: 'cz.malohlava',
-      name: 'visteg'
+      name: 'visteg',
     ],
     'com.dorongold.task-tree': [
       group: 'gradle.plugin.com.dorongold.plugins',
-      name: 'task-tree'
+      name: 'task-tree',
     ],
   ]
 

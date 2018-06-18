@@ -35,16 +35,16 @@ final class JDKProjectPluginDependencies {
     'com.jaredsburrows.checkerframework': [
       configurationName: 'api',
       group: 'com.jaredsburrows',
-      name: 'gradle-checker-framework-plugin'
+      name: 'gradle-checker-framework-plugin',
     ],
     'io.franzbecker.gradle-lombok': [
       group: 'io.franzbecker',
-      name: 'gradle-lombok'
+      name: 'gradle-lombok',
     ],
-    /*'org.danilopianini.javadoc.io-linker': [
+    'org.danilopianini.javadoc.io-linker': [
       group: 'org.danilopianini',
-      name: 'javadoc.io-linker'
-    ],*/
+      name: 'javadoc.io-linker',
+    ],
     'org.gradle.maven': [:],
     'com.jfrog.bintray': [
       group: 'com.jfrog.bintray.gradle',
