@@ -37,7 +37,7 @@ public class JDKExtension extends AbstractExtension {
   void setSourceVersion(String newValue) {
     String oldValue = sourceVersion;
     sourceVersion = newValue;
-    propertyChangeSupport.firePropertyChange("sourceVersion", oldValue, newValue);
+    getPropertyChangeSupport().firePropertyChange("sourceVersion", oldValue, newValue);
   }
 
   /**
@@ -52,7 +52,7 @@ public class JDKExtension extends AbstractExtension {
   void setTargetVersion(String newValue) {
     String oldValue = targetVersion;
     targetVersion = newValue;
-    propertyChangeSupport.firePropertyChange("targetVersion", oldValue, newValue);
+    getPropertyChangeSupport().firePropertyChange("targetVersion", oldValue, newValue);
   }
 
   /**
@@ -63,7 +63,7 @@ public class JDKExtension extends AbstractExtension {
     String oldTargetValue = targetVersion;
     sourceVersion = newValue;
     targetVersion = newValue;
-    propertyChangeSupport.firePropertyChange("sourceVersion", oldSourceValue, newValue);
-    propertyChangeSupport.firePropertyChange("targetVersion", oldTargetValue, newValue);
+    getPropertyChangeSupport().firePropertyChange("sourceVersion", oldSourceValue, newValue);
+    getPropertyChangeSupport().firePropertyChange("targetVersion", oldTargetValue, newValue);
   }
 }

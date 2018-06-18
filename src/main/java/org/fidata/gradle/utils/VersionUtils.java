@@ -19,6 +19,7 @@
 package org.fidata.gradle.utils;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import com.github.zafarkhaja.semver.Version;
 import com.github.zafarkhaja.semver.ParseException;
 import com.google.common.base.Strings;
@@ -49,6 +50,9 @@ public final class VersionUtils {
     catch (ParseException e) {
       return Iterables.any(Splitter.on(CharMatcher.anyOf("-\\._")).split(version), new Predicate<String>() {
         public boolean apply(String label) {
+          if (label == null) {
+            return false;
+          }
           label = label.toUpperCase();
           return label.startsWith("ALPHA") || label.startsWith("BETA") || label.startsWith("RC") || label.startsWith("CR") || label.startsWith("SNAPSHOT");
         }

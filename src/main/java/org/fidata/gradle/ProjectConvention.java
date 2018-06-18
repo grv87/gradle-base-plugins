@@ -25,6 +25,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import lombok.Getter;
 import lombok.Setter;
 import java.io.File;
+import org.ajoberstar.gradle.git.release.base.ReleasePluginExtension;
 import com.github.zafarkhaja.semver.Version;
 import de.gliderpilot.gradle.semanticrelease.SemanticReleasePluginExtension;
 import de.gliderpilot.gradle.semanticrelease.SemanticReleaseChangeLogService;
@@ -40,7 +41,7 @@ import groovy.lang.GString;
  * Provides additional properties to the project
  */
 public class ProjectConvention extends AbstractExtension {
-  private Project project;
+  private final @NonNull Project project;
 
   /**
    * Whether this run has release version (not snapshot)
@@ -54,7 +55,6 @@ public class ProjectConvention extends AbstractExtension {
   @Getter(lazy = true)
   private final /*@NonNull TODOC: https://github.com/rzwitserloot/lombok/issues/1585*/ Writable changeLog = generateChangeLog();
 
-  // @CompileDynamic
   private Writable generateChangeLog() {
     SemanticReleaseChangeLogService changeLogService = project.getExtensions().getByType(SemanticReleasePluginExtension.class).getChangeLog();
     Object version = project.getVersion();
@@ -65,9 +65,9 @@ public class ProjectConvention extends AbstractExtension {
      * We use Java reflection to get value of its fields
      * <grv87 2018-02-17>
      */
-    /*ReleaseVersion inferredVersion = ((ReleaseVersion)version).inferredVersion;
-    return changeLogService.getChangeLog().call(changeLogService.commits(Version.valueOf(inferredVersion.getPreviousVersion())), inferredVersion);*/
-    return null;
+    ReleaseVersion inferredVersion = ((ReleasePluginExtension.DelayedVersion)version).getInferredVersion();
+    return changeLogService.getChangeLog().call(changeLogService.commits(Version.valueOf(inferredVersion.getPreviousVersion())), inferredVersion);
+    // return null;
   }
 
   /**
@@ -125,8 +125,8 @@ public class ProjectConvention extends AbstractExtension {
     AnyLicenseInfo oldLicenseInfo = licenseInfo;
     license = newValue;
     this.licenseInfo = LicenseInfoFactory.parseSPDXLicenseString(license); // TODO: Error handling
-    propertyChangeSupport.firePropertyChange("license", oldLicense, newValue);
-    propertyChangeSupport.firePropertyChange("licenseInfo", oldLicenseInfo, licenseInfo);
+    getPropertyChangeSupport().firePropertyChange("license", oldLicense, newValue);
+    getPropertyChangeSupport().firePropertyChange("licenseInfo", oldLicenseInfo, licenseInfo);
   }
 
   /**
@@ -147,7 +147,7 @@ public class ProjectConvention extends AbstractExtension {
   void setPublicReleases(boolean newValue) {
     boolean oldValue = publicReleases;
     publicReleases = newValue;
-    propertyChangeSupport.firePropertyChange("publicReleases", oldValue, newValue);
+    getPropertyChangeSupport().firePropertyChange("publicReleases", new Boolean(oldValue), new Boolean(newValue));
   }
 
   /**

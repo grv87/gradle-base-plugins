@@ -260,7 +260,7 @@ final class ProjectPlugin extends AbstractPlugin {
       task(RESOLVE_AND_LOCK_ALL_TASK_NAME) { Task task ->
         task.with {
           doFirst {
-              gradle.startParameter.writeDependencyLocks = true
+              assert gradle.startParameter.writeDependencyLocks
           }
           doLast {
             configurations.each {
