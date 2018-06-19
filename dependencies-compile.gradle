@@ -51,5 +51,4 @@ dependencies {
   api(group: 'org.spdx', name: 'spdx-tools', version: 'latest.release') {
     exclude group: 'xerces', module: 'xercesImpl'
   }
-  compileOnly(group: 'org.checkerframework', name: 'checker-qual', version: 'latest.release')
 }

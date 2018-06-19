@@ -47,8 +47,6 @@ Bundler, NPM and similar tools:
 
 The following plugins are used:
 
-*	[`nebula.dependency-lock` plugin](https://github.com/nebula-plugins/gradle-dependency-lock-plugin/wiki)
-
 *	[`com.github.ben-manes.versions` plugin](https://github.com/ben-manes/gradle-versions-plugin)
 
 	There is a missing feature in this plugin: `dependencyUpdates` task doesn't fail
@@ -83,9 +81,10 @@ in version.
 *	Applies and configures `reporting-base` plugin. Redirects
 	all reports	to `build/reports/<format>` directory.
 
+	<BLOCKED: grv87 2018-06-19>
 	Known limitation: `gradle --profile` reports are not redirected.
-	There is no built-in way to do this. They stay
-	in `build/reports/profile` directory.
+	They stay in `build/reports/profile` directory.
+	See https://github.com/FIDATA/gradle-base-plugins/issues/1.
 
 ### Code Quality
 
@@ -146,11 +145,11 @@ All these tasks are put into `Diagnostics` group.
 	Setting it to true turns on all public-release tasks: publishing
 	artifacts to Maven Central, JCenter and so on.
 
-	By default it is off.
+	By default it is false.
 
 ### Prerequisites:
 
-*	Requires Gradle >= 4.1
+*	Requires Gradle >= 4.8
 *	Built and tested with JDK 8
 
 ## `org.fidata.project.jdk` plugin

@@ -21,14 +21,13 @@ plugins {
   id 'org.fidata.project.jdk'
   id 'org.fidata.project.groovy'
   id 'org.fidata.plugin'
-  id 'com.jaredsburrows.checkerframework'
 }
 
 group = 'org.fidata.gradle'
 
 ext.rootDir = '.'
 
-license = 'Apache-2.0'
+// license = 'Apache-2.0'
 publicReleases = false
 
 jdk {
