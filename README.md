@@ -32,7 +32,7 @@ This plugin changes this behavior.
 `check` task depends on all `Test` tasks and new `lint` task.
 
 `release` task is provided by applied
-[`de.gliderpilot.semantic-release` plugin](https://github.com/tschulte/gradle-semantic-release-plugin).
+[`de.gliderpilot.semantic-release` plugin](https://github.com/FIDATA/gradle-semantic-release-plugin).
 
 ### Build Tools Lifecycle
 
@@ -67,7 +67,7 @@ in version.
 
 *	Applies and configures
 	[`org.ajoberstar.git-publish` plugin](https://github.com/ajoberstar/gradle-git-publish).
-	allowing to publish documentation to Github pages.
+	allowing to publish documentation to GitHub pages.
 
 *	Provides `noJekyll` task that generates `.nojekyll` file to
 	[turn off Jekyll processing](https://github.com/blog/572-bypassing-jekyll-on-github-pages).
@@ -198,7 +198,7 @@ and also:
 	[`com.jfrog.bintray` plugin](https://github.com/bintray/gradle-bintray-plugin)
 	and configures publication to JCenter
 
-*	Adds `javadoc` output to Github Pages publication
+*	Adds `javadoc` output to GitHub Pages publication
 
 ## `org.fidata.project.groovy` plugin
 
@@ -223,7 +223,7 @@ and also:
 
 *	Configures GroovyDoc:
 	*	Adds links to Java SE API documentation
-	*	Adds `groovydoc` output to Github Pages publication
+	*	Adds `groovydoc` output to GitHub Pages publication
 
 ## `org.fidata.plugin` plugin
 
