@@ -59,89 +59,84 @@ public final class GroovyProjectPlugin extends AbstractPlugin {
   @Override
   void apply(Project project) {
     super.apply(project)
-    project.with {
-      plugins.with {
-        apply JDKProjectPlugin
+    project.plugins.with {
+      apply JDKProjectPlugin
 
-        PLUGIN_DEPENDENCIES.findAll() { Map.Entry<String, ? extends Map> depNotation -> depNotation.value.getOrDefault('enabled', true) }.keySet().each { String id ->
-          apply id
-        }
+      PLUGIN_DEPENDENCIES.findAll() { Map.Entry<String, ? extends Map> depNotation -> depNotation.value.getOrDefault('enabled', true) }.keySet().each { String id ->
+        apply id
       }
+    }
 
-      String groovyVersion = GroovySystem.version
+    String groovyVersion = GroovySystem.version
 
-      dependencies.add('api', [
-        group: 'org.codehaus.groovy',
-        name: 'groovy-all',
-        version: groovyVersion
+    project.dependencies.add('api', [
+      group: 'org.codehaus.groovy',
+      name: 'groovy-all',
+      version: groovyVersion
+    ])
+    /*
+     * CAVEAT:
+     * Compatibility with `java-library` plugin. See
+     * https://docs.gradle.org/current/userguide/java_library_plugin.html#sec:java_library_known_issues_compat
+     * <>
+     */
+    project.configurations.getByName('apiElements').outgoing.variants.getByName('classes').artifact(
+      file: project.tasks.withType(GroovyCompile).getByName('compileGroovy').destinationDir,
+      type: ArtifactTypeDefinition.JVM_CLASS_DIRECTORY,
+      builtBy: project.tasks.withType(GroovyCompile).getByName('compileGroovy')
+    )
+
+    /*project.dependencies.with {
+      add('testImplementation', [
+        group: 'org.spockframework',
+        name: 'spock-core',
+        version: "1.1-groovy-${ (groovyVersion =~ /^(\d+\.\d+)/).group(0) }"
+      ]) { ModuleDependency dependency ->
+        dependency.exclude(
+          group: 'org.codehaus.groovy',
+          module: 'groovy-all'
+        )
+      }
+      add('testRuntimeOnly', [
+        group: 'com.athaydes',
+        name: 'spock-reports',
+        version: 'latest.release'
+      ]) { ModuleDependency dependency ->
+        dependency.transitive = false
+      }
+      add('testImplementation', [
+        group: 'org.slf4j',
+        name: 'slf4j-api',
+        version: 'latest.release'
       ])
-      /*
-       * CAVEAT:
-       * Compatibility with `java-library` plugin. See
-       * https://docs.gradle.org/current/userguide/java_library_plugin.html#sec:java_library_known_issues_compat
-       * <>
-       */
-      configurations.getByName('apiElements').outgoing.variants.getByName('classes').artifact(
-        file: tasks.withType(GroovyCompile).getByName('compileGroovy').destinationDir,
-        type: ArtifactTypeDefinition.JVM_CLASS_DIRECTORY,
-        builtBy: tasks.withType(GroovyCompile).getByName('compileGroovy')
-      )
+      add('testImplementation', [
+        group: 'org.slf4j',
+        name: 'slf4j-simple',
+        version: 'latest.release'
+      ])
+    }*/
 
-      /*dependencies.with {
-        add('testImplementation', [
-          group: 'org.spockframework',
-          name: 'spock-core',
-          version: "1.1-groovy-${ (groovyVersion =~ /^(\d+\.\d+)/).group(0) }"
-        ]) { ModuleDependency dependency ->
-          dependency.exclude(
-            group: 'org.codehaus.groovy',
-            module: 'groovy-all'
-          )
-        }
-        add('testRuntimeOnly', [
-          group: 'com.athaydes',
-          name: 'spock-reports',
-          version: 'latest.release'
-        ]) { ModuleDependency dependency ->
-          dependency.transitive = false
-        }
-        add('testImplementation', [
-          group: 'org.slf4j',
-          name: 'slf4j-api',
-          version: 'latest.release'
-        ])
-        add('testImplementation', [
-          group: 'org.slf4j',
-          name: 'slf4j-simple',
-          version: 'latest.release'
-        ])
-      }*/
-
-    }
-
-      new DslObject(project.convention.getPlugin(JavaPluginConvention)
+      /*new DslObject(project.convention.getPlugin(JavaPluginConvention)
         .sourceSets.getByName(FUNCTIONAL_TEST_SOURCE_SET_NAME))
-      .convention
+    project.convention
       .getPlugin(GroovySourceSet).groovy
-        .srcDir project.file("src/${ FUNCTIONAL_TEST_SRC_DIR_NAME }/groovy")
+        .srcDir project.file("src/${ FUNCTIONAL_TEST_SRC_DIR_NAME }/groovy")*/ // ???
 
-    project.with {
-      tasks.withType(Test).getByName(FUNCTIONAL_TEST_TASK_NAME).with { Test task ->
-        task.with {
-          reports.html.enabled = false
-          systemProperty 'com.athaydes.spockframework.report.outputDir', new File(project.convention.getPlugin(ProjectConvention).htmlReportsDir, "$SPOCK_REPORTS_DIR_NAME/${ FUNCTIONAL_TEST_REPORTS_DIR_NAME }").absolutePath
-        }
+    project.tasks.withType(Test).getByName(FUNCTIONAL_TEST_TASK_NAME).with { Test task ->
+      task.with {
+        reports.html.enabled = false
+        systemProperty 'com.athaydes.spockframework.report.outputDir', new File(project.convention.getPlugin(ProjectConvention).htmlReportsDir, "$SPOCK_REPORTS_DIR_NAME/${ FUNCTIONAL_TEST_REPORTS_DIR_NAME }").absolutePath
       }
-
-      tasks.getByName("codenarc${ FUNCTIONAL_TEST_SOURCE_SET_NAME.capitalize() }").extensions.extraProperties['disabledRules'] = SPOCK_DISABLED_CODENARC_RULES
-
-      tasks.withType(Groovydoc) { Groovydoc task ->
-        task.with {
-          link "https://docs.oracle.com/javase/${ (JavaVersion.toVersion(project.extensions.getByType(JDKExtension).targetVersion) ?:  JavaVersion.current()).majorVersion }/docs/api/", 'java.'
-        }
-      }
-
-      extensions.getByType(GitPublishExtension).contents.from(tasks.getByName('groovydoc')).into "$project.version/groovydoc"
     }
+
+    project.tasks.getByName("codenarc${ FUNCTIONAL_TEST_SOURCE_SET_NAME.capitalize() }").extensions.extraProperties['disabledRules'] = SPOCK_DISABLED_CODENARC_RULES
+
+    project.tasks.withType(Groovydoc) { Groovydoc task ->
+      task.with {
+        link "https://docs.oracle.com/javase/${ (JavaVersion.toVersion(project.convention.getPlugin(JavaPluginConvention).targetCompatibility) ?:  JavaVersion.current()).majorVersion }/docs/api/", 'java.'
+      }
+    }
+
+    project.extensions.getByType(GitPublishExtension).contents.from(project.tasks.getByName('groovydoc')).into "$project.version/groovydoc"
   }
 }

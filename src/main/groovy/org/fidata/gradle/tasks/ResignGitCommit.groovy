@@ -35,7 +35,7 @@ public class ResignGitCommit extends DefaultTask {
   @TaskAction
   void resign() {
     project.exec {
-      commandLine 'git', 'commit', '--amend', '--no-edit', '--gpg-sign'
+      commandLine 'git', 'commit', '--amend', '--no-edit', "--gpg-sign=${ project.property('gpgKeyId') }"
     }
   }
 }

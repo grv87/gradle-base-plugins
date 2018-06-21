@@ -4,9 +4,6 @@ gradle.properties
 build/
 # GFM Viewer
 .*.md.html
-# Eclipse
-.settings/
-.classpath
 # Gradle IDE
 /bin/
 

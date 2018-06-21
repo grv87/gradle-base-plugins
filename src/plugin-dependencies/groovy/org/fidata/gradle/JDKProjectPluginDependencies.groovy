@@ -32,11 +32,6 @@ final class JDKProjectPluginDependencies {
   static final Map<String, ? extends Map> PLUGIN_DEPENDENCIES = [
     'org.gradle.java': [:],
     'org.gradle.java-library': [:],
-    'com.jaredsburrows.checkerframework': [
-      configurationName: 'api',
-      group: 'com.jaredsburrows',
-      name: 'gradle-checker-framework-plugin',
-    ],
     'io.franzbecker.gradle-lombok': [
       group: 'io.franzbecker',
       name: 'gradle-lombok',
@@ -45,7 +40,7 @@ final class JDKProjectPluginDependencies {
       group: 'org.danilopianini',
       name: 'javadoc.io-linker',
     ],
-    'org.gradle.maven': [:],
+    'org.gradle.maven-publish': [:],
     'com.jfrog.bintray': [
       group: 'com.jfrog.bintray.gradle',
       name: 'gradle-bintray-plugin',

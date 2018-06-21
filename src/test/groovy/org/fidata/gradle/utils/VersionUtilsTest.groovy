@@ -20,7 +20,6 @@
 package org.fidata.gradle.utils
 
 import static org.junit.Assert.assertEquals
-import static org.junit.Assert.assertNull
 import org.junit.runner.RunWith
 import org.junit.Test
 import junitparams.JUnitParamsRunner
@@ -34,7 +33,7 @@ import junitparams.naming.TestCaseName
 @RunWith(JUnitParamsRunner.class)
 public class VersionUtilsTest {
   /**
-   * Test method for {@link org.fidata.gradle.ProjectConvention#isPreReleaseVersion(java.lang.String)}.
+   * Test method for {@link org.fidata.gradle.utils.VersionUtils#isPreReleaseVersion(java.lang.String)}.
    */
   @Test
   @Parameters

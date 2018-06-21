@@ -30,9 +30,6 @@ ext.rootDir = '.'
 // license = 'Apache-2.0'
 publicReleases = false
 
-jdk {
-  version = 1.8
-}
 stutter {
   java(8) {
     compatibleRange '4.8'

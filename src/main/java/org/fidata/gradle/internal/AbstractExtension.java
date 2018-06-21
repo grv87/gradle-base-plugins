@@ -20,8 +20,6 @@ package org.fidata.gradle.internal;
 
 import lombok.Getter;
 import lombok.AccessLevel;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyChangeListener;
 
@@ -30,25 +28,17 @@ import java.beans.PropertyChangeListener;
  */
 @SuppressWarnings("AbstractClassWithoutAbstractMethod")
 public abstract class AbstractExtension {
-  // private @MonotonicNonNull PropertyChangeSupport propertyChangeSupport;
-
   /**
    * List of property change listeners
    */
-  @Getter(/*value = AccessLevel.PROTECTED,*/ lazy = true)
-  private final /*@MonotonicNonNull*/ PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);;
-  /*protected @NonNull PropertyChangeSupport getPropertyChangeSupport() {
-    if (propertyChangeSupport == null) {
-      propertyChangeSupport = new PropertyChangeSupport(this);
-    }
-    return propertyChangeSupport;
-  }*/
+  @Getter(value = AccessLevel.PROTECTED, lazy = true)
+  private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);;
 
   /**
    * Adds a property change listener.
    * @param listener The {@link PropertyChangeListener} to be added.
    */
-  public void addPropertyChangeListener(final @NonNull PropertyChangeListener listener) {
+  public void addPropertyChangeListener(final PropertyChangeListener listener) {
     getPropertyChangeSupport().addPropertyChangeListener(listener);
   }
 
@@ -56,7 +46,7 @@ public abstract class AbstractExtension {
    * Removes a property change listener.
    * @param listener The {@link PropertyChangeListener} to be removed
    */
-  public void removePropertyChangeListener(final @NonNull PropertyChangeListener listener) {
+  public void removePropertyChangeListener(final PropertyChangeListener listener) {
     getPropertyChangeSupport().removePropertyChangeListener(listener);
   }
 }

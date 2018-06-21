@@ -20,8 +20,6 @@ package org.fidata.gradle;
 
 import org.fidata.gradle.internal.AbstractExtension;
 import org.gradle.api.Project;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import lombok.Getter;
 import lombok.Setter;
 import java.io.File;
@@ -41,7 +39,7 @@ import groovy.lang.GString;
  * Provides additional properties to the project
  */
 public class ProjectConvention extends AbstractExtension {
-  private final @NonNull Project project;
+  private final Project project;
 
   /**
    * Whether this run has release version (not snapshot)
@@ -53,7 +51,7 @@ public class ProjectConvention extends AbstractExtension {
    * Changelog since last release
    */
   @Getter(lazy = true)
-  private final /*@NonNull TODOC: https://github.com/rzwitserloot/lombok/issues/1585*/ Writable changeLog = generateChangeLog();
+  private final /*TODOC: https://github.com/rzwitserloot/lombok/issues/1585*/ Writable changeLog = generateChangeLog();
 
   private Writable generateChangeLog() {
     SemanticReleaseChangeLogService changeLogService = project.getExtensions().getByType(SemanticReleasePluginExtension.class).getChangeLog();
@@ -74,27 +72,27 @@ public class ProjectConvention extends AbstractExtension {
    * Parent output directory for reports
    */
   @Getter // TOTEST: Annotation is copied to Getter
-  private final @NonNull File reportsDir;
+  private final File reportsDir;
 
   /**
    * Output directory for HTML reports
    */
   @Getter
-  private final @NonNull File htmlReportsDir;
+  private final File htmlReportsDir;
 
   /**
    * Output directory for XML reports
    */
   @Getter
-  private final @NonNull File xmlReportsDir;
+  private final File xmlReportsDir;
 
   /**
    * Output directory for text reports
    */
   @Getter
-  private final @NonNull File txtReportsDir;
+  private final File txtReportsDir;
 
-  public ProjectConvention(@NonNull Project project) {
+  public ProjectConvention(Project project) {
     super();
 
     this.project = project;
@@ -114,13 +112,13 @@ public class ProjectConvention extends AbstractExtension {
    * SPDX identifier of the project license
    */
   @Getter
-  private @Nullable String license;
+  private String license;
 
   /**
    * Sets the project license
    * @param newValue SPDX license identifier
    */
-  public void setLicense(@Nullable String newValue) throws InvalidLicenseStringException {
+  public void setLicense(String newValue) throws InvalidLicenseStringException {
     String oldLicense = license;
     AnyLicenseInfo oldLicenseInfo = licenseInfo;
     license = newValue;
@@ -154,20 +152,20 @@ public class ProjectConvention extends AbstractExtension {
    * Project website URL
    */
   @Getter @Setter
-  private @NonNull String websiteUrl;
+  private String websiteUrl;
 
   /**
    * Issues URL
    */
   @Getter @Setter
-  private @NonNull String issuesUrl;
+  private String issuesUrl;
 
 
   /**
    * Project VCS URL
    */
 
-  public @NonNull String getVcsUrl() {
+  public String getVcsUrl() {
     return "https://github.com/FIDATA/" + project.getName();
   }
 

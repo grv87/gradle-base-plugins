@@ -19,6 +19,9 @@
  */
 package org.fidata.gradle
 
+import org.gradle.api.publish.PublishingExtension
+import org.gradle.plugins.signing.SigningExtension
+
 import static JDKProjectPluginDependencies.PLUGIN_DEPENDENCIES
 import static ProjectPlugin.LICENSE_FILE_NAMES
 import groovy.transform.CompileStatic
@@ -60,95 +63,77 @@ final class JDKProjectPlugin extends AbstractPlugin implements PropertyChangeLis
   @Override
   void apply(Project project) {
     super.apply(project)
-    project.with {
-      plugins.with {
-        apply ProjectPlugin
+    project.plugins.with {
+      apply ProjectPlugin
 
-        PLUGIN_DEPENDENCIES.findAll() { Map.Entry<String, ? extends Map> depNotation -> depNotation.value.getOrDefault('enabled', true) }.keySet().each { String id ->
-          apply id
-        }
+      PLUGIN_DEPENDENCIES.findAll() { Map.Entry<String, ? extends Map> depNotation -> depNotation.value.getOrDefault('enabled', true) }.keySet().each { String id ->
+        apply id
       }
-
-      convention.getPlugin(ProjectConvention).addPropertyChangeListener this
-      configurePublicReleases()
-
-      JDKExtension jdkExtension = new JDKExtension()
-      project.extensions.add 'jdk', jdkExtension
-      jdkExtension.addPropertyChangeListener this
-      configureJDKSourceVersion()
-      configureJDKTargetVersion()
-      configurePublicReleases()
-
-      tasks.withType(ProcessResources) { ProcessResources task ->
-        task.from(LICENSE_FILE_NAMES).into 'META-INF'
-      }
-
-      dependencies.add('testImplementation', [
-        group: 'junit',
-        name: 'junit',
-        version: 'latest.release'
-      ])
-
     }
 
-    // project.convention.getPlugin(JavaPluginConvention).with {
-      project.convention.getPlugin(JavaPluginConvention).testReportDirName = project.extensions.getByType(ReportingExtension).baseDir.toPath().relativize(new File(project.convention.getPlugin(ProjectConvention).htmlReportsDir, 'tests').toPath()).toString() // TODO: ???
+    project.convention.getPlugin(ProjectConvention).addPropertyChangeListener this
+    configurePublicReleases()
 
-      project.convention.getPlugin(JavaPluginConvention).sourceSets.create(FUNCTIONAL_TEST_SOURCE_SET_NAME) { SourceSet sourceSet ->
-        // sourceSet.with {
+    project.tasks.withType(ProcessResources) { ProcessResources task ->
+      task.from(LICENSE_FILE_NAMES).into 'META-INF'
+    }
+
+    project.dependencies.add('testImplementation', [
+      group: 'junit',
+      name: 'junit',
+      version: 'latest.release'
+    ])
+
+    project.convention.getPlugin(JavaPluginConvention).with {
+      testReportDirName = project.extensions.getByType(ReportingExtension).baseDir.toPath().relativize(new File(project.convention.getPlugin(ProjectConvention).htmlReportsDir, 'tests').toPath()).toString() // TODO: ???
+
+      sourceSets.create(FUNCTIONAL_TEST_SOURCE_SET_NAME) { SourceSet sourceSet ->
           sourceSet.java.srcDir project.file("src/$FUNCTIONAL_TEST_SRC_DIR_NAME/java")
           sourceSet.resources.srcDir project.file("src/$FUNCTIONAL_TEST_SRC_DIR_NAME/resources")
           sourceSet.compileClasspath += project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName('main').output + project.configurations.getByName('testCompileClasspath')
           sourceSet.runtimeClasspath += sourceSet.output + sourceSet.compileClasspath + project.configurations.getByName('testRuntimeClasspath')
-        // }
       }
-    // }
-
-    project.with {
-      task(FUNCTIONAL_TEST_TASK_NAME, type: Test) { Test task ->
-        task.with {
-          group = 'Verification'
-          description = 'Runs functional tests'
-          testClassesDirs = project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(FUNCTIONAL_TEST_SOURCE_SET_NAME).output.classesDirs
-          classpath = project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(FUNCTIONAL_TEST_SOURCE_SET_NAME).runtimeClasspath
-          reports.with {
-            junitXml.setDestination new File(project.convention.getPlugin(ProjectConvention).xmlReportsDir, FUNCTIONAL_TEST_REPORTS_DIR_NAME)
-            html.setDestination new File(project.convention.getPlugin(ProjectConvention).htmlReportsDir, FUNCTIONAL_TEST_REPORTS_DIR_NAME)
-          }
-        }
-      }
-
-      configurations.create('deployerJars')
-
-      /*signing {
-        sign configurations.getByName('deployerJars')
-      }*/
-
-      dependencies.add('deployerJars', [
-        /*deployerJars 'org.apache.maven.wagon:wagon-ssh:2.2'
-        http org.apache.maven.wagon:wagon-http:2.2*/
-        group: 'org.apache.maven.wagon',
-        name: 'wagon-ssh',
-        version: 'latest.release'
-        // ssh
-       /* ssh-external org.apache.maven.wagon:wagon-ssh-external:2.2
-        ftp org.apache.maven.wagon:wagon-ftp:2.2
-        webdav org.apache.maven.wagon:wagon-webdav:1.0-beta-2
-        file -*/
-      ])
-
-      /*uploadArchives {
-        repositories {
-          mavenDeployer {
-            // beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
-          }
-        }
-      } // TODO*/
-
-      configureArtifactory()
-
-      extensions.getByType(GitPublishExtension).contents.from(tasks.getByName('javadoc')).into "$version/javadoc"
     }
+
+    project.tasks.create(FUNCTIONAL_TEST_TASK_NAME, Test) { Test task ->
+      task.with {
+        group = 'Verification'
+        description = 'Runs functional tests'
+        testClassesDirs = project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(FUNCTIONAL_TEST_SOURCE_SET_NAME).output.classesDirs
+        classpath = project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(FUNCTIONAL_TEST_SOURCE_SET_NAME).runtimeClasspath
+        reports.junitXml.setDestination new File(project.convention.getPlugin(ProjectConvention).xmlReportsDir, FUNCTIONAL_TEST_REPORTS_DIR_NAME)
+        reports.html.setDestination new File(project.convention.getPlugin(ProjectConvention).htmlReportsDir, FUNCTIONAL_TEST_REPORTS_DIR_NAME)
+      }
+    }
+
+    project.configurations.create('deployerJars')
+
+    // project.extensions.getByType(SigningExtension).sign project.extensions.getByType(PublishingExtension).publications TODO
+
+    project.dependencies.add('deployerJars', [
+      /*deployerJars 'org.apache.maven.wagon:wagon-ssh:2.2'
+      http org.apache.maven.wagon:wagon-http:2.2*/
+      group: 'org.apache.maven.wagon',
+      name: 'wagon-ssh',
+      version: 'latest.release'
+      // ssh
+     /* ssh-external org.apache.maven.wagon:wagon-ssh-external:2.2
+      ftp org.apache.maven.wagon:wagon-ftp:2.2
+      webdav org.apache.maven.wagon:wagon-webdav:1.0-beta-2
+      file -*/
+    ])
+
+    /*uploadArchives {
+      repositories {
+        mavenDeployer {
+          // beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+        }
+      }
+    } // TODO*/
+
+    configureArtifactory()
+
+    project.extensions.getByType(GitPublishExtension).contents.from(project.tasks.getByName('javadoc')).into "$project.version/javadoc"
   }
 
   /**
@@ -164,28 +149,6 @@ final class JDKProjectPlugin extends AbstractPlugin implements PropertyChangeLis
             break
         }
         break
-      case project.extensions.getByType(JDKExtension):
-        switch (e.propertyName) {
-          case 'sourceVersion':
-            configureJDKSourceVersion()
-            break
-          case 'targetVersion':
-            configureJDKTargetVersion()
-            break
-        }
-        break
-    }
-  }
-
-  private void configureJDKSourceVersion() {
-    project.with {
-      convention.getPlugin(JavaPluginConvention).sourceCompatibility = extensions.getByType(JDKExtension).sourceVersion
-    }
-  }
-
-  private void configureJDKTargetVersion() {
-    project.with {
-      convention.getPlugin(JavaPluginConvention).targetCompatibility = extensions.getByType(JDKExtension).targetVersion
     }
   }
 
@@ -209,7 +172,7 @@ final class JDKProjectPlugin extends AbstractPlugin implements PropertyChangeLis
         artifactory {
           publish {
             repository {
-              repoKey = convention.getPlugin(ProjectConvention).isRelease ? 'libs-release-local' : 'libs-snapshot-local'
+              repoKey = project.convention.getPlugin(ProjectConvention).isRelease ? 'libs-release-local' : 'libs-snapshot-local'
               username = project.getProperty('artifactoryUser')
               password = project.getProperty('artifactoryPassword')
               maven = true
@@ -228,21 +191,19 @@ final class JDKProjectPlugin extends AbstractPlugin implements PropertyChangeLis
 
   @CompileDynamic
   private void configureBintray() {
-    project.with {
-      plugins.apply 'com.jfrog.bintray'
-      bintray {
-        user = 'bintray_user'
-        key = 'bintray_api_key'
-        pkg {
-          repo = 'generic'
-          name = 'gradle-project'
-          userOrg = 'bintray_user'
-          licenses = ['Apache-2.0'] // TODO
-          vcsUrl = convention.getPlugin(ProjectConvention).vcsUrl
-          desc = '' // Version description
-          vcsTag = ''
-          attributes //  Attributes to be attached to the version
-        }
+    project.plugins.apply 'com.jfrog.bintray'
+    project.bintray {
+      user = 'bintray_user'
+      key = 'bintray_api_key'
+      pkg {
+        repo = 'generic'
+        name = 'gradle-project'
+        userOrg = 'bintray_user'
+        licenses = ['Apache-2.0'] // TODO
+        vcsUrl = project.convention.getPlugin(ProjectConvention).vcsUrl
+        desc = '' // Version description
+        vcsTag = ''
+        attributes //  Attributes to be attached to the version
       }
     }
   }

@@ -19,6 +19,8 @@
  */
 package org.fidata.gradle
 
+import org.gradle.api.file.ConfigurableFileTree
+
 import static ProjectPluginDependencies.PLUGIN_DEPENDENCIES
 import static org.gradle.language.base.plugins.LifecycleBasePlugin.CHECK_TASK_NAME
 import static org.gradle.language.base.plugins.LifecycleBasePlugin.BUILD_TASK_NAME
@@ -74,7 +76,6 @@ import org.gradle.api.logging.LogLevel
 import org.fidata.gradle.ProjectPluginDependencies
 import cz.malohlava.VisTaskExecGraphPlugin
 import cz.malohlava.VisTegPluginExtension
-import org.gradle.plugins.ide.eclipse.model.EclipseModel
 import org.gradle.api.tasks.wrapper.Wrapper
 import org.gradle.api.reporting.ReportingExtension
 // import nebula.plugin.dependencylock.DependencyLockExtension
@@ -90,7 +91,7 @@ import org.gradle.api.Action
 /**
  * Provides an environment for a general, language-agnostic project
  */
-// @CompileStatic
+@CompileStatic
 final class ProjectPlugin extends AbstractPlugin {
   static final Template COMMIT_MESSAGE_TEMPLATE = new StreamingTemplateEngine().createTemplate(
     '''
@@ -119,28 +120,26 @@ final class ProjectPlugin extends AbstractPlugin {
   @SuppressWarnings('CouldBeElvis')
   void apply(Project project) {
     super.apply(project)
-    project.with {
-      PLUGIN_DEPENDENCIES.findAll() { Map.Entry<String, ? extends Map> depNotation -> depNotation.value.getOrDefault('enabled', true) }.keySet().each { String id ->
-        plugins.apply id
-      }
-
-      // ProjectConvention projectConvention =
-      convention.plugins['fidata'] = new ProjectConvention(project)
-      // convention.create('fidata', ProjectConvention, project)
-      // convention.add('fidata', ProjectConvention, project)
-
-
-      tasks.withType(Wrapper) { Wrapper task ->
-        task.with {
-          group = 'Chore'
-          gradleVersion = '4.8'
-        }
-      }
-
-      if (!group) { group = 'org.fidata' }
-
-      extensions.getByType(ReportingExtension).baseDir = convention.getPlugin(ProjectConvention).reportsDir
+    PLUGIN_DEPENDENCIES.findAll() { Map.Entry<String, ? extends Map> depNotation -> depNotation.value.getOrDefault('enabled', true) }.keySet().each { String id ->
+      project.plugins.apply id
     }
+
+    // ProjectConvention projectConvention =
+    project.convention.plugins['fidata'] = new ProjectConvention(project)
+    // project.convention.create('fidata', ProjectConvention, project)
+    // project.convention.add('fidata', ProjectConvention, project)
+
+
+    project.tasks.withType(Wrapper) { Wrapper task ->
+      task.with {
+        group = 'Chore'
+        gradleVersion = '4.8'
+      }
+    }
+
+    if (!project.group) { project.group = 'org.fidata' }
+
+    project.extensions.getByType(ReportingExtension).baseDir = project.convention.getPlugin(ProjectConvention).reportsDir
 
     configureLifecycle()
 
@@ -161,11 +160,6 @@ final class ProjectPlugin extends AbstractPlugin {
     configureCodeNarc()
 
     configureDiagnostics()
-
-    project.extensions.getByType(EclipseModel).classpath.with {
-      downloadSources = true
-      downloadJavadoc = true
-    }
   }
 
   /**
@@ -174,23 +168,23 @@ final class ProjectPlugin extends AbstractPlugin {
   public static final String LINT_TASK_NAME = 'lint'
 
   private void configureLifecycle() {
-    project.with {
-      tasks.getByName(BUILD_TASK_NAME).dependsOn.remove CHECK_TASK_NAME
-      tasks.getByName(RELEASE_TASK_NAME).with {
-        // dependsOn BUILD_TASK_NAME TOTEST
-        dependsOn(tasks.getByName(CHECK_TASK_NAME))
-        if (project.convention.getPlugin(ProjectConvention).isRelease) {
-          dependsOn(tasks.getByName(GitPublishPlugin.PUSH_TASK))
-        }
+    project.tasks.getByName(BUILD_TASK_NAME).dependsOn.remove CHECK_TASK_NAME
+    project.tasks.getByName(RELEASE_TASK_NAME).with {
+      // dependsOn BUILD_TASK_NAME TOTEST
+      dependsOn project.tasks.getByName(CHECK_TASK_NAME)
+      if (project.convention.getPlugin(ProjectConvention).isRelease) {
+        dependsOn project.tasks.getByName(/*GitPublishPlugin.PUSH_TASK*/'gitPublishPush')
       }
-      Task lintTask = task(LINT_TASK_NAME) {
+    }
+    Task lintTask = project.tasks.create(LINT_TASK_NAME) { Task task ->
+      task.with {
         group = 'Verification'
         description = 'Runs all static code analyses'
       }
-      tasks.getByName(CHECK_TASK_NAME).dependsOn lintTask
-      tasks.withType(Test) { Test task ->
-        task.project.tasks.getByName(CHECK_TASK_NAME).dependsOn task
-      }
+    }
+    project.tasks.getByName(CHECK_TASK_NAME).dependsOn lintTask
+    project.tasks.withType(Test) { Test task ->
+      task.project.tasks.getByName(CHECK_TASK_NAME).dependsOn task
     }
   }
 
@@ -213,57 +207,55 @@ final class ProjectPlugin extends AbstractPlugin {
 
   @SuppressWarnings('BracesForForLoop')
   private void configureBuildToolsLifecycle() {
-    project.with {
-      Task buildToolsInstall = task(BUILD_TOOLS_INSTALL_TASK_NAME) { Task task ->
-        task.with {
-          group = TaskConfiguration.GROUP
-          description = 'Install all buildTools for build'
-        }
+    Task buildToolsInstall = project.tasks.create(BUILD_TOOLS_INSTALL_TASK_NAME) { Task task ->
+      task.with {
+        group = TaskConfiguration.GROUP
+        description = 'Install all buildTools for build'
       }
-      Task buildToolsUpdate = task(BUILD_TOOLS_UPDATE_TASK_NAME) { Task task ->
-        task.with {
-          group = TaskConfiguration.GROUP
-          description = 'Update all buildTools that support automatic update'
-          mustRunAfter buildToolsInstall
-        }
+    }
+    Task buildToolsUpdate = project.tasks.create(BUILD_TOOLS_UPDATE_TASK_NAME) { Task task ->
+      task.with {
+        group = TaskConfiguration.GROUP
+        description = 'Update all buildTools that support automatic update'
+        mustRunAfter buildToolsInstall
       }
-      Task buildToolsOutdated = task(BUILD_TOOLS_OUTDATED_TASK_NAME) { Task task ->
-        task.with {
-          group = TaskConfiguration.GROUP
-          description = 'Show outdated buildTools'
-          mustRunAfter buildToolsInstall
-        }
+    }
+    Task buildToolsOutdated = project.tasks.create(BUILD_TOOLS_OUTDATED_TASK_NAME) { Task task ->
+      task.with {
+        group = TaskConfiguration.GROUP
+        description = 'Show outdated buildTools'
+        mustRunAfter buildToolsInstall
       }
-      afterEvaluate {
-        for (Task task in
-          tasks
-          - buildToolsInstall
-          - buildToolsInstall.taskDependencies.getDependencies(buildToolsInstall)
-          - buildToolsInstall.mustRunAfter.getDependencies(buildToolsInstall)
-          - buildToolsInstall.shouldRunAfter.getDependencies(buildToolsInstall)
-        ) {
-          task.mustRunAfter buildToolsInstall
-        }
-        for (Task task in
-            tasks
-            - buildToolsUpdate
-            - buildToolsUpdate.taskDependencies.getDependencies(buildToolsUpdate)
-            - buildToolsUpdate.mustRunAfter.getDependencies(buildToolsUpdate)
-            - buildToolsUpdate.shouldRunAfter.getDependencies(buildToolsUpdate)
-        ) {
-          task.mustRunAfter buildToolsUpdate
-        }
+    }
+    project.afterEvaluate {
+      for (Task task in
+        project.tasks
+        - buildToolsInstall
+        - buildToolsInstall.taskDependencies.getDependencies(buildToolsInstall)
+        - buildToolsInstall.mustRunAfter.getDependencies(buildToolsInstall)
+        - buildToolsInstall.shouldRunAfter.getDependencies(buildToolsInstall)
+      ) {
+        task.mustRunAfter buildToolsInstall
       }
-      
-      dependencyLocking.lockAllConfigurations()
-      
-      task(RESOLVE_AND_LOCK_ALL_TASK_NAME) { Task task ->
+      for (Task task in
+        project.tasks
+        - buildToolsUpdate
+        - buildToolsUpdate.taskDependencies.getDependencies(buildToolsUpdate)
+        - buildToolsUpdate.mustRunAfter.getDependencies(buildToolsUpdate)
+        - buildToolsUpdate.shouldRunAfter.getDependencies(buildToolsUpdate)
+      ) {
+        task.mustRunAfter buildToolsUpdate
+      }
+
+      project.dependencyLocking.lockAllConfigurations()
+
+      project.tasks.create(RESOLVE_AND_LOCK_ALL_TASK_NAME) { Task task ->
         task.with {
           doFirst {
-              assert gradle.startParameter.writeDependencyLocks
+              assert project.gradle.startParameter.writeDependencyLocks
           }
           doLast {
-            configurations.each {
+            project.configurations.each {
               if (it.canBeResolved) {
                 // Any any custome filtering on the to be resolved configurations
                 it.resolve()
@@ -272,22 +264,22 @@ final class ProjectPlugin extends AbstractPlugin {
           }
         }
       }
-      /*tasks.withType(GenerateLockTask) { GenerateLockTask task ->
+      /*project.tasks.withType(GenerateLockTask) { GenerateLockTask task ->
         task.group = null
         buildToolsInstall.mustRunAfter task
       }
-      tasks.withType(UpdateLockTask) { UpdateLockTask task ->
+      project.tasks.withType(UpdateLockTask) { UpdateLockTask task ->
         task.group = 'Chore'
         buildToolsUpdate.mustRunAfter task
       }
-      tasks.withType(SaveLockTask) { SaveLockTask task ->
+      project.tasks.withType(SaveLockTask) { SaveLockTask task ->
         task.group = 'Chore'
         buildToolsUpdate.mustRunAfter task
       }
-      tasks.findByName('saveGlobalLock')?.with {
+      project.tasks.findByName('saveGlobalLock')?.with {
         dependsOn tasks.getByName(UPDATE_GLOBAL_LOCK_TASK_NAME)
       }
-      tasks.getByName('saveLock').with {
+      project.tasks.getByName('saveLock').with {
         dependsOn tasks.getByName(UPDATE_LOCK_TASK_NAME)
       }
       buildToolsUpdate.with {
@@ -299,7 +291,7 @@ final class ProjectPlugin extends AbstractPlugin {
         }
       }*/
 
-      tasks.withType(DependencyUpdatesTask) { DependencyUpdatesTask task ->
+      project.tasks.withType(DependencyUpdatesTask) { DependencyUpdatesTask task ->
         task.group = 'Chore'
         buildToolsOutdated.dependsOn task
       }
@@ -307,26 +299,24 @@ final class ProjectPlugin extends AbstractPlugin {
   }
 
   private void configureDependencyResolution() {
-    project.with {
-      // extensions.getByType(DependencyLockExtension).includeTransitives = true
+    // project.extensions.getByType(DependencyLockExtension).includeTransitives = true
 
-      dependencies.components.all { ComponentMetadataDetails details ->
-        if (details.status == 'release' && isPreReleaseVersion(details.id.version)) {
-          details.status = 'milestone'
-        }
+    project.dependencies.components.all { ComponentMetadataDetails details ->
+      if (details.status == 'release' && isPreReleaseVersion(details.id.version)) {
+        details.status = 'milestone'
       }
+    }
 
-      tasks.withType(DependencyUpdatesTask) { DependencyUpdatesTask task ->
-        task.with {
-          revision = 'release'
-          outputFormatter = 'xml'
-          outputDir = new File(project.convention.getPlugin(ProjectConvention).xmlReportsDir, 'dependencyUpdates')
-          resolutionStrategy = { ResolutionStrategy resolutionStrategy ->
-            resolutionStrategy.componentSelection { ComponentSelectionRules rules ->
-              rules.all { ComponentSelection selection ->
-                if (revision == 'release' && isPreReleaseVersion(selection.candidate.version)) {
-                  selection.reject 'Pre-release version'
-                }
+    project.tasks.withType(DependencyUpdatesTask) { DependencyUpdatesTask task ->
+      task.with {
+        revision = 'release'
+        outputFormatter = 'xml'
+        outputDir = new File(project.convention.getPlugin(ProjectConvention).xmlReportsDir, 'dependencyUpdates')
+        resolutionStrategy = { ResolutionStrategy resolutionStrategy ->
+          resolutionStrategy.componentSelection { ComponentSelectionRules rules ->
+            rules.all { ComponentSelection selection ->
+              if (revision == 'release' && isPreReleaseVersion(selection.candidate.version)) {
+                selection.reject 'Pre-release version'
               }
             }
           }
@@ -348,25 +338,23 @@ final class ProjectPlugin extends AbstractPlugin {
    */
   @CompileDynamic
   private void configureArtifactory() {
-    project.with {
-      if (project.hasProperty('artifactoryUser') && project.hasProperty('artifactoryPassword')) {
-        artifactory {
-          contextUrl = ARTIFACTORY_URL
-          resolve {
-            repository {
-              repoKey = project.convention.getPlugin(ProjectConvention).isRelease ? 'libs-release' : 'libs-snapshot'
-              username = project.property('artifactoryUser')
-              password = project.extensions.extraProperties['artifactoryPassword'] // TOTEST
-              maven = true
-            }
+    if (project.hasProperty('artifactoryUser') && project.hasProperty('artifactoryPassword')) {
+      project.artifactory {
+        contextUrl = ARTIFACTORY_URL
+        resolve {
+          repository {
+            repoKey = project.convention.getPlugin(ProjectConvention).isRelease ? 'libs-release' : 'libs-snapshot'
+            username = project.property('artifactoryUser')
+            password = project.extensions.extraProperties['artifactoryPassword'] // TOTEST
+            maven = true
           }
         }
       }
-      else {
-        repositories {
-          jcenter()
-          mavenCentral()
-        }
+    }
+    else {
+      project.repositories {
+        jcenter()
+        mavenCentral()
       }
     }
   }
@@ -399,39 +387,35 @@ final class ProjectPlugin extends AbstractPlugin {
   public static final String NO_JEKYLL_TASK_NAME = 'noJekyll'
 
   private void configureGitPublish() {
-    project.with {
-      extensions.getByType(GitPublishExtension).with {
-        branch = 'gh-pages'
-        preserve { PatternFilterable preserve ->
-          preserve.with {
-            include '**'
-            exclude '*-SNAPSHOT/**' // TODO - keep other branches ?
-          }
-        }
-        commitMessage = COMMIT_MESSAGE_TEMPLATE.make(
-          type: 'docs',
-          subject: "publish documentation for version $version",
-          generatedBy: 'org.ajoberstar:gradle-git-publish'
-        ).toString()
-      }
-
-      // TODO
-      NoJekyll noJekyllTask = tasks.create(NO_JEKYLL_TASK_NAME, NoJekyll)
-      noJekyllTask.with {
-        description = 'Generates .nojekyll file in gitPublish repository'
-        destinationDir = project.extensions.getByType(GitPublishExtension).repoDir.getAsFile().get()
-      }
-      tasks.getByName(GitPublishPlugin.COMMIT_TASK).dependsOn noJekyllTask
-
-      /*
-       * BLOCKED:
-       * JGit doesn't support signed commits yet.
-       * See https://bugs.eclipse.org/bugs/show_bug.cgi?id=382212 <>
-       */
-      ResignGitCommit resignGitCommit = tasks.create("${ GitPublishPlugin.COMMIT_TASK }Resign", ResignGitCommit)
-      resignGitCommit.description = 'Amend git publish commit adding sign to it'
-      tasks.getByName(GitPublishPlugin.COMMIT_TASK).finalizedBy resignGitCommit
+    project.extensions.getByType(GitPublishExtension).with {
+      branch.set 'gh-pages'
+      preserve.include '**'
+      preserve.exclude '*-SNAPSHOT/**' // TODO - keep other branches ?
+      commitMessage.set COMMIT_MESSAGE_TEMPLATE.make(
+        type: 'docs',
+        subject: "publish documentation for version ${ project.version }",
+        generatedBy: 'org.ajoberstar:gradle-git-publish'
+      ).toString()
     }
+
+    // TODO
+    NoJekyll noJekyllTask = project.tasks.create(NO_JEKYLL_TASK_NAME, NoJekyll) { NoJekyll task ->
+      task.with {
+        description = 'Generates .nojekyll file in gitPublish repository'
+        destinationDir = project.extensions.getByType(GitPublishExtension).repoDir.asFile.get()
+      }
+    }
+    project.tasks.getByName(/*GitPublishPlugin.COMMIT_TASK*/ 'gitPublishCommit').dependsOn noJekyllTask
+
+    /*
+     * BLOCKED:
+     * JGit doesn't support signed commits yet.
+     * See https://bugs.eclipse.org/bugs/show_bug.cgi?id=382212 <>
+     */
+    ResignGitCommit resignGitCommit = project.tasks.create("${ /*GitPublishPlugin.COMMIT_TASK*/ 'gitPublishCommit' }Resign", ResignGitCommit) { ResignGitCommit task ->
+      task.description = 'Amend git publish commit adding sign to it'
+    }
+    project.tasks.getByName(/*GitPublishPlugin.COMMIT_TASK*/ 'gitPublishCommit').finalizedBy resignGitCommit
   }
 
   /**
@@ -444,65 +428,57 @@ final class ProjectPlugin extends AbstractPlugin {
   private static final Template CODENARC_DISABLED_RULES_CONFIG_TEMPLATE = new StreamingTemplateEngine().createTemplate(Resources.toString(Resources.getResource(ProjectPlugin, 'config/codenarc/codenarc.disabledRules.groovy.template'), Charsets.UTF_8))
 
   private void configureCodeNarc() {
-    project.with {
-      Task codeNarcTask = task(CODENARC_TASK_NAME) { Task task ->
-        task.with {
-          group = 'Verification'
-          description = 'Runs CodeNarc analysis for each source set'
-        }
+    Task codeNarcTask = project.tasks.create(CODENARC_TASK_NAME) { Task task ->
+      task.with {
+        group = 'Verification'
+        description = 'Runs CodeNarc analysis for each source set'
       }
-      tasks.getByName(LINT_TASK_NAME).dependsOn codeNarcTask
+    }
+    project.tasks.getByName(LINT_TASK_NAME).dependsOn codeNarcTask
 
-      tasks.withType(CodeNarc) { CodeNarc task ->
-        task.with {
-          config = project.resources.text.fromString(CODENARC_DEFAULT_CONFIG)
-          doFirst {
-            if (task.extensions.extraProperties.has('disabledRules')) {
-              config = project.resources.text.fromString(
-                config.asString() +
-                CODENARC_DISABLED_RULES_CONFIG_TEMPLATE.make(disabledRules: task.extensions.extraProperties['disabledRules'].inspect()).toString()
-              )
-            }
-          }
-          String reportFileName = "codenarc/${ toSafeFileName((name - ~/^codenarc/).uncapitalize()) }"
-          reports.with {
-            xml.with {
-              enabled = true
-              setDestination new File(project.convention.getPlugin(ProjectConvention).xmlReportsDir, "${ reportFileName }.xml")
-            }
-            // console.enabled = true TODO
-            html.with {
-              enabled = true
-              setDestination new File(project.convention.getPlugin(ProjectConvention).htmlReportsDir, "${ reportFileName }.html")
-            }
+    project.tasks.withType(CodeNarc) { CodeNarc task ->
+      task.with {
+        config = project.resources.text.fromString(CODENARC_DEFAULT_CONFIG)
+        doFirst {
+          if (task.extensions.extraProperties.has('disabledRules')) {
+            config = project.resources.text.fromString(
+              config.asString() +
+              CODENARC_DISABLED_RULES_CONFIG_TEMPLATE.make(disabledRules: task.extensions.extraProperties['disabledRules'].inspect()).toString()
+            )
           }
         }
-        codeNarcTask.dependsOn task
+        String reportFileName = "codenarc/${ toSafeFileName((name - ~/^codenarc/).uncapitalize()) }"
+        reports.xml.enabled = true
+        reports.xml.setDestination new File(project.convention.getPlugin(ProjectConvention).xmlReportsDir, "${ reportFileName }.xml")
+        // reports.console.enabled = true TODO
+        reports.html.enabled = true
+        reports.html.setDestination new File(project.convention.getPlugin(ProjectConvention).htmlReportsDir, "${ reportFileName }.html")
       }
+      codeNarcTask.dependsOn task
+    }
 
-      task("codenarc${ DEFAULT_BUILD_SRC_DIR.capitalize() }", type: CodeNarc) { CodeNarc task ->
-        Closure excludeBuildDir = { FileTreeElement fte ->
-          String[] p = fte.relativePath.segments
-          int i = 0
-          while (i < p.length && p[i] == DEFAULT_BUILD_SRC_DIR) { i++ }
-          i < p.length && p[i] == DEFAULT_BUILD_DIR_NAME
+    project.tasks.create("codenarc${ DEFAULT_BUILD_SRC_DIR.capitalize() }", CodeNarc) { CodeNarc task ->
+      Closure excludeBuildDir = { FileTreeElement fte ->
+        String[] p = fte.relativePath.segments
+        int i = 0
+        while (i < p.length && p[i] == DEFAULT_BUILD_SRC_DIR) { i++ }
+        i < p.length && p[i] == DEFAULT_BUILD_DIR_NAME
+      }
+      task.with {
+        for (File f in project.fileTree(project.projectDir) { ConfigurableFileTree fileTree ->
+          fileTree.include '**/*.gradle'
+          fileTree.exclude excludeBuildDir
+        }) {
+          source f
         }
-        task.with {
-          for (File f in fileTree(projectDir) {
-            include '**/*.gradle'
-            exclude excludeBuildDir
-          }) {
-            source f
-          }
-          for (File f in fileTree(DEFAULT_BUILD_SRC_DIR) {
-            include '**/*.groovy'
-            exclude excludeBuildDir
-          }) {
-            source f
-          }
-          source 'Jenkinsfile'
-          source fileTree(dir: file('config'), includes: ['**/*.groovy'])
+        for (File f in project.fileTree(DEFAULT_BUILD_SRC_DIR) { ConfigurableFileTree fileTree ->
+          fileTree.include '**/*.groovy'
+          fileTree.exclude excludeBuildDir
+        }) {
+          source f
         }
+        source 'Jenkinsfile'
+        source project.fileTree(dir: project.file('config'), includes: ['**/*.groovy'])
       }
     }
   }
@@ -513,66 +489,64 @@ final class ProjectPlugin extends AbstractPlugin {
   public static final String INPUTS_OUTPUTS_TASK_NAME = 'inputsOutputs'
 
   private void configureDiagnostics() {
-    project.with {
-      plugins.withType(ProjectReportsPlugin) {
-        convention.getPlugin(ProjectReportsPluginConvention).projectReportDirName = convention.getPlugin(ProjectConvention).reportsDir.toPath().relativize(new File(convention.getPlugin(ProjectConvention).txtReportsDir, 'project').toPath()).toString()
+    project.plugins.withType(ProjectReportsPlugin) {
+      project.convention.getPlugin(ProjectReportsPluginConvention).projectReportDirName = project.convention.getPlugin(ProjectConvention).reportsDir.toPath().relativize(new File(project.convention.getPlugin(ProjectConvention).txtReportsDir, 'project').toPath()).toString()
 
-        tasks.withType(BuildEnvironmentReportTask) { BuildEnvironmentReportTask task ->
-          task.group = 'Diagnostics'
-        }
-        tasks.withType(ComponentReport) { ComponentReport task ->
-          task.group = 'Diagnostics'
-        }
-        tasks.withType(DependencyReportTask) { DependencyReportTask task ->
-          task.group = 'Diagnostics'
-        }
-        tasks.withType(DependencyInsightReportTask) { DependencyInsightReportTask task ->
-          task.group = 'Diagnostics'
-        }
-        tasks.withType(DependentComponentsReport) { DependentComponentsReport task ->
-          task.group = 'Diagnostics'
-        }
-        tasks.withType(ModelReport) { ModelReport task ->
-          task.group = 'Diagnostics'
-        }
-        tasks.withType(ProjectReportTask) { ProjectReportTask task ->
-          task.group = 'Diagnostics'
-        }
-        tasks.withType(PropertyReportTask) { PropertyReportTask task ->
-          task.group = 'Diagnostics'
-        }
-        tasks.withType(HtmlDependencyReportTask) { HtmlDependencyReportTask task ->
-          task.with {
-            group = 'Diagnostics'
-            reports.html.setDestination new File(project.convention.getPlugin(ProjectConvention).htmlReportsDir, 'dependencies')
-          }
-        }
-        tasks.withType(TaskReportTask) { TaskReportTask task ->
-          task.group = 'Diagnostics'
-        }
-        tasks.getByName(PROJECT_REPORT).group = 'Diagnostics'
+      project.tasks.withType(BuildEnvironmentReportTask) { BuildEnvironmentReportTask task ->
+        task.group = 'Diagnostics'
       }
-
-      task(INPUTS_OUTPUTS_TASK_NAME, type: InputsOutputs) { InputsOutputs task ->
+      project.tasks.withType(ComponentReport) { ComponentReport task ->
+        task.group = 'Diagnostics'
+      }
+      project.tasks.withType(DependencyReportTask) { DependencyReportTask task ->
+        task.group = 'Diagnostics'
+      }
+      project.tasks.withType(DependencyInsightReportTask) { DependencyInsightReportTask task ->
+        task.group = 'Diagnostics'
+      }
+      project.tasks.withType(DependentComponentsReport) { DependentComponentsReport task ->
+        task.group = 'Diagnostics'
+      }
+      project.tasks.withType(ModelReport) { ModelReport task ->
+        task.group = 'Diagnostics'
+      }
+      project.tasks.withType(ProjectReportTask) { ProjectReportTask task ->
+        task.group = 'Diagnostics'
+      }
+      project.tasks.withType(PropertyReportTask) { PropertyReportTask task ->
+        task.group = 'Diagnostics'
+      }
+      project.tasks.withType(HtmlDependencyReportTask) { HtmlDependencyReportTask task ->
         task.with {
           group = 'Diagnostics'
-          description = 'Generates report about all task file inputs and outputs'
-          outputFile = new File(project.convention.getPlugin(ProjectConvention).txtReportsDir, InputsOutputs.DEFAULT_OUTPUT_FILE_NAME)
+          reports.html.setDestination new File(project.convention.getPlugin(ProjectConvention).htmlReportsDir, 'dependencies')
         }
       }
+      project.tasks.withType(TaskReportTask) { TaskReportTask task ->
+        task.group = 'Diagnostics'
+      }
+      project.tasks.getByName(PROJECT_REPORT).group = 'Diagnostics'
+    }
 
-      plugins.withType(VisTaskExecGraphPlugin) {
-        extensions.getByType(VisTegPluginExtension).with {
-          enabled        = (logging.level ?: gradle.startParameter.logLevel) <= LogLevel.INFO
-          colouredNodes  = true
-          colouredEdges  = true
-          destination    = new File(project.convention.getPlugin(ProjectConvention).reportsDir, 'visteg.dot')
-          exporter       = 'dot'
-          colorscheme    = 'paired12'
-          nodeShape      = 'box'
-          startNodeShape = 'hexagon'
-          endNodeShape   = 'doubleoctagon'
-        }
+    project.tasks.create(INPUTS_OUTPUTS_TASK_NAME, InputsOutputs) { InputsOutputs task ->
+      task.with {
+        group = 'Diagnostics'
+        description = 'Generates report about all task file inputs and outputs'
+        outputFile = new File(project.convention.getPlugin(ProjectConvention).txtReportsDir, InputsOutputs.DEFAULT_OUTPUT_FILE_NAME)
+      }
+    }
+
+    project.plugins.withType(VisTaskExecGraphPlugin) {
+      project.extensions.getByType(VisTegPluginExtension).with {
+        enabled        = (project.logging.level ?: project.gradle.startParameter.logLevel) <= LogLevel.INFO
+        colouredNodes  = true
+        colouredEdges  = true
+        destination    = new File(project.convention.getPlugin(ProjectConvention).reportsDir, 'visteg.dot')
+        exporter       = 'dot'
+        colorscheme    = 'paired12'
+        nodeShape      = 'box'
+        startNodeShape = 'hexagon'
+        endNodeShape   = 'doubleoctagon'
       }
     }
   }

@@ -18,8 +18,6 @@
  */
 package org.fidata.gradle.utils;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.nullness.qual.NonNull;
 import com.github.zafarkhaja.semver.Version;
 import com.github.zafarkhaja.semver.ParseException;
 import com.google.common.base.Strings;
@@ -40,7 +38,7 @@ public final class VersionUtils {
    *         null on empty or null version
    */
 
-  public static @Nullable Boolean isPreReleaseVersion(@Nullable String version) {
+  public static Boolean isPreReleaseVersion(String version) {
     if (Strings.isNullOrEmpty(version)) {
       return null;
     };

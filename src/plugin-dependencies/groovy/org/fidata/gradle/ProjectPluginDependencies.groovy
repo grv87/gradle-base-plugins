@@ -30,7 +30,7 @@ final class ProjectPluginDependencies {
    * List of plugin dependencies with IDs
    */
   static final Map<String, ? extends Map> PLUGIN_DEPENDENCIES = [
-    'org.gradle.eclipse': [:],
+    'org.gradle.idea': [:],
     'org.gradle.lifecycle-base': [:],
     'nebula.contacts': [
       group: 'com.netflix.nebula',

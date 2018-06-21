@@ -55,54 +55,51 @@ final class GradlePluginPlugin extends AbstractPlugin implements PropertyChangeL
     super.apply(project);
       // PluginContainer plugins = project.getPlugins()
 
-    project.with {
-      plugins.with {
-        apply ProjectPlugin
+    project.plugins.with {
+      apply ProjectPlugin
 
-        PLUGIN_DEPENDENCIES.findAll() { Map.Entry<String, ? extends Map> depNotation -> depNotation.value.getOrDefault('enabled', true) }.keySet().each { String id ->
-          apply id
-        }
+      PLUGIN_DEPENDENCIES.findAll() { Map.Entry<String, ? extends Map> depNotation -> depNotation.value.getOrDefault('enabled', true) }.keySet().each { String id ->
+        apply id
       }
+    }
 
-      convention.getPlugin(ProjectConvention).addPropertyChangeListener(this)
-      configurePublicReleases()
+    project.convention.getPlugin(ProjectConvention).addPropertyChangeListener(this)
+    configurePublicReleases()
 
       // TaskContainer tasks = getTasks()
 
-      tasks.withType(Test) { Test task ->
-        task.with {
-          Matcher compatTestMatcher = (name =~ /^compatTest(.*)?/)
-          if (compatTestMatcher.matches()) {
-            // Project project = task.project
-            String reportDirName = "compatTest/${ toSafeFileName(compatTestMatcher.group(1).uncapitalize()) }" /* uncapitalize requires Groovy >= 2.4.8, i.e. Gradle >= 3.5 */
-            // TestTaskReports reports = task.getReports()
-            // reports.junitXml.destination = new File(project.convention.getPlugin(ProjectConvention).xmlReportsDir, reportDirName) // TODO: Cannot set read-only property: destination
-            if (project.plugins.hasPlugin(GroovyProjectPlugin)) {
-              reports.html.enabled = false
-              // Map<String, File> systemProperties = new Map<String, File>()
-              // systemProperties.put('com.athaydes.spockframework.report.outputDir', new File(project.convention.getPlugin(ProjectConvention.class).getHtmlReportsDir(), "${ GroovyProjectPlugin.SPOCK_REPORTS_DIR_NAME }/$reportDirName").absolutePath)
-              systemProperty 'com.athaydes.spockframework.report.outputDir', new File(project.convention.getPlugin(ProjectConvention).htmlReportsDir, "${ SPOCK_REPORTS_DIR_NAME }/$reportDirName").absolutePath
-            }
+    project.tasks.withType(Test) { Test task ->
+      task.with {
+        Matcher compatTestMatcher = (name =~ /^compatTest(.*)?/)
+        if (compatTestMatcher.matches()) {
+          // Project project = task.project
+          String reportDirName = "compatTest/${ toSafeFileName(compatTestMatcher.group(1).uncapitalize()) }" /* uncapitalize requires Groovy >= 2.4.8, i.e. Gradle >= 3.5 */
+          // TestTaskReports reports = task.getReports()
+          // reports.junitXml.destination = new File(project.convention.getPlugin(ProjectConvention).xmlReportsDir, reportDirName) // TODO: Cannot set read-only property: destination
+          if (project.plugins.hasPlugin(GroovyProjectPlugin)) {
+            reports.html.enabled = false
+            // Map<String, File> systemProperties = new Map<String, File>()
+            // systemProperties.put('com.athaydes.spockframework.report.outputDir', new File(project.convention.getPlugin(ProjectConvention.class).getHtmlReportsDir(), "${ GroovyProjectPlugin.SPOCK_REPORTS_DIR_NAME }/$reportDirName").absolutePath)
+            systemProperty 'com.athaydes.spockframework.report.outputDir', new File(project.convention.getPlugin(ProjectConvention).htmlReportsDir, "${ SPOCK_REPORTS_DIR_NAME }/$reportDirName").absolutePath
           }
         }
       }
-      tasks.withType(ValidateTaskProperties) { ValidateTaskProperties task ->
-        task.with {
-          outputFile.set new File(project.convention.getPlugin(ProjectConvention).txtReportsDir, "${ toSafeFileName(name) }.txt")
-          failOnWarning = true
-        }
+    }
+    project.tasks.withType(ValidateTaskProperties) { ValidateTaskProperties task ->
+      task.with {
+        outputFile.set new File(project.convention.getPlugin(ProjectConvention).txtReportsDir, "${ toSafeFileName(name) }.txt")
+        failOnWarning = true
       }
-      tasks.withType(Groovydoc) { Groovydoc task ->
-        task.with {
-          link "https://docs.gradle.org/${ project.gradle.gradleVersion }/javadoc/", 'org.gradle.'
-        }
+    }
+    project.tasks.withType(Groovydoc) { Groovydoc task ->
+      task.with {
+        link "https://docs.gradle.org/${ project.gradle.gradleVersion }/javadoc/", 'org.gradle.'
       }
+    }
 
-      dependencies.with {
-        add('api', gradleApi())
-        add('testImplementation', gradleTestKit())
-      }
-
+    project.dependencies.with {
+      add('api', gradleApi())
+      add('testImplementation', gradleTestKit())
     }
 
     project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName('compatTest') { SourceSet sourceSet ->
@@ -110,11 +107,9 @@ final class GradlePluginPlugin extends AbstractPlugin implements PropertyChangeL
       sourceSet.runtimeClasspath += sourceSet.output + sourceSet.compileClasspath + project.configurations.getByName('testRuntimeClasspath')
     }
 
-    project.with {
-      tasks.getByName('codenarcCompatTest').extensions.extraProperties['disabledRules'] = SPOCK_DISABLED_CODENARC_RULES
+    project.tasks.getByName('codenarcCompatTest').extensions.extraProperties['disabledRules'] = SPOCK_DISABLED_CODENARC_RULES
 
-      configureArtifactory()
-    }
+    configureArtifactory()
   }
 
   /**
@@ -133,20 +128,18 @@ final class GradlePluginPlugin extends AbstractPlugin implements PropertyChangeL
   }
 
   private void configurePublicReleases() {
-    project.with {
-      if (convention.getPlugin(ProjectConvention).publicReleases) {
-        plugins.apply 'com.gradle.plugin-publish'
-        extensions.getByType(PluginBundleExtension).with {
-          website = project.convention.getPlugin(ProjectConvention).websiteUrl
-          vcsUrl = project.convention.getPlugin(ProjectConvention).vcsUrl
-          description = { project.convention.getPlugin(ProjectConvention).changeLog.toString() }
-          mavenCoordinates { MavenCoordinates mavenCoordinates
-            mavenCoordinates.groupId = group
-          }
+    if (project.convention.getPlugin(ProjectConvention).publicReleases) {
+      project.plugins.apply 'com.gradle.plugin-publish'
+      project.extensions.getByType(PluginBundleExtension).with {
+        website = project.convention.getPlugin(ProjectConvention).websiteUrl
+        vcsUrl = project.convention.getPlugin(ProjectConvention).vcsUrl
+        description = { project.convention.getPlugin(ProjectConvention).changeLog.toString() }
+        mavenCoordinates { MavenCoordinates mavenCoordinates
+          mavenCoordinates.groupId = project.group
         }
-        tasks.getByName(/*PublishPlugin.PUBLISH_TASK_NAME*/ 'publishPlugins').onlyIf { project.convention.getPlugin(ProjectConvention).isRelease }
-        tasks.getByName('release').finalizedBy 'publishPlugins'
       }
+      project.tasks.getByName(/*PublishPlugin.PUBLISH_TASK_NAME*/ 'publishPlugins').onlyIf { project.convention.getPlugin(ProjectConvention).isRelease }
+      project.tasks.getByName('release').finalizedBy 'publishPlugins'
     }
   }
 
@@ -159,17 +152,15 @@ final class GradlePluginPlugin extends AbstractPlugin implements PropertyChangeL
   @CompileDynamic
   private void configureArtifactory() {
     if (project.hasProperty('artifactoryUser') && project.hasProperty('artifactoryPassword')) {
-      project.with {
-        artifactory {
-          resolve {
-            repository {
-              repoKey = project.convention.getPlugin(ProjectConvention).isRelease ? 'plugins-release' : 'plugins-snapshot'
-            }
+      project.artifactory {
+        resolve {
+          repository {
+            repoKey = project.convention.getPlugin(ProjectConvention).isRelease ? 'plugins-release' : 'plugins-snapshot'
           }
-          publish {
-            repository {
-              repoKey = project.convention.getPlugin(ProjectConvention).isRelease ? 'plugins-release-local' : 'plugins-snapshot-local'
-            }
+        }
+        publish {
+          repository {
+            repoKey = project.convention.getPlugin(ProjectConvention).isRelease ? 'plugins-release-local' : 'plugins-snapshot-local'
           }
         }
       }

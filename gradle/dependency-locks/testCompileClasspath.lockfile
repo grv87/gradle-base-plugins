@@ -18,7 +18,6 @@ com.google.j2objc:j2objc-annotations:1.1
 com.googlecode.javaewah:JavaEWAH:1.1.6
 com.googlecode.json-simple:json-simple:1.1.1
 com.gradle.publish:plugin-publish-plugin:0.9.10
-com.jaredsburrows:gradle-checker-framework-plugin:0.2.1
 com.jcabi.incubator:xembly:0.22
 com.jcabi:jcabi-aspects:0.22.5
 com.jcabi:jcabi-github:0.33.1
@@ -84,7 +83,7 @@ org.apache.poi:poi:3.15
 org.apache.thrift:libthrift:0.9.3
 org.apache.xmlbeans:xmlbeans:2.6.0
 org.aspectj:aspectjrt:1.8.7
-org.checkerframework:checker-qual:2.4.0
+org.checkerframework:checker-qual:2.0.0
 org.codehaus.gpars:gpars:1.2.1
 org.codehaus.groovy:groovy-all:2.4.12
 org.codehaus.jsr166-mirror:jsr166y:1.7.0
