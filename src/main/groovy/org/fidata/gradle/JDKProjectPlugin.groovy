@@ -21,6 +21,8 @@ package org.fidata.gradle
 
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.plugins.signing.SigningExtension
+import org.spdx.rdfparser.license.AnyLicenseInfo
+import org.spdx.rdfparser.license.LicenseSet
 
 import static JDKProjectPluginDependencies.PLUGIN_DEPENDENCIES
 import static ProjectPlugin.LICENSE_FILE_NAMES
@@ -192,6 +194,17 @@ final class JDKProjectPlugin extends AbstractPlugin implements PropertyChangeLis
   @CompileDynamic
   private void configureBintray() {
     project.plugins.apply 'com.jfrog.bintray'
+
+    AnyLicenseInfo licenseInfo = project.convention.getPlugin(ProjectConvention).licenseInfo
+    List<String> licenseList = new ArrayList<String>()
+    if (licenseInfo instanceof LicenseSet) {
+      for (AnyLicenseInfo license in ((LicenseSet)licenseInfo).members) {
+        licenseList.add license.toString()
+      }
+    } else {
+      licenseList.add licenseInfo.toString()
+    }
+
     project.bintray {
       user = project.getProperty('bintrayUser')
       key = project.getProperty('bintrayAPIKey')
@@ -199,12 +212,15 @@ final class JDKProjectPlugin extends AbstractPlugin implements PropertyChangeLis
         repo = 'generic'
         name = 'gradle-project'
         userOrg = 'fidata'
-        licenses = ['Apache-2.0'] // TODO
+        licenses = licenseList.toArray()
         vcsUrl = project.convention.getPlugin(ProjectConvention).vcsUrl
         desc = '' // Version description
         version {
           name = ''
           vcsTag = ''
+          gpg {
+            sign = true // TODO ?
+          }
           // attributes // Attributes to be attached to the version
         }
       }

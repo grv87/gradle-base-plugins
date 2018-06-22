@@ -51,4 +51,5 @@ dependencies {
   api(group: 'org.spdx', name: 'spdx-tools', version: 'latest.release') {
     exclude group: 'xerces', module: 'xercesImpl'
   }
+  api(group: 'xerces', name: 'xercesImpl', version: 'latest.release')
 }

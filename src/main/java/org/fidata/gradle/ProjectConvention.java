@@ -28,6 +28,7 @@ import com.github.zafarkhaja.semver.Version;
 import de.gliderpilot.gradle.semanticrelease.SemanticReleasePluginExtension;
 import de.gliderpilot.gradle.semanticrelease.SemanticReleaseChangeLogService;
 import org.ajoberstar.gradle.git.release.base.ReleaseVersion;
+import org.spdx.rdfparser.license.SpdxNoneLicense;
 import org.spdx.spdxspreadsheet.InvalidLicenseStringException;
 import org.spdx.rdfparser.license.LicenseInfoFactory;
 import org.spdx.rdfparser.license.AnyLicenseInfo;
@@ -131,7 +132,7 @@ public class ProjectConvention extends AbstractExtension {
    * Project license information
    */
   @Getter
-  private AnyLicenseInfo licenseInfo;
+  private AnyLicenseInfo licenseInfo = new SpdxNoneLicense();
 
   /**
    * Whether releases of this project are public

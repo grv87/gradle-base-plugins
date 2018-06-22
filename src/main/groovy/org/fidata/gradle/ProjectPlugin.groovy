@@ -484,6 +484,11 @@ final class ProjectPlugin extends AbstractPlugin {
   }
 
   /**
+   * Name of Diagnostics task group
+   */
+  public static final String DIAGNOSTICS_TASK_GROUP_NAME = 'Diagnostics'
+
+  /**
    * Name of InputsOutputs task
    */
   public static final String INPUTS_OUTPUTS_TASK_NAME = 'inputsOutputs'
@@ -493,44 +498,44 @@ final class ProjectPlugin extends AbstractPlugin {
       project.convention.getPlugin(ProjectReportsPluginConvention).projectReportDirName = project.convention.getPlugin(ProjectConvention).reportsDir.toPath().relativize(new File(project.convention.getPlugin(ProjectConvention).txtReportsDir, 'project').toPath()).toString()
 
       project.tasks.withType(BuildEnvironmentReportTask) { BuildEnvironmentReportTask task ->
-        task.group = 'Diagnostics'
+        task.group = DIAGNOSTICS_TASK_GROUP_NAME
       }
       project.tasks.withType(ComponentReport) { ComponentReport task ->
-        task.group = 'Diagnostics'
+        task.group = DIAGNOSTICS_TASK_GROUP_NAME
       }
       project.tasks.withType(DependencyReportTask) { DependencyReportTask task ->
-        task.group = 'Diagnostics'
+        task.group = DIAGNOSTICS_TASK_GROUP_NAME
       }
       project.tasks.withType(DependencyInsightReportTask) { DependencyInsightReportTask task ->
-        task.group = 'Diagnostics'
+        task.group = DIAGNOSTICS_TASK_GROUP_NAME
       }
       project.tasks.withType(DependentComponentsReport) { DependentComponentsReport task ->
-        task.group = 'Diagnostics'
+        task.group = DIAGNOSTICS_TASK_GROUP_NAME
       }
       project.tasks.withType(ModelReport) { ModelReport task ->
-        task.group = 'Diagnostics'
+        task.group = DIAGNOSTICS_TASK_GROUP_NAME
       }
       project.tasks.withType(ProjectReportTask) { ProjectReportTask task ->
-        task.group = 'Diagnostics'
+        task.group = DIAGNOSTICS_TASK_GROUP_NAME
       }
       project.tasks.withType(PropertyReportTask) { PropertyReportTask task ->
-        task.group = 'Diagnostics'
+        task.group = DIAGNOSTICS_TASK_GROUP_NAME
       }
       project.tasks.withType(HtmlDependencyReportTask) { HtmlDependencyReportTask task ->
         task.with {
-          group = 'Diagnostics'
+          group = DIAGNOSTICS_TASK_GROUP_NAME
           reports.html.setDestination new File(project.convention.getPlugin(ProjectConvention).htmlReportsDir, 'dependencies')
         }
       }
       project.tasks.withType(TaskReportTask) { TaskReportTask task ->
-        task.group = 'Diagnostics'
+        task.group = DIAGNOSTICS_TASK_GROUP_NAME
       }
-      project.tasks.getByName(PROJECT_REPORT).group = 'Diagnostics'
+      project.tasks.getByName(PROJECT_REPORT).group = DIAGNOSTICS_TASK_GROUP_NAME
     }
 
     project.tasks.create(INPUTS_OUTPUTS_TASK_NAME, InputsOutputs) { InputsOutputs task ->
       task.with {
-        group = 'Diagnostics'
+        group = DIAGNOSTICS_TASK_GROUP_NAME
         description = 'Generates report about all task file inputs and outputs'
         outputFile = new File(project.convention.getPlugin(ProjectConvention).txtReportsDir, InputsOutputs.DEFAULT_OUTPUT_FILE_NAME)
       }

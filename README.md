@@ -38,9 +38,16 @@ This plugin changes this behavior.
 
 Plugin provides tasks for dealing with build tools managed by Gradle,
 Bundler, NPM and similar tools:
+
 *	`buildToolsInstall` - install build tools once after project clone.
+
 *	`buildToolsUpdate` - updates build tools that could be updated
 	automatically.
+
+	This task should be run with `--write-locks` parameter.
+	We could set this parameter in plugin, but this still wouldn't work
+	for `buildSrc` projects.
+
 *	`buildToolsOutdated` - shows outdated build tools that could not be
 	updated automatically and/or have version restrictions. Developer
 	have to update them manually.
@@ -70,6 +77,19 @@ in version.
 *	Provides `noJekyll` task that generates `.nojekyll` file to
 	[turn off Jekyll processing](https://github.com/blog/572-bypassing-jekyll-on-github-pages).
 
+### Code Quality
+
+*	Provides `lint` task
+
+*	Applies
+[`codenarc` plugin](https://docs.gradle.org/current/userguide/codenarc_plugin.html)
+
+*	Provides `codenarc` task that runs all CodeNarc tasks.
+	Includes this task in execution list for `lint` task.
+
+*	Provides `codenarcBuildSrc` task for `build.gradle` itself
+	and accompanying Groovy scripts.
+
 ### Reports
 
 *	Provides read-only project properties:
@@ -85,17 +105,6 @@ in version.
 	Known limitation: `gradle --profile` reports are not redirected.
 	They stay in `build/reports/profile` directory.
 	See https://github.com/FIDATA/gradle-base-plugins/issues/1.
-
-### Code Quality
-
-*	Applies
-[`codenarc` plugin](https://docs.gradle.org/current/userguide/codenarc_plugin.html)
-
-*	Provides `codenarc` task that runs all CodeNarc tasks.
-	Includes this task in execution list for `lint` task.
-
-*	Provides `codenarcBuildSrc` task for `build.gradle` itself
-	and accompanying Groovy scripts.
 
 ### Build Diagnostics and Troubleshooting
 
@@ -121,7 +130,9 @@ All these tasks are put into `Diagnostics` group.
 
 *	Sets `group` to `org.fidata` if it hasn't been set already.
 
-*	Configures `wrapper` task to specific Gradle version.
+*	Provides `license` property used by other plugins.
+	[SPDX license identifiers](https://spdx.org/licenses/)
+	are supported.
 
 *	Applies
 	[`nebula.contacts` plugin](https://github.com/nebula-plugins/gradle-contacts-plugin)
@@ -147,7 +158,9 @@ All these tasks are put into `Diagnostics` group.
 
 	By default it is false.
 
-### Prerequisites:
+*	Configures `wrapper` task to specific Gradle version.
+
+### Supported Gradle and JDK versions:
 
 *	Requires Gradle >= 4.8
 *	Built and tested with JDK 8
@@ -164,20 +177,6 @@ and also:
 	and
 	[`java-library`](https://docs.gradle.org/current/userguide/java_library_plugin.html)
 	plugins
-
-*	Adds `jdk` extension:
-
-	```
-	jdk {
-	  sourceVersion '1.7',
-	  targetVersion '1.6'
-	}
-	```
-
-	Currently this extension only sets `sourceCompatibility`
-	and `targetCompatibility` properties of the project.
-	In the future cross-compilation/testing using specific version
-	of JDK will be implemented.
 
 *	Adds license file into JAR `META-INF` directory
 

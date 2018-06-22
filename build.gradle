@@ -27,7 +27,7 @@ group = 'org.fidata.gradle'
 
 ext.rootDir = '.'
 
-// license = 'Apache-2.0'
+license = 'Apache-2.0'
 publicReleases = false
 
 stutter {
