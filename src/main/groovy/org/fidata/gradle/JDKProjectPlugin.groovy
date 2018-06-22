@@ -1,11 +1,11 @@
 #!/usr/bin/env groovy
 /*
  * org.fidata.project.jdk Gradle plugin
- * Copyright © 2017  Basil Peace
+ * Copyright © 2017-2018  Basil Peace
  *
  * This file is part of gradle-base-plugins.
  *
- * Licensed under the Apache License, Version 2.0 (the "License")
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
@@ -162,10 +162,10 @@ final class JDKProjectPlugin extends AbstractPlugin implements PropertyChangeLis
   }
 
   /*
-   * CAVEAT:
+   * WORKAROUND:
    * Conventions and extensions in JFrog Gradle plugins have package scopes,
    * so we can't use static compilation
-   * <grv87 2018-02-18>
+   * <grv87 2018-06-22>
    */
   @CompileDynamic
   private void configureArtifactory() {
@@ -175,8 +175,8 @@ final class JDKProjectPlugin extends AbstractPlugin implements PropertyChangeLis
           publish {
             repository {
               repoKey = project.convention.getPlugin(ProjectConvention).isRelease ? 'libs-release-local' : 'libs-snapshot-local'
-              username = project.getProperty('artifactoryUser')
-              password = project.getProperty('artifactoryPassword')
+              username = project.property('artifactoryUser')
+              password = project.property('artifactoryPassword')
               maven = true
             }
             defaults {
@@ -191,6 +191,12 @@ final class JDKProjectPlugin extends AbstractPlugin implements PropertyChangeLis
     }
   }
 
+  /*
+   * WORKAROUND:
+   * Conventions and extensions in JFrog Gradle plugins have package scopes,
+   * so we can't use static compilation
+   * <grv87 2018-06-22>
+   */
   @CompileDynamic
   private void configureBintray() {
     project.plugins.apply 'com.jfrog.bintray'
@@ -206,8 +212,8 @@ final class JDKProjectPlugin extends AbstractPlugin implements PropertyChangeLis
     }
 
     project.bintray {
-      user = project.getProperty('bintrayUser')
-      key = project.getProperty('bintrayAPIKey')
+      user = project.property('bintrayUser')
+      key = project.property('bintrayAPIKey')
       pkg {
         repo = 'generic'
         name = 'gradle-project'

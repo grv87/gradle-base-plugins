@@ -1,10 +1,10 @@
 /*
  * NoJekyll task class
- * Copyright © 2017  Basil Peace
+ * Copyright © 2017-2018  Basil Peace
  *
  * This file is part of gradle-base-plugins.
  *
- * Licensed under the Apache License, Version 2.0 (the "License")
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
@@ -40,7 +40,7 @@ public class NoJekyll extends DefaultTask {
   private File destinationDir
 
   /**
-   * Gets a dir where to generate a file
+   * @return a dir where to generate a file
    */
   @Internal
   File getDestinationDir() {
@@ -58,7 +58,7 @@ public class NoJekyll extends DefaultTask {
   private File destinationFile
 
   /**
-   * Gets a file that to be generated
+   * @return a file that to be generated
    */
   @OutputFile
   File getDestinationFile() {

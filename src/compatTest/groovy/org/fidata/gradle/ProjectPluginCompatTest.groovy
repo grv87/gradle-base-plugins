@@ -1,7 +1,7 @@
 #!/usr/bin/env groovy
 /*
  * Specification for org.fidata.project Gradle plugin
- * Copyright © 2017  Basil Peace
+ * Copyright © 2017-2018  Basil Peace
  *
  * This file is part of gradle-base-plugins.
  *
@@ -19,6 +19,8 @@
  */
 package org.fidata.gradle
 
+import static org.fidata.gradle.utils.GradleRunnerUtils.skippedTaskPathsGradleBugWorkaround
+import org.gradle.api.internal.tasks.TaskExecutionOutcome
 import spock.lang.Specification
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
@@ -143,10 +145,5 @@ class ProjectPluginCompatTest extends Specification {
       .withArguments([*arguments, '--stacktrace', '--refresh-dependencies'])
       .withPluginClasspath()
       .build()
-  }
-
-  protected List<String> skippedTaskPathsGradleBugWorkaround(String output) {
-    //Due to https://github.com/gradle/gradle/issues/2732 no tasks are returned in dry-run mode. When fixed ".taskPaths(SKIPPED)" should be used directly
-    output.readLines().findAll { it.endsWith(' SKIPPED') }.collect { it[0..it.lastIndexOf(' ')] }
   }
 }

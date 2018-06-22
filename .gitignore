@@ -7,7 +7,7 @@ build/
 # Gradle IDE
 /bin/
 # Idea
-.iml
+*.iml
 .idea/workspace.xml
 
 .groovy/

@@ -1,7 +1,7 @@
 #!/usr/bin/env groovy
 /*
  * Gradle Settings file for gradle-base-plugins 1st-level buildSrc
- * Copyright © 2017  Basil Peace
+ * Copyright © 2017-2018  Basil Peace
  *
  * This file is part of gradle-base-plugins.
  *
@@ -24,8 +24,8 @@ pluginManagement {
     maven {
       url 'https://fidata.jfrog.io/fidata/plugins-release/'
       credentials {
-        username = getProperty('artifactoryUser')
-        password = getProperty('artifactoryPassword')
+        username = property('artifactoryUser')
+        password = property('artifactoryPassword')
       }
     }
   }
@@ -38,8 +38,8 @@ buildCache {
   remote(HttpBuildCache) {
     url = 'https://fidata.jfrog.io/fidata/local.gradle.cache/'
     credentials {
-      username = getProperty('artifactoryUser')
-      password = getProperty('artifactoryPassword')
+      username = property('artifactoryUser')
+      password = property('artifactoryPassword')
     }
     push = System.getenv().with { containsKey('CI') || containsKey('JENKINS_URL') }
   }

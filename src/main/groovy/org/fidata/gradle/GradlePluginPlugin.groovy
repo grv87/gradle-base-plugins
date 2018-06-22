@@ -1,7 +1,7 @@
 #!/usr/bin/env groovy
 /*
  * org.fidata.plugin Gradle plugin
- * Copyright © 2017  Basil Peace
+ * Copyright © 2017-2018  Basil Peace
  *
  * This file is part of gradle-base-plugins.
  *
@@ -144,10 +144,10 @@ final class GradlePluginPlugin extends AbstractPlugin implements PropertyChangeL
   }
 
   /*
-   * CAVEAT:
+   * WORKAROUND:
    * project.Conventions and extensions in JFrog Gradle plugins have package scopes,
    * so we can't use static compilation
-   * <grv87 2018-02-18>
+   * <grv87 2018-06-22>
    */
   @CompileDynamic
   private void configureArtifactory() {

@@ -72,7 +72,7 @@ public class ProjectConvention extends AbstractExtension {
   /**
    * Parent output directory for reports
    */
-  @Getter // TOTEST: Annotation is copied to Getter
+  @Getter
   private final File reportsDir;
 
   /**
@@ -165,7 +165,6 @@ public class ProjectConvention extends AbstractExtension {
   /**
    * Project VCS URL
    */
-
   public String getVcsUrl() {
     return "https://github.com/FIDATA/" + project.getName();
   }

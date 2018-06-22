@@ -196,6 +196,8 @@ and also:
 	[`com.jfrog.bintray` plugin](https://github.com/bintray/gradle-bintray-plugin)
 	and configures publication to JCenter
 
+*	Applies `javadoc.io-linker` plugin
+
 *	Adds `javadoc` output to GitHub Pages publication
 
 ## `org.fidata.project.groovy` plugin
@@ -255,6 +257,22 @@ used in the project.
 	[`com.gradle.plugin-publish` plugin](https://plugins.gradle.org/docs/publish-plugin)
 
 *	Configures `groovydoc` links to Gradle API
+
+# Properties
+
+Provided via `gradle.properties` file.
+
+Property | Usage | Notes
+---------|-------|------
+artifactoryUser     <td rowspan="2"> Getting build tools and dependencies from Artifactory; use Gradle cache |
+artifactoryPassword | It is actually API key
+gitUsername <td rowspan="2"> Git push during release |
+gitPassword |
+ghToken | Create release on GitHub |
+gpgKeyId                <td rowspan="2"> Sign artifacts, git commits and git tags |
+gpgKeySecretKeyRingFile |
+bintrayUser   <td rowspan="2"> Release to Bintray |
+bintrayAPIKey |
 
 # Development
 

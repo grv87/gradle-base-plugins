@@ -1,7 +1,7 @@
 #!/usr/bin/env groovy
 /*
  * JDKProjectPluginDependencies class
- * Copyright © 2017  Basil Peace
+ * Copyright © 2017-2018  Basil Peace
  *
  * This file is part of gradle-base-plugins.
  *

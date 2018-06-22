@@ -1,10 +1,10 @@
 /*
  * InputsOutputs task class
- * Copyright © 2015-2017  Basil Peace
+ * Copyright © 2015-2018  Basil Peace
  *
  * This file is part of gradle-base-plugins.
  *
- * Licensed under the Apache License, Version 2.0 (the "License")
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
@@ -39,7 +39,7 @@ public class InputsOutputs extends DefaultTask {
   private File outputFile
 
   /**
-   * Gets output file
+   * @return output file
    */
   @OutputFile
   File getOutputFile() {
@@ -48,7 +48,7 @@ public class InputsOutputs extends DefaultTask {
 
   /**
    * Sets output file
-   * By default it is '${reporting.baseDir}/inputsOutputs.txt`
+   * By default it is <code>${reporting.baseDir}/inputsOutputs.txt</code>
    */
   void setOutputFile(File outputFile) {
     this.outputFile = outputFile

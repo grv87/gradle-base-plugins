@@ -5,7 +5,7 @@
  *
  * This file is part of gradle-base-plugins.
  *
- * Licensed under the Apache License, Version 2.0 (the "License")
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
@@ -133,7 +133,7 @@ final class ProjectPlugin extends AbstractPlugin {
     project.tasks.withType(Wrapper) { Wrapper task ->
       task.with {
         group = 'Chore'
-        gradleVersion = '4.8'
+        gradleVersion = '4.8.1'
       }
     }
 
@@ -331,10 +331,10 @@ final class ProjectPlugin extends AbstractPlugin {
   public static final String ARTIFACTORY_URL = 'https://fidata.jfrog.io/fidata'
 
   /*
-   * CAVEAT:
+   * WORKAROUND:
    * Conventions and extensions in JFrog Gradle plugins have package scopes,
    * so we can't use static compilation
-   * <grv87 2018-02-18>
+   * <grv87 2018-06-22>
    */
   @CompileDynamic
   private void configureArtifactory() {
@@ -361,7 +361,6 @@ final class ProjectPlugin extends AbstractPlugin {
 
   private void configureSigning() {
     System.setProperty 'signing.keyId', project.property('gpgKeyId').toString()
-    System.setProperty 'signing.password', project.property('gpgKeyPassword').toString()
     System.setProperty 'signing.secretKeyRingFile', project.property('gpgSecretKeyRingFile').toString()
   }
 
@@ -377,7 +376,6 @@ final class ProjectPlugin extends AbstractPlugin {
     if (project.hasProperty('ghToken')) {
       /*project.extensions.getByType(SemanticReleasePluginExtension.class)*/
       project.tasks.withType(UpdateGithubRelease).getByName('updateGithubRelease').repo.ghToken = project.property('ghToken').toString()
-      // project.tasks.getByName('updateGithubRelease').repo.ghToken = project.property('ghToken').toString()
     }
   }
 

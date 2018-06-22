@@ -1,7 +1,7 @@
 #!/usr/bin/env groovy
 /*
- * Unit test for VersionUtils class
- * Copyright © 2017  Basil Peace
+ * Unit tests for VersionUtils class
+ * Copyright © 2017-2018  Basil Peace
  *
  * This file is part of gradle-base-plugins.
  *
@@ -27,13 +27,12 @@ import junitparams.Parameters
 import junitparams.naming.TestCaseName
 
 /**
- * @author Basil Peace
- *
+ * Unit tests for {@link VersionUtils} class
  */
 @RunWith(JUnitParamsRunner.class)
 public class VersionUtilsTest {
   /**
-   * Test method for {@link org.fidata.gradle.utils.VersionUtils#isPreReleaseVersion(java.lang.String)}.
+   * Test method for {@link VersionUtils#isPreReleaseVersion(java.lang.String)}.
    */
   @Test
   @Parameters

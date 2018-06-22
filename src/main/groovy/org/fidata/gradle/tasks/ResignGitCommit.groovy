@@ -1,10 +1,10 @@
 /*
  * ResignGitCommit task class
- * Copyright © 2017  Basil Peace
+ * Copyright © 2017-2018  Basil Peace
  *
  * This file is part of gradle-base-plugins.
  *
- * Licensed under the Apache License, Version 2.0 (the "License")
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
@@ -23,10 +23,12 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
 
 /**
- * Amend previous git commit adding sign to it ("resign" commit)
+ * Amends previous git commit adding sign to it ("resigns" commit)
  *
+ * WORKAROUND:
  * This is necessary since JGit doesn't support signed commits yet.
  * See https://bugs.eclipse.org/bugs/show_bug.cgi?id=382212
+ * <grv87 2018-06-22>
  */
 public class ResignGitCommit extends DefaultTask {
   /**
