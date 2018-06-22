@@ -6,5 +6,8 @@ build/
 .*.md.html
 # Gradle IDE
 /bin/
+# Idea
+.iml
+.idea/workspace.xml
 
 .groovy/
