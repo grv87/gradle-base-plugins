@@ -134,7 +134,7 @@ final class GradlePluginPlugin extends AbstractPlugin implements PropertyChangeL
         website = project.convention.getPlugin(ProjectConvention).websiteUrl
         vcsUrl = project.convention.getPlugin(ProjectConvention).vcsUrl
         description = { project.convention.getPlugin(ProjectConvention).changeLog.toString() }
-        mavenCoordinates { MavenCoordinates mavenCoordinates
+        mavenCoordinates { MavenCoordinates mavenCoordinates ->
           mavenCoordinates.groupId = project.group
         }
       }

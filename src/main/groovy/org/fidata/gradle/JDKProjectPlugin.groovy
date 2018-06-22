@@ -193,17 +193,20 @@ final class JDKProjectPlugin extends AbstractPlugin implements PropertyChangeLis
   private void configureBintray() {
     project.plugins.apply 'com.jfrog.bintray'
     project.bintray {
-      user = 'bintray_user'
-      key = 'bintray_api_key'
+      user = project.getProperty('bintrayUser')
+      key = project.getProperty('bintrayAPIKey')
       pkg {
         repo = 'generic'
         name = 'gradle-project'
-        userOrg = 'bintray_user'
+        userOrg = 'fidata'
         licenses = ['Apache-2.0'] // TODO
         vcsUrl = project.convention.getPlugin(ProjectConvention).vcsUrl
         desc = '' // Version description
-        vcsTag = ''
-        attributes //  Attributes to be attached to the version
+        version {
+          name = ''
+          vcsTag = ''
+          // attributes // Attributes to be attached to the version
+        }
       }
     }
   }
