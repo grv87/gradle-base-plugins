@@ -42,7 +42,7 @@ repositories {
   }
 }
 
-apply from: "${ project.ext.rootDir }/dependencies-compile.gradle"
+apply from: "${ project.ext.rootDir }/gradle/dependencies-compile.gradle"
 
 sourceSets.main {
   java.srcDirs = ["${ project.ext.rootDir }/src/main/java"]

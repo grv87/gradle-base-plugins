@@ -1,6 +1,8 @@
 # This is a Gradle generated file for dependency locking.
 # Manual edits can break the build and are not advised.
 # This file is expected to be part of source control.
+backport-util-concurrent:backport-util-concurrent:3.1
+classworlds:classworlds:1.1-alpha-2
 com.fasterxml.jackson.core:jackson-annotations:2.9.0
 com.fasterxml.jackson.core:jackson-core:2.9.5
 com.fasterxml.jackson.core:jackson-databind:2.9.5
@@ -34,9 +36,12 @@ com.jcraft:jsch.agentproxy.usocket-jna:0.0.9
 com.jcraft:jsch.agentproxy.usocket-nc:0.0.9
 com.jcraft:jsch:0.1.54
 com.jcraft:jzlib:1.1.1
+com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.2
 com.thoughtworks.xstream:xstream:1.4.10
+commons-beanutils:commons-beanutils:1.8.0
 commons-cli:commons-cli:1.3
 commons-codec:commons-codec:1.10
+commons-collections:commons-collections:3.2.1
 commons-io:commons-io:2.5
 commons-lang:commons-lang:2.4
 commons-logging:commons-logging:1.2
@@ -47,17 +52,24 @@ javax.inject:javax.inject:1
 javax.validation:validation-api:1.1.0.Final
 javax.ws.rs:javax.ws.rs-api:2.0.1
 junit:junit:4.12
+nekohtml:nekohtml:1.9.6.2
+nekohtml:xercesMinimal:1.9.6.2
 net.java.dev.jna:jna-platform:4.1.0
 net.java.dev.jna:jna:4.1.0
+net.sf.ezmorph:ezmorph:1.0.6
+net.sf.json-lib:json-lib:2.3
 net.sf.opencsv:opencsv:2.3
 net.sf.saxon:saxon-dom:8.7
 net.sf.saxon:saxon:8.7
+net.sourceforge.nekohtml:nekohtml:1.9.16
 nu.validator.htmlparser:htmlparser:1.4
 org.ajoberstar:gradle-git-publish:1.0.1
 org.ajoberstar:grgit:2.2.1
 org.antlr:ST4:4.0.4
 org.antlr:antlr-runtime:3.5.2
 org.antlr:antlr:3.4
+org.apache.ant:ant-launcher:1.8.0
+org.apache.ant:ant:1.8.0
 org.apache.commons:commons-collections4:4.1
 org.apache.commons:commons-compress:1.16
 org.apache.commons:commons-csv:1.3
@@ -76,7 +88,20 @@ org.apache.jena:jena-tdb:3.1.1
 org.apache.logging.log4j:log4j-api:2.10.0
 org.apache.logging.log4j:log4j-core:2.10.0
 org.apache.logging.log4j:log4j-slf4j-impl:2.10.0
+org.apache.maven.wagon:wagon-file:1.0-beta-6
+org.apache.maven.wagon:wagon-http-lightweight:1.0-beta-6
+org.apache.maven.wagon:wagon-http-shared:1.0-beta-6
+org.apache.maven.wagon:wagon-provider-api:1.0-beta-6
+org.apache.maven:maven-ant-tasks:2.1.3
+org.apache.maven:maven-artifact-manager:2.2.1
+org.apache.maven:maven-artifact:2.2.1
+org.apache.maven:maven-error-diagnostics:2.2.1
 org.apache.maven:maven-model:3.0.4
+org.apache.maven:maven-plugin-registry:2.2.1
+org.apache.maven:maven-profile:2.2.1
+org.apache.maven:maven-project:2.2.1
+org.apache.maven:maven-repository-metadata:2.2.1
+org.apache.maven:maven-settings:2.2.1
 org.apache.poi:poi-ooxml-schemas:3.15
 org.apache.poi:poi-ooxml:3.15
 org.apache.poi:poi:3.15
@@ -85,9 +110,13 @@ org.apache.xmlbeans:xmlbeans:2.6.0
 org.aspectj:aspectjrt:1.8.7
 org.checkerframework:checker-qual:2.0.0
 org.codehaus.gpars:gpars:1.2.1
+org.codehaus.groovy.modules.http-builder:http-builder:0.7.2
 org.codehaus.groovy:groovy-all:2.4.12
 org.codehaus.jsr166-mirror:jsr166y:1.7.0
 org.codehaus.mojo:animal-sniffer-annotations:1.14
+org.codehaus.plexus:plexus-container-default:1.0-alpha-9-stable-1
+org.codehaus.plexus:plexus-interpolation:1.11
+org.codehaus.plexus:plexus-utils:2.0.6
 org.eclipse.jgit:org.eclipse.jgit.ui:4.11.0.201803080745-r
 org.eclipse.jgit:org.eclipse.jgit:4.11.0.201803080745-r
 org.glassfish.hk2.external:aopalliance-repackaged:2.4.0-b10
@@ -120,5 +149,6 @@ pl.pragmatists:JUnitParams:1.1.1
 stax:stax-api:1.0.1
 xerces:xercesImpl:2.12.0
 xml-apis:xml-apis:1.4.01
+xml-resolver:xml-resolver:1.2
 xmlpull:xmlpull:1.1.3.1
 xpp3:xpp3_min:1.1.4c

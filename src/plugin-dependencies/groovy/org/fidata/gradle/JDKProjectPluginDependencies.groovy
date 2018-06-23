@@ -42,6 +42,7 @@ final class JDKProjectPluginDependencies {
     ],
     'org.gradle.maven-publish': [:],
     'com.jfrog.bintray': [
+      configurationName: 'implementation',
       group: 'com.jfrog.bintray.gradle',
       name: 'gradle-bintray-plugin',
       excludes: [

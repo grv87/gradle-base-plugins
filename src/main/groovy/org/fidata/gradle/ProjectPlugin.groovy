@@ -22,6 +22,8 @@ package org.fidata.gradle
 import org.fidata.gradle.tasks.CodeNarcTaskConvention
 import org.gradle.api.file.ConfigurableFileTree
 import org.gradle.api.internal.plugins.DslObject
+import org.jfrog.gradle.plugin.artifactory.dsl.DoubleDelegateWrapper
+import org.jfrog.gradle.plugin.artifactory.dsl.ResolverConfig
 
 import static ProjectPluginDependencies.PLUGIN_DEPENDENCIES
 import static org.gradle.language.base.plugins.LifecycleBasePlugin.CHECK_TASK_NAME
@@ -34,7 +36,6 @@ import static org.gradle.internal.FileUtils.toSafeFileName
 import static org.fidata.gradle.utils.VersionUtils.isPreReleaseVersion
 import static org.gradle.language.base.plugins.LifecycleBasePlugin.VERIFICATION_GROUP
 import groovy.transform.CompileStatic
-import groovy.transform.CompileDynamic
 import org.fidata.gradle.internal.AbstractPlugin
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -71,6 +72,7 @@ import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 import org.gradle.api.artifacts.ComponentSelectionRules
 import org.gradle.api.artifacts.ResolutionStrategy
 import de.gliderpilot.gradle.semanticrelease.UpdateGithubRelease
+import org.jfrog.gradle.plugin.artifactory.dsl.ArtifactoryPluginConvention
 
 /**
  * Provides an environment for a general, language-agnostic project
@@ -282,29 +284,17 @@ final class ProjectPlugin extends AbstractPlugin {
    */
   public static final String ARTIFACTORY_URL = 'https://fidata.jfrog.io/fidata'
 
-  /*
-   * WORKAROUND:
-   * Conventions and extensions in JFrog Gradle plugins have package scopes,
-   * so we can't use static compilation
-   * <grv87 2018-06-22>
-   */
-  @CompileDynamic
   private void configureArtifactory() {
     if (project.hasProperty('artifactoryUser') && project.hasProperty('artifactoryPassword')) {
-      project.artifactory {
+      project.convention.getPlugin(ArtifactoryPluginConvention).with {
         contextUrl = ARTIFACTORY_URL
-        resolve {
-          repository {
-            repoKey = project.convention.getPlugin(ProjectConvention).isRelease ? 'libs-release' : 'libs-snapshot'
-            username = project.property('artifactoryUser')
-            password = project.property('artifactoryPassword')
-            maven = true
-          }
-        }
+        clientConfig.resolver.repoKey = project.convention.getPlugin(ProjectConvention).isRelease ? 'libs-release' : 'libs-snapshot'
+        clientConfig.resolver.username = project.property('artifactoryUser')
+        clientConfig.resolver.password = project.property('artifactoryPassword')
+        clientConfig.resolver.maven = true
       }
-    }
-    else {
-      project.repositories {
+    } else {
+      project.repositories.with {
         jcenter()
         mavenCentral()
       }
@@ -323,10 +313,9 @@ final class ProjectPlugin extends AbstractPlugin {
     }
   }
 
-  @CompileDynamic
   private void configureSemanticRelease() {
     if (project.hasProperty('ghToken')) {
-      /*project.extensions.getByType(SemanticReleasePluginExtension.class)*/
+      /*project.extensions.getByType(SemanticReleasePluginExtension.class)*/ // TODO
       project.tasks.withType(UpdateGithubRelease).getByName('updateGithubRelease').repo.ghToken = project.property('ghToken').toString()
     }
   }
@@ -348,7 +337,6 @@ final class ProjectPlugin extends AbstractPlugin {
       ).toString()
     }
 
-    // TODO
     NoJekyll noJekyllTask = project.tasks.create(NO_JEKYLL_TASK_NAME, NoJekyll) { NoJekyll task ->
       task.with {
         description = 'Generates .nojekyll file in gitPublish repository'

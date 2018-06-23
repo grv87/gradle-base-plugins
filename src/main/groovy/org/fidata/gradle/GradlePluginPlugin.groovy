@@ -19,13 +19,16 @@
  */
 package org.fidata.gradle
 
+import com.gradle.publish.PublishPlugin
+import org.jfrog.gradle.plugin.artifactory.dsl.ArtifactoryPluginConvention
+
 import java.util.regex.Pattern
 
 import static GradlePluginPluginDependencies.PLUGIN_DEPENDENCIES
 import static ProjectPlugin.BUILD_TOOLS_UPDATE_TASK_NAME
+import static org.ajoberstar.gradle.git.release.base.BaseReleasePlugin.RELEASE_TASK_NAME
 import static org.gradle.internal.FileUtils.toSafeFileName
 import groovy.transform.CompileStatic
-import groovy.transform.CompileDynamic
 import org.fidata.gradle.internal.AbstractPlugin
 import org.gradle.api.Project
 import com.gradle.publish.PluginBundleExtension
@@ -94,8 +97,8 @@ final class GradlePluginPlugin extends AbstractPlugin implements PropertyChangeL
           mavenCoordinates.groupId = project.group.toString()
         }
       }
-      project.tasks.getByName(/*PublishPlugin.PUBLISH_TASK_NAME*/ 'publishPlugins').onlyIf { project.convention.getPlugin(ProjectConvention).isRelease }
-      project.tasks.getByName('release').finalizedBy 'publishPlugins'
+      project.tasks.getByName(/* WORKAROUND: PublishPlugin.BASE_TASK_NAME has private scope <grv87 2018-06-23> */ 'publishPlugins').onlyIf { project.convention.getPlugin(ProjectConvention).isRelease }
+      project.tasks.getByName(RELEASE_TASK_NAME).finalizedBy /* WORKAROUND: PublishPlugin.BASE_TASK_NAME has private scope <grv87 2018-06-23> */ 'publishPlugins'
     }
   }
 
@@ -104,12 +107,13 @@ final class GradlePluginPlugin extends AbstractPlugin implements PropertyChangeL
   }
 
   private void configureCompatTest() {
-    Pattern compatTestPattern = ~/^compatTest(.*)?/
+    Pattern compatTestPattern = ~/^compatTest(.+)/
     project.plugins.getPlugin(JDKProjectPlugin).addSpockDependency(
-            project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName('compatTest'),
-            project.tasks.withType(Test).matching({ Test task -> task.name =~ compatTestPattern })
+      project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName('compatTest'),
+      project.tasks.withType(Test).matching({ Test task -> task.name =~ compatTestPattern })
     ) { String name ->
       Matcher compatTestMatcher = (name =~ compatTestPattern)
+      compatTestMatcher.find()
       "compatTest/${ compatTestMatcher.group(1).uncapitalize() }"
     }
     project.tasks.withType(ValidateTaskProperties) { ValidateTaskProperties task ->
@@ -118,7 +122,7 @@ final class GradlePluginPlugin extends AbstractPlugin implements PropertyChangeL
         failOnWarning = true
       }
     }
-    /* project.extensions.getByType(GradlePluginDevelopmentExtension).testSourceSets.each */
+    /* project.extensions.getByType(GradlePluginDevelopmentExtension).testSourceSets.each */ // TODO
     project.plugins.getPlugin(JDKProjectPlugin).configureIntegrationTestSourceSetClasspath project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName('compatTest')
   }
 
@@ -130,26 +134,11 @@ final class GradlePluginPlugin extends AbstractPlugin implements PropertyChangeL
     }
   }
 
-  /*
-   * WORKAROUND:
-   * project.Conventions and extensions in JFrog Gradle plugins have package scopes,
-   * so we can't use static compilation
-   * <grv87 2018-06-22>
-   */
-  @CompileDynamic
   private void configureArtifactory() {
     if (project.hasProperty('artifactoryUser') && project.hasProperty('artifactoryPassword')) {
-      project.artifactory {
-        resolve {
-          repository {
-            repoKey = project.convention.getPlugin(ProjectConvention).isRelease ? 'plugins-release' : 'plugins-snapshot'
-          }
-        }
-        publish {
-          repository {
-            repoKey = project.convention.getPlugin(ProjectConvention).isRelease ? 'plugins-release-local' : 'plugins-snapshot-local'
-          }
-        }
+      project.convention.getPlugin(ArtifactoryPluginConvention).clientConfig.with {
+        resolver.repoKey = project.convention.getPlugin(ProjectConvention).isRelease ? 'plugins-release' : 'plugins-snapshot'
+        publisher.repoKey = project.convention.getPlugin(ProjectConvention).isRelease ? 'plugins-release-local' : 'plugins-snapshot-local'
       }
     }
   }

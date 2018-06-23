@@ -123,7 +123,7 @@ public class ProjectConvention extends AbstractExtension {
     String oldLicense = license;
     AnyLicenseInfo oldLicenseInfo = licenseInfo;
     license = newValue;
-    this.licenseInfo = LicenseInfoFactory.parseSPDXLicenseString(license); // TODO: Error handling
+    this.licenseInfo = LicenseInfoFactory.parseSPDXLicenseString(license);
     getPropertyChangeSupport().firePropertyChange("license", oldLicense, newValue);
     getPropertyChangeSupport().firePropertyChange("licenseInfo", oldLicenseInfo, licenseInfo);
   }

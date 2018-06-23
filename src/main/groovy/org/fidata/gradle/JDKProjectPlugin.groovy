@@ -19,22 +19,24 @@
  */
 package org.fidata.gradle
 
+import org.jfrog.gradle.plugin.artifactory.dsl.ArtifactoryPluginConvention
+import org.jfrog.gradle.plugin.artifactory.dsl.PublisherConfig
+import org.jfrog.gradle.plugin.artifactory.task.ArtifactoryTask
+
 import static JDKProjectPluginDependencies.PLUGIN_DEPENDENCIES
 import static org.gradle.api.tasks.SourceSet.TEST_SOURCE_SET_NAME
 import static org.gradle.api.plugins.JavaPlugin.JAVADOC_TASK_NAME
 import static org.gradle.api.plugins.JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME
 import static org.gradle.api.plugins.JavaPlugin.RUNTIME_ONLY_CONFIGURATION_NAME
 import static org.gradle.api.tasks.SourceSet.MAIN_SOURCE_SET_NAME
+import static org.ajoberstar.gradle.git.release.base.BaseReleasePlugin.RELEASE_TASK_NAME
 import static ProjectPlugin.LICENSE_FILE_NAMES
 import org.fidata.gradle.tasks.CodeNarcTaskConvention
 import org.gradle.api.artifacts.ModuleDependency
 import org.gradle.api.internal.plugins.DslObject
-import org.gradle.api.publish.PublishingExtension
-import org.gradle.plugins.signing.SigningExtension
 import org.spdx.rdfparser.license.AnyLicenseInfo
 import org.spdx.rdfparser.license.LicenseSet
 import groovy.transform.CompileStatic
-import groovy.transform.CompileDynamic
 import org.fidata.gradle.internal.AbstractPlugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.testing.Test
@@ -45,6 +47,8 @@ import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.reporting.ReportingExtension
 import org.ajoberstar.gradle.git.publish.GitPublishExtension
+import com.jfrog.bintray.gradle.BintrayExtension
+import com.jfrog.bintray.gradle.tasks.BintrayPublishTask
 
 import static org.gradle.internal.FileUtils.toSafeFileName
 
@@ -78,7 +82,7 @@ final class JDKProjectPlugin extends AbstractPlugin implements PropertyChangeLis
     project.convention.getPlugin(JavaPluginConvention).testReportDirName = project.extensions.getByType(ReportingExtension).baseDir.toPath().relativize(new File(project.convention.getPlugin(ProjectConvention).htmlReportsDir, 'tests').toPath()).toString() // TODO: ???
 
     // project.extensions.getByType(SigningExtension).sign project.extensions.getByType(PublishingExtension).publications
-    // Caused by: org.gradle.api.InvalidUserDataException: Cannot configure the 'publishing' extension after it has been accessed.
+    // TODO Caused by: org.gradle.api.InvalidUserDataException: Cannot configure the 'publishing' extension after it has been accessed.
 
     configureArtifactory()
 
@@ -89,7 +93,6 @@ final class JDKProjectPlugin extends AbstractPlugin implements PropertyChangeLis
    * Gets called when a property is changed
    */
   void propertyChange(PropertyChangeEvent e) {
-    // TODO: Switch on class ?
     switch (e.source) {
       case project.convention.getPlugin(ProjectConvention):
         switch (e.propertyName) {
@@ -171,7 +174,7 @@ final class JDKProjectPlugin extends AbstractPlugin implements PropertyChangeLis
     tasks.each { Test task ->
       task.with {
         reports.html.enabled = false
-        systemProperty 'com.athaydes.spockframework.report.outputDir', new File(project.convention.getPlugin(ProjectConvention).htmlReportsDir, "spock/${ toSafeFileName(reportDirNamer.call(sourceSetName)) }").absolutePath
+        systemProperty 'com.athaydes.spockframework.report.outputDir', new File(project.convention.getPlugin(ProjectConvention).htmlReportsDir, "spock/${ toSafeFileName(reportDirNamer.call(name)) }").absolutePath
       }
     }
 
@@ -233,43 +236,23 @@ final class JDKProjectPlugin extends AbstractPlugin implements PropertyChangeLis
     addSpockDependency functionalTestSourceSet, functionalTestTask
   }
 
-  /*
-   * WORKAROUND:
-   * Conventions and extensions in JFrog Gradle plugins have package scopes,
-   * so we can't use static compilation
-   * <grv87 2018-06-22>
-   */
-  @CompileDynamic
   private void configureArtifactory() {
     if (project.hasProperty('artifactoryUser') && project.hasProperty('artifactoryPassword')) {
-      project.with {
-        artifactory {
-          publish {
-            repository {
-              repoKey = project.convention.getPlugin(ProjectConvention).isRelease ? 'libs-release-local' : 'libs-snapshot-local'
-              username = project.property('artifactoryUser')
-              password = project.property('artifactoryPassword')
-              maven = true
-            }
-            defaults {
-              // publications
-              publishConfigs 'archive' // Configurations
-              // publications('mavenGroovy') // TODO
-            }
-          }
-        }
-        tasks.getByName('release').finalizedBy tasks.getByName(/*BuildInfoBaseTask.BUILD_INFO_TASK_NAME*/ 'artifactoryPublish') // TODO
+      project.convention.getPlugin(ArtifactoryPluginConvention).clientConfig.publisher.with {
+        repoKey = project.convention.getPlugin(ProjectConvention).isRelease ? 'libs-release-local' : 'libs-snapshot-local'
+        username = project.property('artifactoryUser')
+        password = project.property('artifactoryPassword')
+        maven = true
+        /*defaults {
+            // publications
+            publishConfigs 'archive' // Configurations
+            // publications('mavenGroovy') // TODO
+          }*/
       }
+      project.tasks.getByName(RELEASE_TASK_NAME).finalizedBy project.tasks.withType(ArtifactoryTask)
     }
   }
 
-  /*
-   * WORKAROUND:
-   * Conventions and extensions in JFrog Gradle plugins have package scopes,
-   * so we can't use static compilation
-   * <grv87 2018-06-22>
-   */
-  @CompileDynamic
   private void configureBintray() {
     project.plugins.apply 'com.jfrog.bintray'
 
@@ -283,25 +266,20 @@ final class JDKProjectPlugin extends AbstractPlugin implements PropertyChangeLis
       licenseList.add licenseInfo.toString()
     }
 
-    project.bintray {
-      user = project.property('bintrayUser')
-      key = project.property('bintrayAPIKey')
-      pkg {
-        repo = 'generic'
-        name = 'gradle-project'
-        userOrg = 'fidata'
-        licenses = licenseList.toArray()
-        vcsUrl = project.convention.getPlugin(ProjectConvention).vcsUrl
-        desc = '' // Version description
-        version {
-          name = ''
-          vcsTag = ''
-          gpg {
-            sign = true // TODO ?
-          }
-          // attributes // Attributes to be attached to the version
-        }
-      }
+    project.extensions.getByType(BintrayExtension).with {
+      user = project.property('bintrayUser').toString()
+      key = project.property('bintrayAPIKey').toString()
+      pkg.repo = 'generic'
+      pkg.name = 'gradle-project'
+      pkg.userOrg = 'fidata'
+      pkg.licenses = licenseList.toArray(new String[licenseList.size()])
+      pkg.vcsUrl = project.convention.getPlugin(ProjectConvention).vcsUrl
+      pkg.desc = '' // Version description
+      pkg.version.name = ''
+      pkg.version.vcsTag = '' // TODO
+      pkg.version.gpg.sign = true // TODO ?
+      // pkg.version.attributes // Attributes to be attached to the version
     }
+    project.tasks.getByName(RELEASE_TASK_NAME).finalizedBy project.tasks.withType(BintrayPublishTask)
   }
 }
