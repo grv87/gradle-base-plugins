@@ -20,6 +20,7 @@
 package org.fidata.gradle
 
 import com.gradle.publish.PublishPlugin
+import org.gradle.api.artifacts.repositories.MavenArtifactRepository
 import org.jfrog.gradle.plugin.artifactory.dsl.ArtifactoryPluginConvention
 
 import java.util.regex.Pattern
@@ -27,6 +28,7 @@ import java.util.regex.Pattern
 import static GradlePluginPluginDependencies.PLUGIN_DEPENDENCIES
 import static ProjectPlugin.BUILD_TOOLS_UPDATE_TASK_NAME
 import static org.ajoberstar.gradle.git.release.base.BaseReleasePlugin.RELEASE_TASK_NAME
+import static ProjectPlugin.ARTIFACTORY_URL
 import static org.gradle.internal.FileUtils.toSafeFileName
 import groovy.transform.CompileStatic
 import org.fidata.gradle.internal.AbstractPlugin
@@ -136,9 +138,17 @@ final class GradlePluginPlugin extends AbstractPlugin implements PropertyChangeL
 
   private void configureArtifactory() {
     if (project.hasProperty('artifactoryUser') && project.hasProperty('artifactoryPassword')) {
+      String resolveRepository = project.convention.getPlugin(ProjectConvention).isRelease ? 'plugins-release' : 'plugins-snapshot'
       project.convention.getPlugin(ArtifactoryPluginConvention).clientConfig.with {
-        resolver.repoKey = project.convention.getPlugin(ProjectConvention).isRelease ? 'plugins-release' : 'plugins-snapshot'
+        resolver.repoKey = resolveRepository
         publisher.repoKey = project.convention.getPlugin(ProjectConvention).isRelease ? 'plugins-release-local' : 'plugins-snapshot-local'
+      }
+      project.repositories.maven { MavenArtifactRepository mavenArtifactRepository ->
+        mavenArtifactRepository.with {
+          url = "$ARTIFACTORY_URL/$resolveRepository/"
+          credentials.username = project.property('artifactoryUser')
+          credentials.password = project.property('artifactoryPassword')
+        }
       }
     }
   }

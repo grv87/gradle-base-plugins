@@ -19,18 +19,25 @@
  */
 package org.fidata.gradle
 
+import groovy.transform.PackageScope
+import org.gradle.api.JavaVersion
+import org.gradle.api.artifacts.repositories.MavenArtifactRepository
+import org.gradle.api.tasks.javadoc.Javadoc
+import org.gradle.external.javadoc.StandardJavadocDocletOptions
 import org.jfrog.gradle.plugin.artifactory.dsl.ArtifactoryPluginConvention
 import org.jfrog.gradle.plugin.artifactory.dsl.PublisherConfig
 import org.jfrog.gradle.plugin.artifactory.task.ArtifactoryTask
 
 import static JDKProjectPluginDependencies.PLUGIN_DEPENDENCIES
 import static org.gradle.api.tasks.SourceSet.TEST_SOURCE_SET_NAME
+import static org.gradle.api.plugins.JavaPlugin.COMPILE_JAVA_TASK_NAME
 import static org.gradle.api.plugins.JavaPlugin.JAVADOC_TASK_NAME
 import static org.gradle.api.plugins.JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME
 import static org.gradle.api.plugins.JavaPlugin.RUNTIME_ONLY_CONFIGURATION_NAME
 import static org.gradle.api.tasks.SourceSet.MAIN_SOURCE_SET_NAME
 import static org.ajoberstar.gradle.git.release.base.BaseReleasePlugin.RELEASE_TASK_NAME
 import static ProjectPlugin.LICENSE_FILE_NAMES
+import static ProjectPlugin.ARTIFACTORY_URL
 import org.fidata.gradle.tasks.CodeNarcTaskConvention
 import org.gradle.api.artifacts.ModuleDependency
 import org.gradle.api.internal.plugins.DslObject
@@ -49,6 +56,7 @@ import org.gradle.api.reporting.ReportingExtension
 import org.ajoberstar.gradle.git.publish.GitPublishExtension
 import com.jfrog.bintray.gradle.BintrayExtension
 import com.jfrog.bintray.gradle.tasks.BintrayPublishTask
+import io.franzbecker.gradle.lombok.task.DelombokTask
 
 import static org.gradle.internal.FileUtils.toSafeFileName
 
@@ -74,6 +82,10 @@ final class JDKProjectPlugin extends AbstractPlugin implements PropertyChangeLis
     project.tasks.withType(ProcessResources) { ProcessResources task ->
       task.from(LICENSE_FILE_NAMES).into 'META-INF'
     }
+
+    configureJavadoc()
+
+    configureDelombok()
 
     addJUnitDependency project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(TEST_SOURCE_SET_NAME)
 
@@ -107,6 +119,27 @@ final class JDKProjectPlugin extends AbstractPlugin implements PropertyChangeLis
   private void configurePublicReleases() {
     if (project.convention.getPlugin(ProjectConvention).publicReleases) {
       configureBintray()
+    }
+  }
+
+  public String DELOMBOK_TASK_NAME = 'delombok'
+
+  private void configureDelombok() {
+    DelombokTask delombokTask = project.tasks.create(DELOMBOK_TASK_NAME, DelombokTask) { DelombokTask task ->
+      task.with {
+        dependsOn project.tasks.getByName(COMPILE_JAVA_TASK_NAME)
+        File outputDir = new File(project.buildDir, 'delombok')
+        outputs.dir outputDir
+        project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(MAIN_SOURCE_SET_NAME).java.srcDirs.each { File dir ->
+          inputs.dir dir
+          args dir, "-d", outputDir
+        }
+        classpath project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(MAIN_SOURCE_SET_NAME).compileClasspath
+      }
+    }
+    project.tasks.withType(Javadoc).getByName(JAVADOC_TASK_NAME) { Javadoc task ->
+      task.dependsOn delombokTask
+      task.source = delombokTask.outputs
     }
   }
 
@@ -250,6 +283,18 @@ final class JDKProjectPlugin extends AbstractPlugin implements PropertyChangeLis
           }*/
       }
       project.tasks.getByName(RELEASE_TASK_NAME).finalizedBy project.tasks.withType(ArtifactoryTask)
+      project.repositories.maven { MavenArtifactRepository mavenArtifactRepository ->
+        mavenArtifactRepository.with {
+          url = "$ARTIFACTORY_URL/${ project.convention.getPlugin(ProjectConvention).isRelease ? 'libs-release' : 'libs-snapshot' }/"
+          credentials.username = project.property('artifactoryUser')
+          credentials.password = project.property('artifactoryPassword')
+        }
+      }
+    } else {
+      project.repositories.with {
+        jcenter()
+        mavenCentral()
+      }
     }
   }
 
@@ -282,4 +327,20 @@ final class JDKProjectPlugin extends AbstractPlugin implements PropertyChangeLis
     }
     project.tasks.getByName(RELEASE_TASK_NAME).finalizedBy project.tasks.withType(BintrayPublishTask)
   }
+
+  @PackageScope
+  Map<String, GString> getJavadocLinks() {
+    ['java': "https://docs.oracle.com/javase/${ (JavaVersion.toVersion(project.convention.getPlugin(JavaPluginConvention).targetCompatibility) ?: JavaVersion.current()).majorVersion }/docs/api/"]
+  }
+
+  private void configureJavadoc() {
+    project.tasks.withType(Javadoc) { Javadoc task ->
+      task.options { StandardJavadocDocletOptions options ->
+        getJavadocLinks().values().each {
+          options.links it
+        }
+      }
+    }
+  }
+
 }

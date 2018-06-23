@@ -20,6 +20,7 @@
 package org.fidata.gradle
 
 import org.fidata.gradle.tasks.CodeNarcTaskConvention
+import org.gradle.api.artifacts.repositories.MavenArtifactRepository
 import org.gradle.api.file.ConfigurableFileTree
 import org.gradle.api.internal.plugins.DslObject
 import org.jfrog.gradle.plugin.artifactory.dsl.DoubleDelegateWrapper
@@ -286,17 +287,13 @@ final class ProjectPlugin extends AbstractPlugin {
 
   private void configureArtifactory() {
     if (project.hasProperty('artifactoryUser') && project.hasProperty('artifactoryPassword')) {
+      String repository = project.convention.getPlugin(ProjectConvention).isRelease ? 'libs-release' : 'libs-snapshot'
       project.convention.getPlugin(ArtifactoryPluginConvention).with {
         contextUrl = ARTIFACTORY_URL
-        clientConfig.resolver.repoKey = project.convention.getPlugin(ProjectConvention).isRelease ? 'libs-release' : 'libs-snapshot'
+        clientConfig.resolver.repoKey = repository
         clientConfig.resolver.username = project.property('artifactoryUser')
         clientConfig.resolver.password = project.property('artifactoryPassword')
         clientConfig.resolver.maven = true
-      }
-    } else {
-      project.repositories.with {
-        jcenter()
-        mavenCentral()
       }
     }
   }

@@ -64,11 +64,6 @@ final class ProjectPluginDependencies {
       group: 'org.ajoberstar',
       name: 'gradle-git-publish',
     ],
-    /*'org.ajoberstar.github-pages': [
-      configurationName: 'implementation',
-      group: 'org.ajoberstar',
-      name: 'gradle-git',
-    ],*/
     'org.gradle.reporting-base': [:],
     'org.gradle.codenarc': [:],
     'org.gradle.project-report': [:],

@@ -47,6 +47,7 @@ commons-lang:commons-lang:2.4
 commons-logging:commons-logging:1.2
 cz.malohlava:visteg:1.0.3
 de.gliderpilot.gradle.semantic-release:gradle-semantic-release-plugin:2.0.0-grgit2-FIDATA-SNAPSHOT
+io.franzbecker:gradle-lombok:1.14
 javax.annotation:javax.annotation-api:1.2
 javax.inject:javax.inject:1
 javax.validation:validation-api:1.1.0.Final

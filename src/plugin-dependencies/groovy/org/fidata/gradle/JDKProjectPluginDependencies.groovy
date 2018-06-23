@@ -33,12 +33,9 @@ final class JDKProjectPluginDependencies {
     'org.gradle.java': [:],
     'org.gradle.java-library': [:],
     'io.franzbecker.gradle-lombok': [
+      configurationName: 'implementation',
       group: 'io.franzbecker',
       name: 'gradle-lombok',
-    ],
-    'org.danilopianini.javadoc.io-linker': [
-      group: 'org.danilopianini',
-      name: 'javadoc.io-linker',
     ],
     'org.gradle.maven-publish': [:],
     'com.jfrog.bintray': [

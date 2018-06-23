@@ -29,7 +29,7 @@ import java.beans.PropertyChangeListener;
 @SuppressWarnings("AbstractClassWithoutAbstractMethod")
 public abstract class AbstractExtension {
   /**
-   * List of property change listeners
+   * @return list of property change listeners
    */
   @Getter(value = AccessLevel.PROTECTED, lazy = true)
   private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);;

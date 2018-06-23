@@ -19,6 +19,8 @@
  */
 package org.fidata.gradle
 
+import org.gradle.api.tasks.javadoc.Javadoc
+
 import static GroovyProjectPluginDependencies.PLUGIN_DEPENDENCIES
 import static org.gradle.api.plugins.JavaPlugin.API_ELEMENTS_CONFIGURATION_NAME
 import groovy.transform.CompileStatic
@@ -30,6 +32,8 @@ import org.gradle.api.artifacts.type.ArtifactTypeDefinition
 import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.tasks.compile.GroovyCompile
 import org.ajoberstar.gradle.git.publish.GitPublishExtension
+
+import static org.gradle.api.plugins.JavaPlugin.JAVADOC_TASK_NAME
 
 /**
  * Provides an environment for a Groovy project
@@ -70,9 +74,17 @@ final class GroovyProjectPlugin extends AbstractPlugin {
   }
 
   private void configureGroovydoc() {
+    Javadoc javadoc = project.tasks.withType(Javadoc).getByName(JAVADOC_TASK_NAME)
+    javadoc.onlyIf{ false }
     project.tasks.withType(Groovydoc) { Groovydoc task ->
       task.with {
-        link "https://docs.oracle.com/javase/${ (JavaVersion.toVersion(project.convention.getPlugin(JavaPluginConvention).targetCompatibility) ?: JavaVersion.current()).majorVersion }/docs/api/", 'java.'
+        source javadoc.source
+        project.plugins.getPlugin(JDKProjectPlugin).getJavadocLinks().each { String key, GString value ->
+          link value, "$key."
+        }
+        GString groovydocLink = "http://docs.groovy-lang.org/${ GroovySystem.version }/html/api/"
+        link groovydocLink, "groovy."
+        link groovydocLink, "org.codehaus.groovy."
       }
     }
   }

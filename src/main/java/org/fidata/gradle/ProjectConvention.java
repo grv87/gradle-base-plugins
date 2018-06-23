@@ -33,8 +33,6 @@ import org.spdx.spdxspreadsheet.InvalidLicenseStringException;
 import org.spdx.rdfparser.license.LicenseInfoFactory;
 import org.spdx.rdfparser.license.AnyLicenseInfo;
 import groovy.lang.Writable;
-import java.lang.reflect.InvocationTargetException;
-import groovy.lang.GString;
 
 /**
  * Provides additional properties to the project
@@ -43,13 +41,13 @@ public class ProjectConvention extends AbstractExtension {
   private final Project project;
 
   /**
-   * Whether this run has release version (not snapshot)
+   * @return whether this run has release version (not snapshot)
    */
   @Getter
   private final boolean isRelease;
 
   /**
-   * Changelog since last release
+   * @return changelog since last release
    */
   @Getter(lazy = true)
   private final /*TODOC: https://github.com/rzwitserloot/lombok/issues/1585*/ Writable changeLog = generateChangeLog();
@@ -70,25 +68,25 @@ public class ProjectConvention extends AbstractExtension {
   }
 
   /**
-   * Parent output directory for reports
+   * @return parent output directory for reports
    */
   @Getter
   private final File reportsDir;
 
   /**
-   * Output directory for HTML reports
+   * @return output directory for HTML reports
    */
   @Getter
   private final File htmlReportsDir;
 
   /**
-   * Output directory for XML reports
+   * @return output directory for XML reports
    */
   @Getter
   private final File xmlReportsDir;
 
   /**
-   * Output directory for text reports
+   * @return output directory for text reports
    */
   @Getter
   private final File txtReportsDir;
@@ -110,7 +108,7 @@ public class ProjectConvention extends AbstractExtension {
   }
 
   /**
-   * SPDX identifier of the project license
+   * @return SPDX identifier of the project license
    */
   @Getter
   private String license;
@@ -118,6 +116,7 @@ public class ProjectConvention extends AbstractExtension {
   /**
    * Sets the project license
    * @param newValue SPDX license identifier
+   * @throws InvalidLicenseStringException when license parsing with SPDX failed
    */
   public void setLicense(String newValue) throws InvalidLicenseStringException {
     String oldLicense = license;
@@ -129,41 +128,44 @@ public class ProjectConvention extends AbstractExtension {
   }
 
   /**
-   * Project license information
+   * @return project license information
    */
   @Getter
   private AnyLicenseInfo licenseInfo = new SpdxNoneLicense();
 
   /**
-   * Whether releases of this project are public
+   * @return whether releases of this project are public
    */
   @Getter
   private boolean publicReleases = false;
 
   /**
    * Sets whether releases of this project are public
+   * @param newValue whether releases of this project are public
    */
-  void setPublicReleases(boolean newValue) {
+  public void setPublicReleases(boolean newValue) {
     boolean oldValue = publicReleases;
     publicReleases = newValue;
     getPropertyChangeSupport().firePropertyChange("publicReleases", new Boolean(oldValue), new Boolean(newValue));
   }
 
   /**
-   * Project website URL
+   * @return project website URL
+   * @param websiteUrl project website URL
    */
   @Getter @Setter
   private String websiteUrl;
 
   /**
-   * Issues URL
+   * @return issues URL
+   * @param issuesUrl issues URL
    */
   @Getter @Setter
   private String issuesUrl;
 
 
   /**
-   * Project VCS URL
+   * @return project VCS URL
    */
   public String getVcsUrl() {
     return "https://github.com/FIDATA/" + project.getName();

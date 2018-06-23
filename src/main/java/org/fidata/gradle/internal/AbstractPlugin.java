@@ -18,6 +18,8 @@
  */
 package org.fidata.gradle.internal;
 
+import lombok.AccessLevel;
+import lombok.Getter;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 
@@ -26,14 +28,11 @@ import org.gradle.api.Project;
  */
 @SuppressWarnings("AbstractClassWithoutAbstractMethod")
 public abstract class AbstractPlugin implements Plugin<Project> {
-  private Project project;
-
   /**
-   * Gets project which this plugin instance is applied to
+   * @return project which this plugin instance is applied to
    */
-  protected final Project getProject() {
-    return project;
-  }
+  @Getter(value = AccessLevel.PROTECTED)
+  private Project project;
 
   /**
    * Applies the plugin to the project

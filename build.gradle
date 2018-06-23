@@ -49,24 +49,17 @@ contacts {
 
 apply from: "${ project.ext.rootDir }/gradle/dependencies-compile.gradle"
 
-sourceSets.main.groovy.srcDirs << ["${ project.ext.rootDir }/src/plugin-dependencies/groovy"]
+sourceSets.main.groovy.srcDirs += ["${ project.ext.rootDir }/src/plugin-dependencies/groovy"]
 
-/*tasks['groovydoc'].with {
-  Closure addLinks = { List dependencies ->
-    for (Map depNotation in dependencies) {
-      if (depNotation['configurationName'] == 'api' && depNotation.containsKey('groovydoc')) {
-        link depNotation['groovydoc'], "${ depNotation['group'] }."
-      }
+dependencies {
+  testImplementation group: 'pl.pragmatists', name: 'JUnitParams', version: 'latest.release'
+}
+
+test {
+    testLogging {
+        exceptionFormat = 'full'
     }
-  }
-
-  addLinks org.fidata.gradle.ProjectPluginDependencies.DEPENDENCIES
-  addLinks org.fidata.gradle.JDKProjectPluginDependencies.DEPENDENCIES
-  addLinks org.fidata.gradle.GroovyProjectPluginDependencies.DEPENDENCIES
-  addLinks org.fidata.gradle.GradlePluginPluginDependencies.DEPENDENCIES
-
-  use = true // TOTEST
-}*/
+}
 
 tasks['codenarcMain'].disabledRules = ['JavaIoPackageAccess']
 
@@ -76,31 +69,12 @@ task('codenarcMainResources', type: CodeNarc) {
   }
 }
 
-dependencies {
-  testImplementation group: 'pl.pragmatists', name: 'JUnitParams', version: 'latest.release'
-}
-
-sourceSets {
-  integTest {
-  	groovy.srcDir 'src/integTest/groovy'
-    compileClasspath += sourceSets.main.output + configurations.testCompileClasspath
-    runtimeClasspath += output + compileClasspath + configurations.testRuntimeClasspath
-  }
-}
-
-task('integTest', type: Test) {
-  testClassesDirs = sourceSets['integTest'].output.classesDirs
-  classpath = sourceSets['integTest'].runtimeClasspath
-  reports.with {
-    junitXml.destination = new File(xmlReportsDir, 'integTest')
-	html.destination = new File(htmlReportsDir, 'integTest')
-	// html.enabled = false
-  }
-  systemProperty 'com.athaydes.spockframework.report.outputDir', new File(htmlReportsDir, 'spock/integTest').absolutePath
-}
-
-test {
-    testLogging {
-        exceptionFormat = 'full'
-    }
+/*
+ * WORKAROUND:
+ * https://github.com/DanySK/javadoc.io-linker/issues/5
+ * `org.danilopianini.javadoc.io-linker` plugin doesn't work with `java-library` plugin
+ * <grv87 2018-06-23>
+ */
+project.afterEvaluate {
+  tasks['groovydoc'].link "https://static.javadoc.io/org.spdx/spdx-tools/${ configurations.getByName('compileClasspath').resolvedConfiguration.firstLevelModuleDependencies.find { it.moduleGroup == 'org.spdx' && it.moduleName == 'spdx-tools' }.moduleVersion }/", 'org.spdx.'
 }
