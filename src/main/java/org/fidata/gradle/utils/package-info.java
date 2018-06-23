@@ -1,6 +1,5 @@
-#!/usr/bin/env groovy
 /*
- * Build script for gradle-base-plugins 2nd-level buildSrc
+ * org.fidata.gradle.utils Package Info
  * Copyright © 2017-2018  Basil Peace
  *
  * This file is part of gradle-base-plugins.
@@ -17,24 +16,7 @@
  * implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-plugins {
-  id 'groovy'
-  id 'java-library'
-}
-
-group = 'org.fidata.gradle'
-
-ext.rootDir = '../..'
-
-dependencyLocking.lockAllConfigurations()
-
-dependencies {
-  api localGroovy()
-}
-
-sourceSets.main.groovy.srcDirs = ["${ project.ext.rootDir }/src/plugin-dependencies/groovy"]
-
-dependencies.runtime project(path)
-
-tasks['check'].enabled = false
-tasks['test'].enabled = false
+/**
+ * Utils for Gradle plugins developed by FIDATA
+ */
+package org.fidata.gradle.utils;

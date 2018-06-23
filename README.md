@@ -90,6 +90,10 @@ in version.
 *	Provides `codenarcBuildSrc` task for `build.gradle` itself
 	and accompanying Groovy scripts.
 
+*	Sets default configuration for all `codenarc` tasks.
+	Adds `disabledRules` property to each task, so that specific rules
+	could be disabled per task
+
 ### Reports
 
 *	Provides read-only project properties:

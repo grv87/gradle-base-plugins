@@ -30,7 +30,7 @@ import org.gradle.api.tasks.TaskAction
  * See https://bugs.eclipse.org/bugs/show_bug.cgi?id=382212
  * <grv87 2018-06-22>
  */
-public class ResignGitCommit extends DefaultTask {
+class ResignGitCommit extends DefaultTask {
   /**
    * Resigns previous git commit
    */

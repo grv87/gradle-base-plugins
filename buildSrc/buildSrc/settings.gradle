@@ -24,8 +24,8 @@ pluginManagement {
     maven {
       url 'https://fidata.jfrog.io/fidata/plugins-release/'
       credentials {
-        username = property('artifactoryUser')
-        password = property('artifactoryPassword')
+        username = getProperty('artifactoryUser')
+        password = getProperty('artifactoryPassword')
       }
     }
   }
@@ -38,8 +38,8 @@ buildCache {
   remote(HttpBuildCache) {
     url = 'https://fidata.jfrog.io/fidata/local.gradle.cache/'
     credentials {
-      username = property('artifactoryUser')
-      password = property('artifactoryPassword')
+      username = getProperty('artifactoryUser')
+      password = getProperty('artifactoryPassword')
     }
     push = System.getenv().with { containsKey('CI') || containsKey('JENKINS_URL') }
   }

@@ -30,7 +30,7 @@ import org.gradle.api.reporting.ReportingExtension
  * Generates reports about all task file inputs and outputs
  */
 @CompileStatic
-public class InputsOutputs extends DefaultTask {
+class InputsOutputs extends DefaultTask {
   /**
    * InputsOutputs default output file name
    */
@@ -48,7 +48,7 @@ public class InputsOutputs extends DefaultTask {
 
   /**
    * Sets output file
-   * By default it is <code>${reporting.baseDir}/inputsOutputs.txt</code>
+   * By default it is <code>${ reporting.baseDir }/inputsOutputs.txt</code>
    */
   void setOutputFile(File outputFile) {
     this.outputFile = outputFile

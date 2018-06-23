@@ -19,13 +19,20 @@
  */
 package org.fidata.gradle
 
+import static JDKProjectPluginDependencies.PLUGIN_DEPENDENCIES
+import static org.gradle.api.tasks.SourceSet.TEST_SOURCE_SET_NAME
+import static org.gradle.api.plugins.JavaPlugin.JAVADOC_TASK_NAME
+import static org.gradle.api.plugins.JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME
+import static org.gradle.api.plugins.JavaPlugin.RUNTIME_ONLY_CONFIGURATION_NAME
+import static org.gradle.api.tasks.SourceSet.MAIN_SOURCE_SET_NAME
+import static ProjectPlugin.LICENSE_FILE_NAMES
+import org.fidata.gradle.tasks.CodeNarcTaskConvention
+import org.gradle.api.artifacts.ModuleDependency
+import org.gradle.api.internal.plugins.DslObject
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.plugins.signing.SigningExtension
 import org.spdx.rdfparser.license.AnyLicenseInfo
 import org.spdx.rdfparser.license.LicenseSet
-
-import static JDKProjectPluginDependencies.PLUGIN_DEPENDENCIES
-import static ProjectPlugin.LICENSE_FILE_NAMES
 import groovy.transform.CompileStatic
 import groovy.transform.CompileDynamic
 import org.fidata.gradle.internal.AbstractPlugin
@@ -37,31 +44,15 @@ import java.beans.PropertyChangeEvent
 import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.reporting.ReportingExtension
-// import org.jfrog.gradle.plugin.artifactory.task.BuildInfoBaseTask // TODO
 import org.ajoberstar.gradle.git.publish.GitPublishExtension
+
+import static org.gradle.internal.FileUtils.toSafeFileName
 
 /**
  * Provides an environment for a JDK project
  */
 @CompileStatic
 final class JDKProjectPlugin extends AbstractPlugin implements PropertyChangeListener {
-  /**
-   * Name of functional test source set
-   */
-  public static final String FUNCTIONAL_TEST_SOURCE_SET_NAME = 'functionalTest'
-  /**
-   * Name of functional test source directory
-   */
-  public static final String FUNCTIONAL_TEST_SRC_DIR_NAME = 'functionalTest'
-  /**
-   * Name of functional test task
-   */
-  public static final String FUNCTIONAL_TEST_TASK_NAME = 'functionalTest'
-  /**
-   * Name of functional test reports directory
-   */
-  public static final String FUNCTIONAL_TEST_REPORTS_DIR_NAME = 'functionalTest'
-
   @Override
   void apply(Project project) {
     super.apply(project)
@@ -80,62 +71,18 @@ final class JDKProjectPlugin extends AbstractPlugin implements PropertyChangeLis
       task.from(LICENSE_FILE_NAMES).into 'META-INF'
     }
 
-    project.dependencies.add('testImplementation', [
-      group: 'junit',
-      name: 'junit',
-      version: 'latest.release'
-    ])
+    addJUnitDependency project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(TEST_SOURCE_SET_NAME)
 
-    project.convention.getPlugin(JavaPluginConvention).with {
-      testReportDirName = project.extensions.getByType(ReportingExtension).baseDir.toPath().relativize(new File(project.convention.getPlugin(ProjectConvention).htmlReportsDir, 'tests').toPath()).toString() // TODO: ???
+    configureFunctionalTests()
 
-      sourceSets.create(FUNCTIONAL_TEST_SOURCE_SET_NAME) { SourceSet sourceSet ->
-          sourceSet.java.srcDir project.file("src/$FUNCTIONAL_TEST_SRC_DIR_NAME/java")
-          sourceSet.resources.srcDir project.file("src/$FUNCTIONAL_TEST_SRC_DIR_NAME/resources")
-          sourceSet.compileClasspath += project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName('main').output + project.configurations.getByName('testCompileClasspath')
-          sourceSet.runtimeClasspath += sourceSet.output + sourceSet.compileClasspath + project.configurations.getByName('testRuntimeClasspath')
-      }
-    }
+    project.convention.getPlugin(JavaPluginConvention).testReportDirName = project.extensions.getByType(ReportingExtension).baseDir.toPath().relativize(new File(project.convention.getPlugin(ProjectConvention).htmlReportsDir, 'tests').toPath()).toString() // TODO: ???
 
-    project.tasks.create(FUNCTIONAL_TEST_TASK_NAME, Test) { Test task ->
-      task.with {
-        group = 'Verification'
-        description = 'Runs functional tests'
-        testClassesDirs = project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(FUNCTIONAL_TEST_SOURCE_SET_NAME).output.classesDirs
-        classpath = project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(FUNCTIONAL_TEST_SOURCE_SET_NAME).runtimeClasspath
-        reports.junitXml.setDestination new File(project.convention.getPlugin(ProjectConvention).xmlReportsDir, FUNCTIONAL_TEST_REPORTS_DIR_NAME)
-        reports.html.setDestination new File(project.convention.getPlugin(ProjectConvention).htmlReportsDir, FUNCTIONAL_TEST_REPORTS_DIR_NAME)
-      }
-    }
-
-    project.configurations.create('deployerJars')
-
-    // project.extensions.getByType(SigningExtension).sign project.extensions.getByType(PublishingExtension).publications TODO
-
-    project.dependencies.add('deployerJars', [
-      /*deployerJars 'org.apache.maven.wagon:wagon-ssh:2.2'
-      http org.apache.maven.wagon:wagon-http:2.2*/
-      group: 'org.apache.maven.wagon',
-      name: 'wagon-ssh',
-      version: 'latest.release'
-      // ssh
-     /* ssh-external org.apache.maven.wagon:wagon-ssh-external:2.2
-      ftp org.apache.maven.wagon:wagon-ftp:2.2
-      webdav org.apache.maven.wagon:wagon-webdav:1.0-beta-2
-      file -*/
-    ])
-
-    /*uploadArchives {
-      repositories {
-        mavenDeployer {
-          // beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
-        }
-      }
-    } // TODO*/
+    // project.extensions.getByType(SigningExtension).sign project.extensions.getByType(PublishingExtension).publications
+    // Caused by: org.gradle.api.InvalidUserDataException: Cannot configure the 'publishing' extension after it has been accessed.
 
     configureArtifactory()
 
-    project.extensions.getByType(GitPublishExtension).contents.from(project.tasks.getByName('javadoc')).into "$project.version/javadoc"
+    project.extensions.getByType(GitPublishExtension).contents.from(project.tasks.getByName(JAVADOC_TASK_NAME)).into "$project.version/javadoc"
   }
 
   /**
@@ -154,11 +101,136 @@ final class JDKProjectPlugin extends AbstractPlugin implements PropertyChangeLis
     }
   }
 
-  @CompileDynamic
   private void configurePublicReleases() {
     if (project.convention.getPlugin(ProjectConvention).publicReleases) {
       configureBintray()
     }
+  }
+
+  /**
+   * Adds JUnit dependency to specified source set configuration
+   * @param sourceSet source set
+   */
+  void addJUnitDependency(SourceSet sourceSet) {
+    project.dependencies.add("${ sourceSet.name }${ IMPLEMENTATION_CONFIGURATION_NAME.capitalize() }", [
+      group: 'junit',
+      name: 'junit',
+      version: '[4.0,5.0)'
+    ])
+  }
+
+  /**
+   * Adds Spock to specified source set and task
+   * @param sourceSet source set
+   * @param task test task
+   *        If null, task with the same name as source set is used
+   */
+  void addSpockDependency(SourceSet sourceSet, Test task = null) {
+    addSpockDependency sourceSet, [project.tasks.withType(Test).getByName(sourceSet.name)], Closure.IDENTITY
+  }
+
+  /**
+   * Adds Spock to specified source set and tasks
+   * @param sourceSet source set
+   * @param tasks list of test tasks.
+   * @param reportDirNamer closure to set report directory name from task name
+   */
+  void addSpockDependency(SourceSet sourceSet, Iterable<Test> tasks, Closure<GString> reportDirNamer) {
+    project.plugins.apply 'org.gradle.groovy'
+    String sourceSetName = sourceSet.name
+    project.dependencies.with {
+      add("$sourceSetName${ IMPLEMENTATION_CONFIGURATION_NAME.capitalize() }", [
+              group  : 'org.spockframework',
+              name   : 'spock-core',
+              version: "1.1-groovy-2.4" // ${ (GroovySystem.version =~ /^(\d+\.\d+)/).group(0) } // TODO: ???
+      ]) { ModuleDependency dependency ->
+        dependency.exclude(
+                group: 'org.codehaus.groovy',
+                module: 'groovy-all'
+        )
+      }
+      add("$sourceSetName${ RUNTIME_ONLY_CONFIGURATION_NAME.capitalize() }", [
+              group  : 'com.athaydes',
+              name   : 'spock-reports',
+              version: 'latest.release'
+      ]) { ModuleDependency dependency ->
+        dependency.transitive = false
+      }
+      add("$sourceSetName${ IMPLEMENTATION_CONFIGURATION_NAME.capitalize() }", [
+              group  : 'org.slf4j',
+              name   : 'slf4j-api',
+              version: 'latest.release'
+      ])
+      add("$sourceSetName${ IMPLEMENTATION_CONFIGURATION_NAME.capitalize() }", [
+              group  : 'org.slf4j',
+              name   : 'slf4j-simple',
+              version: 'latest.release'
+      ])
+    }
+
+    tasks.each { Test task ->
+      task.with {
+        reports.html.enabled = false
+        systemProperty 'com.athaydes.spockframework.report.outputDir', new File(project.convention.getPlugin(ProjectConvention).htmlReportsDir, "spock/${ toSafeFileName(reportDirNamer.call(sourceSetName)) }").absolutePath
+      }
+    }
+
+    new DslObject(project.tasks.getByName("codenarc${ sourceSetName.capitalize() }")).convention.getPlugin(CodeNarcTaskConvention).disabledRules.addAll(['MethodName', 'FactoryMethodName'])
+  }
+
+  /**
+   * Configures integration test source set classpath
+   * See https://docs.gradle.org/current/userguide/java_testing.html#sec:configuring_java_integration_tests
+   * @param sourceSet source set to configure
+   * @return
+   */
+  void configureIntegrationTestSourceSetClasspath(SourceSet sourceSet) {
+    sourceSet.compileClasspath += project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(MAIN_SOURCE_SET_NAME).output
+    sourceSet.runtimeClasspath += sourceSet.output + sourceSet.compileClasspath
+
+    // project.configurations["${ sourceSet.name }${ IMPLEMENTATION_CONFIGURATION_NAME.capitalize() }"].extendsFrom project.configurations['implementation']
+  }
+
+  /**
+   * Name of functional test source set
+   */
+  public static final String FUNCTIONAL_TEST_SOURCE_SET_NAME = 'functionalTest'
+  /**
+   * Name of functional test source directory
+   */
+  public static final String FUNCTIONAL_TEST_SRC_DIR_NAME = 'functionalTest'
+  /**
+   * Name of functional test task
+   */
+  public static final String FUNCTIONAL_TEST_TASK_NAME = 'functionalTest'
+  /**
+   * Name of functional test reports directory
+   */
+  public static final String FUNCTIONAL_TEST_REPORTS_DIR_NAME = 'functionalTest'
+
+  private void configureFunctionalTests() {
+    SourceSet functionalTestSourceSet = project.convention.getPlugin(JavaPluginConvention).with {
+      sourceSets.create(FUNCTIONAL_TEST_SOURCE_SET_NAME) { SourceSet sourceSet ->
+        sourceSet.java.srcDir project.file("src/$FUNCTIONAL_TEST_SRC_DIR_NAME/java")
+        sourceSet.resources.srcDir project.file("src/$FUNCTIONAL_TEST_SRC_DIR_NAME/resources")
+
+        configureIntegrationTestSourceSetClasspath sourceSet
+      }
+    }
+
+    Test functionalTestTask = project.tasks.create(FUNCTIONAL_TEST_TASK_NAME, Test) { Test task ->
+      task.with {
+        group = 'Verification'
+        description = 'Runs functional tests'
+        testClassesDirs = project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(FUNCTIONAL_TEST_SOURCE_SET_NAME).output.classesDirs
+        classpath = project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(FUNCTIONAL_TEST_SOURCE_SET_NAME).runtimeClasspath
+        reports.junitXml.setDestination new File(project.convention.getPlugin(ProjectConvention).xmlReportsDir, FUNCTIONAL_TEST_REPORTS_DIR_NAME)
+        reports.html.setDestination new File(project.convention.getPlugin(ProjectConvention).htmlReportsDir, FUNCTIONAL_TEST_REPORTS_DIR_NAME)
+      }
+    }
+
+    addJUnitDependency functionalTestSourceSet
+    addSpockDependency functionalTestSourceSet, functionalTestTask
   }
 
   /*

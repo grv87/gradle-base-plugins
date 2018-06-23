@@ -47,9 +47,9 @@ contacts {
   }
 }
 
-apply from: "${project.ext.rootDir}/dependencies-compile.gradle"
+apply from: "${ project.ext.rootDir }/dependencies-compile.gradle"
 
-sourceSets.main.groovy.srcDirs << ["${project.ext.rootDir}/src/plugin-dependencies/groovy"]
+sourceSets.main.groovy.srcDirs << ["${ project.ext.rootDir }/src/plugin-dependencies/groovy"]
 
 /*tasks['groovydoc'].with {
   Closure addLinks = { List dependencies ->
@@ -68,7 +68,7 @@ sourceSets.main.groovy.srcDirs << ["${project.ext.rootDir}/src/plugin-dependenci
   use = true // TOTEST
 }*/
 
-tasks['codenarcMain'].ext.disabledRules = ['JavaIoPackageAccess']
+tasks['codenarcMain'].disabledRules = ['JavaIoPackageAccess']
 
 task('codenarcMainResources', type: CodeNarc) {
   for (File srcDir in sourceSets.main.resources.srcDirs) {

@@ -26,7 +26,7 @@ import org.gradle.api.internal.tasks.TaskExecutionOutcome;
  * Utils for {@link org.gradle.testkit.runner.GradleRunner}
  */
 @CompileStatic
-public final class GradleRunnerUtils {
+final class GradleRunnerUtils {
   /**
    * WORKAROUND:
    * No tasks are returned in {@link org.gradle.testkit.runner.BuildResult#taskPaths} dry-run mode.
@@ -36,12 +36,12 @@ public final class GradleRunnerUtils {
    * @return list of skipped task names
    * <grv87 2018-06-22>
    */
-  public static List<String> skippedTaskPathsGradleBugWorkaround(String output) {
+  static List<String> skippedTaskPathsGradleBugWorkaround(String output) {
     output.readLines().findAll { it.endsWith(" ${ TaskExecutionOutcome.SKIPPED.message }") }.collect { it[0..it.lastIndexOf(' ')] }
   }
 
   // Suppress default constructor for noninstantiability
-  public GradleRunnerUtils() {
+  GradleRunnerUtils() {
     throw new AssertionError()
   }
 }

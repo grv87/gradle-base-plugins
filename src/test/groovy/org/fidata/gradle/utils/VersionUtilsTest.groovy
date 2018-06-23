@@ -30,18 +30,18 @@ import junitparams.naming.TestCaseName
  * Unit tests for {@link VersionUtils} class
  */
 @RunWith(JUnitParamsRunner.class)
-public class VersionUtilsTest {
+class VersionUtilsTest {
   /**
    * Test method for {@link VersionUtils#isPreReleaseVersion(java.lang.String)}.
    */
   @Test
   @Parameters
   @TestCaseName('{index}: isPreReleaseVersion({0}) == {1}')
-  public void testIsPreReleaseVersion(final String version, final Boolean expectedResult) {
+  void testIsPreReleaseVersion(final String version, final Boolean expectedResult) {
     assertEquals expectedResult, VersionUtils.isPreReleaseVersion(version)
   }
 
-  public static Object[] parametersForTestIsPreReleaseVersion() {
+  static Object[] parametersForTestIsPreReleaseVersion() {
     [
       // SemVer
       [null                   , null],

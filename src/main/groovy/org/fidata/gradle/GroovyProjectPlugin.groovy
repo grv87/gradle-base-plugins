@@ -20,42 +20,22 @@
 package org.fidata.gradle
 
 import static GroovyProjectPluginDependencies.PLUGIN_DEPENDENCIES
-import static JDKProjectPlugin.FUNCTIONAL_TEST_SOURCE_SET_NAME
-import static JDKProjectPlugin.FUNCTIONAL_TEST_SRC_DIR_NAME
-import static JDKProjectPlugin.FUNCTIONAL_TEST_TASK_NAME
-import static JDKProjectPlugin.FUNCTIONAL_TEST_REPORTS_DIR_NAME
+import static org.gradle.api.plugins.JavaPlugin.API_ELEMENTS_CONFIGURATION_NAME
 import groovy.transform.CompileStatic
 import org.fidata.gradle.internal.AbstractPlugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.javadoc.Groovydoc
 import org.gradle.api.JavaVersion
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition
-import org.gradle.api.artifacts.ModuleDependency
 import org.gradle.api.plugins.JavaPluginConvention
-import org.gradle.api.tasks.SourceSet
-import org.gradle.api.internal.plugins.DslObject
-import org.gradle.api.tasks.GroovySourceSet
-import org.gradle.api.tasks.testing.Test
 import org.gradle.api.tasks.compile.GroovyCompile
 import org.ajoberstar.gradle.git.publish.GitPublishExtension
-import org.gradle.api.Action
-import org.gradle.api.file.CopySpec
 
 /**
  * Provides an environment for a Groovy project
  */
 @CompileStatic
-public final class GroovyProjectPlugin extends AbstractPlugin {
-  /**
-   * Name of Spock reports directory
-   */
-  public static final String SPOCK_REPORTS_DIR_NAME = 'spock'
-
-  /**
-   * List of CodeNarc rules disabled for Spock test sources
-   */
-  public static final List<String> SPOCK_DISABLED_CODENARC_RULES = ['MethodName', 'FactoryMethodName']
-
+final class GroovyProjectPlugin extends AbstractPlugin {
   @Override
   void apply(Project project) {
     super.apply(project)
@@ -67,12 +47,10 @@ public final class GroovyProjectPlugin extends AbstractPlugin {
       }
     }
 
-    String groovyVersion = GroovySystem.version
-
     project.dependencies.add('api', [
       group: 'org.codehaus.groovy',
       name: 'groovy-all',
-      version: groovyVersion
+      version: GroovySystem.version
     ])
     /*
      * CAVEAT:
@@ -80,63 +58,22 @@ public final class GroovyProjectPlugin extends AbstractPlugin {
      * https://docs.gradle.org/current/userguide/java_library_plugin.html#sec:java_library_known_issues_compat
      * <>
      */
-    project.configurations.getByName('apiElements').outgoing.variants.getByName('classes').artifact(
+    project.configurations.getByName(API_ELEMENTS_CONFIGURATION_NAME).outgoing.variants.getByName('classes').artifact(
       file: project.tasks.withType(GroovyCompile).getByName('compileGroovy').destinationDir,
       type: ArtifactTypeDefinition.JVM_CLASS_DIRECTORY,
       builtBy: project.tasks.withType(GroovyCompile).getByName('compileGroovy')
     )
 
-    /*project.dependencies.with {
-      add('testImplementation', [
-        group: 'org.spockframework',
-        name: 'spock-core',
-        version: "1.1-groovy-${ (groovyVersion =~ /^(\d+\.\d+)/).group(0) }"
-      ]) { ModuleDependency dependency ->
-        dependency.exclude(
-          group: 'org.codehaus.groovy',
-          module: 'groovy-all'
-        )
-      }
-      add('testRuntimeOnly', [
-        group: 'com.athaydes',
-        name: 'spock-reports',
-        version: 'latest.release'
-      ]) { ModuleDependency dependency ->
-        dependency.transitive = false
-      }
-      add('testImplementation', [
-        group: 'org.slf4j',
-        name: 'slf4j-api',
-        version: 'latest.release'
-      ])
-      add('testImplementation', [
-        group: 'org.slf4j',
-        name: 'slf4j-simple',
-        version: 'latest.release'
-      ])
-    }*/
-
-      /*new DslObject(project.convention.getPlugin(JavaPluginConvention)
-        .sourceSets.getByName(FUNCTIONAL_TEST_SOURCE_SET_NAME))
-    project.convention
-      .getPlugin(GroovySourceSet).groovy
-        .srcDir project.file("src/${ FUNCTIONAL_TEST_SRC_DIR_NAME }/groovy")*/ // ???
-
-    project.tasks.withType(Test).getByName(FUNCTIONAL_TEST_TASK_NAME).with { Test task ->
-      task.with {
-        reports.html.enabled = false
-        systemProperty 'com.athaydes.spockframework.report.outputDir', new File(project.convention.getPlugin(ProjectConvention).htmlReportsDir, "$SPOCK_REPORTS_DIR_NAME/${ FUNCTIONAL_TEST_REPORTS_DIR_NAME }").absolutePath
-      }
-    }
-
-    project.tasks.getByName("codenarc${ FUNCTIONAL_TEST_SOURCE_SET_NAME.capitalize() }").extensions.extraProperties['disabledRules'] = SPOCK_DISABLED_CODENARC_RULES
-
-    project.tasks.withType(Groovydoc) { Groovydoc task ->
-      task.with {
-        link "https://docs.oracle.com/javase/${ (JavaVersion.toVersion(project.convention.getPlugin(JavaPluginConvention).targetCompatibility) ?:  JavaVersion.current()).majorVersion }/docs/api/", 'java.'
-      }
-    }
+    configureGroovydoc()
 
     project.extensions.getByType(GitPublishExtension).contents.from(project.tasks.getByName('groovydoc')).into "$project.version/groovydoc"
+  }
+
+  private void configureGroovydoc() {
+    project.tasks.withType(Groovydoc) { Groovydoc task ->
+      task.with {
+        link "https://docs.oracle.com/javase/${ (JavaVersion.toVersion(project.convention.getPlugin(JavaPluginConvention).targetCompatibility) ?: JavaVersion.current()).majorVersion }/docs/api/", 'java.'
+      }
+    }
   }
 }

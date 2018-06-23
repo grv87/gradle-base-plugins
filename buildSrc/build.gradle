@@ -36,18 +36,18 @@ repositories {
   maven {
     url 'https://fidata.jfrog.io/fidata/plugins-snapshot/'
     credentials {
-      username = artifactoryUser
-      password = artifactoryPassword
+      username = project.property('artifactoryUser')
+      password = project.property('artifactoryPassword')
     }
   }
 }
 
-apply from: "${project.ext.rootDir}/dependencies-compile.gradle"
+apply from: "${ project.ext.rootDir }/dependencies-compile.gradle"
 
 sourceSets.main {
-  java.srcDirs = ["${project.ext.rootDir}/src/main/java"]
-  groovy.srcDirs = ["${project.ext.rootDir}/src/plugin-dependencies/groovy", "${project.ext.rootDir}/src/main/groovy"]
-  resources.srcDirs = ["${project.ext.rootDir}/src/main/resources"]
+  java.srcDirs = ["${ project.ext.rootDir }/src/main/java"]
+  groovy.srcDirs = ["${ project.ext.rootDir }/src/plugin-dependencies/groovy", "${ project.ext.rootDir }/src/main/groovy"]
+  resources.srcDirs = ["${ project.ext.rootDir }/src/main/resources"]
 }
 
 task('inputsOutputs').doLast {

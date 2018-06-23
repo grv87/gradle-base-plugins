@@ -31,7 +31,7 @@ import org.gradle.api.tasks.TaskAction
  */
 @CacheableTask
 @CompileStatic
-public class NoJekyll extends DefaultTask {
+class NoJekyll extends DefaultTask {
   /**
    * NoJekyll file name
    */
