@@ -22,9 +22,9 @@ plugins {
   id 'java'
   id 'groovy'
   id 'java-library'
-  id 'io.franzbecker.gradle-lombok' version '1.11'
   id 'java-gradle-plugin'
 }
+apply plugin: 'io.franzbecker.gradle-lombok'
 
 group = 'org.fidata.gradle'
 
@@ -36,8 +36,8 @@ repositories {
   maven {
     url 'https://fidata.jfrog.io/fidata/plugins-snapshot/'
     credentials {
-      username = project.property('artifactoryUser')
-      password = project.property('artifactoryPassword')
+      username = project.ext.artifactoryUser
+      password = project.ext.artifactoryPassword
     }
   }
 }
@@ -49,25 +49,3 @@ sourceSets.main {
   groovy.srcDirs = ["${ project.ext.rootDir }/src/plugin-dependencies/groovy", "${ project.ext.rootDir }/src/main/groovy"]
   resources.srcDirs = ["${ project.ext.rootDir }/src/main/resources"]
 }
-
-task('inputsOutputs').doLast {
-  for (t in tasks) {
-    if (t.inputs.hasInputs) {
-      for (f in t.inputs.files) {
-        logger.lifecycle(sprintf('%s input:\t%s', [t.name, f.path]))
-      }
-    }
-    if (t.outputs.hasOutput) {
-      for (f in t.outputs.files) {
-        logger.lifecycle(sprintf('%s output:\t%s', [t.name, f.path]))
-      }
-    }
-  }
-}
-tasks['check'].enabled = false
-tasks['test'].enabled = false
-
-/*
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-*/

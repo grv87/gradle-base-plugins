@@ -28,13 +28,23 @@ ext.rootDir = '../..'
 
 dependencyLocking.lockAllConfigurations()
 
+repositories {
+  maven {
+    url 'https://fidata.jfrog.io/fidata/plugins-release/'
+    credentials {
+      username = project.ext.artifactoryUser
+      password = project.ext.artifactoryPassword
+    }
+  }
+}
+
 dependencies {
   api localGroovy()
+  api gradleApi()
+  runtimeOnly group: 'io.franzbecker', name: 'gradle-lombok', version: 'latest.release'
 }
 
 sourceSets.main.groovy.srcDirs = ["${ project.ext.rootDir }/src/plugin-dependencies/groovy"]
 
 dependencies.runtime project(path)
 
-tasks['check'].enabled = false
-tasks['test'].enabled = false

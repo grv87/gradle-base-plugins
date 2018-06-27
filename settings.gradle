@@ -23,8 +23,8 @@ pluginManagement {
     maven {
       url 'https://fidata.jfrog.io/fidata/plugins-release/'
       credentials {
-        username = getProperty('artifactoryUser')
-        password = getProperty('artifactoryPassword')
+        username = settings.ext.artifactoryUser
+        password = settings.ext.artifactoryPassword
       }
     }
   }
@@ -37,9 +37,17 @@ buildCache {
   remote(HttpBuildCache) {
     url = 'https://fidata.jfrog.io/fidata/local.gradle.cache/'
     credentials {
-      username = getProperty('artifactoryUser')
-      password = getProperty('artifactoryPassword')
+      username = settings.ext.artifactoryUser
+      password = settings.ext.artifactoryPassword
     }
+    /*
+     * WORKAROUND:
+     * Jenkins doesn't set CI environment variable
+     * https://issues.jenkins-ci.org/browse/JENKINS-36707
+     * <grv87 2018-06-27>
+     */
     push = System.getenv().with { containsKey('CI') || containsKey('JENKINS_URL') }
   }
 }
+
+enableFeaturePreview('STABLE_PUBLISHING')

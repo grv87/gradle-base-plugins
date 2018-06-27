@@ -1,3 +1,8 @@
 gradlew text eol=lf
 gradlew.bat text eol=crlf
 **/gradle/dependency-locks/*.lockfile eol=lf
+# WORKAROUND:
+# Lombok doesn't work correctly with Windows line endings
+# https://github.com/rzwitserloot/lombok/issues/1745
+# <grv87 2018-06-27>
+*.java eol=lf
