@@ -18,10 +18,10 @@
  */
 package org.fidata.gradle;
 
-import org.fidata.gradle.internal.AbstractExtension;
-import org.gradle.api.Project;
 import lombok.Getter;
 import lombok.Setter;
+import org.fidata.gradle.internal.AbstractExtension;
+import org.gradle.api.Project;
 import java.io.File;
 import org.ajoberstar.gradle.git.release.base.ReleasePluginExtension;
 import com.github.zafarkhaja.semver.Version;
@@ -43,8 +43,12 @@ public class ProjectConvention extends AbstractExtension {
   /**
    * @return whether this run has release version (not snapshot)
    */
-  @Getter
-  private final boolean isRelease;
+  @Getter(lazy = true)
+  private final boolean isRelease = calculateIsRelease();
+
+  private boolean calculateIsRelease() {
+    return !project.getVersion().toString().endsWith("-SNAPSHOT");
+  }
 
   /**
    * @return changelog since last release
@@ -55,16 +59,8 @@ public class ProjectConvention extends AbstractExtension {
   private Writable generateChangeLog() {
     SemanticReleaseChangeLogService changeLogService = project.getExtensions().getByType(SemanticReleasePluginExtension.class).getChangeLog();
     Object version = project.getVersion();
-    /*
-     * CAVEAT:
-     * project.version is an instance of private class ReleasePluginExtension.DelayedVersion.
-     * See https://github.com/ajoberstar/gradle-git/issues/272
-     * We use Java reflection to get value of its fields
-     * <grv87 2018-02-17>
-     */
     ReleaseVersion inferredVersion = ((ReleasePluginExtension.DelayedVersion)version).getInferredVersion();
     return changeLogService.getChangeLog().call(changeLogService.commits(Version.valueOf(inferredVersion.getPreviousVersion())), inferredVersion);
-    // return null;
   }
 
   /**
@@ -95,8 +91,6 @@ public class ProjectConvention extends AbstractExtension {
     super();
 
     this.project = project;
-
-    isRelease = !project.getVersion().toString().endsWith("-SNAPSHOT");
 
     reportsDir = new File(project.getBuildDir(), "reports");
     xmlReportsDir = new File(reportsDir, "xml");
@@ -131,7 +125,7 @@ public class ProjectConvention extends AbstractExtension {
    * @return project license information
    */
   @Getter
-  private AnyLicenseInfo licenseInfo = new SpdxNoneLicense();
+  private SpdxListedLicense spdxListedLicense = new SpdxNoneLicense();
 
   /**
    * @return whether releases of this project are public
@@ -150,15 +144,15 @@ public class ProjectConvention extends AbstractExtension {
   }
 
   /**
-   * @return project website URL
    * @param websiteUrl project website URL
+   * @return project website URL
    */
   @Getter @Setter
   private String websiteUrl;
 
   /**
-   * @return issues URL
    * @param issuesUrl issues URL
+   * @return issues URL
    */
   @Getter @Setter
   private String issuesUrl;

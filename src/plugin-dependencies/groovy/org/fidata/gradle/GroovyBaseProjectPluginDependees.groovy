@@ -1,6 +1,6 @@
 #!/usr/bin/env groovy
 /*
- * GradlePluginPluginDependencies class
+ * GroovyBaseProjectPluginDependees class
  * Copyright © 2017-2018  Basil Peace
  *
  * This file is part of gradle-base-plugins.
@@ -20,35 +20,22 @@
 package org.fidata.gradle
 
 import groovy.transform.CompileStatic
+import org.fidata.gradle.utils.PluginDependee
 
 /**
- * List of dependencies of org.fidata.plugin plugin
+ * List of dependees of org.fidata.base.groovy plugin
  */
 @CompileStatic
-final class GradlePluginPluginDependencies {
+final class GroovyBaseProjectPluginDependees {
   /**
-   * List of plugin dependencies with IDs
+   * List of plugin dependees with IDs
    */
-  static final Map<String, ? extends Map> PLUGIN_DEPENDENCIES = [
-    'org.gradle.java-gradle-plugin': [:],
-    'org.ajoberstar.stutter': [
-      group: 'org.ajoberstar',
-      name: 'gradle-stutter',
-    ],
-    'org.ysb33r.gradletest': [
-      group: 'gradle.plugin.org.ysb33r.gradle',
-      name: 'gradletest',
-    ],
-    'com.gradle.plugin-publish': [
-      configurationName: 'implementation',
-      group: 'com.gradle.publish',
-      name: 'plugin-publish-plugin',
-      enabled: false
-    ],
+  static final Map<String, PluginDependee> PLUGIN_DEPENDEES = [
+    'org.gradle.groovy-base': new PluginDependee(),
   ]
 
   // Suppress default constructor for noninstantiability
-  private GradlePluginPluginDependencies() {
+  private GroovyBaseProjectPluginDependees() {
     throw new AssertionError()
   }
 }

@@ -1,7 +1,7 @@
 #!/usr/bin/env groovy
 /*
  * CodeNarc rules
- * Copyright © 2017  Basil Peace
+ * Copyright © 2017-2018  Basil Peace
  *
  * This file is part of gradle-base-plugins.
  *
@@ -35,6 +35,7 @@ ruleset {
   }
   ruleset('rulesets/exceptions.xml')
   ruleset('rulesets/formatting.xml') {
+    Indentation(spacesPerIndentLevel: 2)
     LineLength(enabled: false)
     SpaceAroundMapEntryColon(enabled: false)
     SpaceAfterClosingBrace(enabled: false)

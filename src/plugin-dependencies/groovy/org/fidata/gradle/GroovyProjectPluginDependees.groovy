@@ -1,5 +1,6 @@
+#!/usr/bin/env groovy
 /*
- * ResignGitCommit task class
+ * GroovyProjectPluginDependees class
  * Copyright © 2017-2018  Basil Peace
  *
  * This file is part of gradle-base-plugins.
@@ -16,30 +17,25 @@
  * implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-package org.fidata.gradle.tasks
+package org.fidata.gradle
 
 import groovy.transform.CompileStatic
-import org.gradle.api.DefaultTask
-import org.gradle.api.tasks.TaskAction
-import org.gradle.process.ExecSpec
+import org.fidata.gradle.utils.PluginDependee
 
 /**
- * Amends previous git commit adding sign to it ("resigns" commit)
- *
- * WORKAROUND:
- * This is necessary since JGit doesn't support signed commits yet.
- * See https://bugs.eclipse.org/bugs/show_bug.cgi?id=382212
- * <grv87 2018-06-22>
+ * List of dependees of org.fidata.project.groovy plugin
  */
 @CompileStatic
-class ResignGitCommit extends DefaultTask {
+final class GroovyProjectPluginDependees {
   /**
-   * Resigns previous git commit
+   * List of plugin dependees with IDs
    */
-  @TaskAction
-  void resign() {
-    project.exec { ExecSpec execSpec ->
-      execSpec.commandLine 'git', 'commit', '--amend', '--no-edit', "--gpg-sign=${ project.extensions.extraProperties['gpgKeyId'] }"
-    }
+  static final Map<String, PluginDependee> PLUGIN_DEPENDEES = [
+    'org.gradle.groovy': new PluginDependee(),
+  ]
+
+  // Suppress default constructor for noninstantiability
+  private GroovyProjectPluginDependees() {
+    throw new AssertionError()
   }
 }

@@ -19,7 +19,6 @@
 package org.fidata.gradle.tasks
 
 import groovy.transform.CompileStatic
-import java.io.File
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.OutputFile
@@ -44,7 +43,7 @@ class NoJekyll extends DefaultTask {
    */
   @Internal
   File getDestinationDir() {
-    return destinationDir
+    destinationDir
   }
 
   /**
@@ -62,7 +61,7 @@ class NoJekyll extends DefaultTask {
    */
   @OutputFile
   File getDestinationFile() {
-    return destinationFile
+    destinationFile
   }
 
   /**

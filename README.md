@@ -24,75 +24,106 @@ General, language-agnostic project.
 
 Basic development cycle is `build` → `check` → `release`.
 
-`build`, `check` and `clean` tasks are provided by applied
+`build`, `check` and, also, `clean` tasks are provided by applied
 `lifecycle-base` plugin. In original `lifecycle-base` plugin
 `build` task depends on `check` task.
 This plugin changes this behavior.
 
-`check` task depends on all `Test` tasks and new `lint` task.
-
 `release` task is provided by applied
 [`de.gliderpilot.semantic-release` plugin](https://github.com/FIDATA/gradle-semantic-release-plugin).
 
-### Build Tools Lifecycle
+### Prerequisites Lifecycle
 
-Plugin provides tasks for dealing with build tools managed by Gradle,
-Bundler, NPM and similar tools:
+*   Provides tasks for dealing with prerequisites managed by Gradle,
+    Bundler, NPM and similar tools:
 
-*	`buildToolsInstall` - install build tools once after project clone.
+    *	`prerequisitesInstall` - install prerequisites once
+    after project clone
 
-*	`buildToolsUpdate` - updates build tools that could be updated
-	automatically.
+    *	`prerequisitesUpdate` - updates prerequisites that could be updated
+        automatically
 
-	This task should be run with `--write-locks` parameter.
-	We could set this parameter in plugin, but this still wouldn't work
-	for `buildSrc` projects.
+        This task should be run with `--write-locks` parameter.
+        We could set this parameter in plugin, but this still wouldn't work
+        for `buildSrc` projects.
 
-*	`buildToolsOutdated` - shows outdated build tools that could not be
-	updated automatically and/or have version restrictions. Developer
-	have to update them manually.
+    *	`prerequisitesOutdated` - shows outdated prerequisites
+        that could not be updated automatically and/or have version
+        restrictions. Developer have to update them manually
 
-The following plugins are used:
+        For Gradle dependencies
+        [`com.github.ben-manes.versions` plugin](https://github.com/ben-manes/gradle-versions-plugin)
+        is uses.
+        There is a missing feature in this plugin:
+        `dependencyUpdates` task doesn't fail whenever dependencies
+        are not up-to-date.
+        See https://github.com/ben-manes/gradle-versions-plugin/issues/191
+        and https://github.com/ben-manes/gradle-versions-plugin/issues/192
+        for discussion.
+        This will be resolved in the future.
 
-*	[`com.github.ben-manes.versions` plugin](https://github.com/ben-manes/gradle-versions-plugin)
+*   Configures `wrapper` task to specific Gradle version.
+    Since this task should be run twice it is not included
+    in `prerequisitesUpdate` and should be run manually
 
-	There is a missing feature in this plugin: `dependencyUpdates` task doesn't fail
-	whenever dependencies are not up-to-date.
-	See https://github.com/ben-manes/gradle-versions-plugin/issues/191
-	and https://github.com/ben-manes/gradle-versions-plugin/issues/192
-	for discussion.
-	This will be resolved in the future.
+### Dependency Resolution
 
-Plugin also configures dependency resolution changing
-[Ivy status](http://ant.apache.org/ivy/history/latest-milestone/terminology.html#status)
-from `release` to `milestone` for artifacts having pre-release labels
-in version.
+*	Applies and configures
+    [`com.jfrog.artifactory` plugin](https://www.jfrog.com/confluence/display/RTF/Gradle+Artifactory+Plugin)
+
+    Allows us to resolve artifacts from
+    [FIDATA Artifactory](https://artifactory.fidata.org/), and also
+    to publish build info there.
+
+*   Turns off changing modules caching, so that SNAPSHOT dependencies
+    are updated on each run
+
+*   Plugin configures dependency resolution changing
+    [Ivy status](http://ant.apache.org/ivy/history/latest-milestone/terminology.html#status)
+    from `release` to `milestone` for artifacts having pre-release labels
+    in version
 
 ### Documentation
 
 *	Applies and configures
 	[`org.ajoberstar.git-publish` plugin](https://github.com/ajoberstar/gradle-git-publish).
-	allowing to publish documentation to GitHub pages.
+	allowing to publish documentation to GitHub pages
 
 *	Provides `noJekyll` task that generates `.nojekyll` file to
-	[turn off Jekyll processing](https://github.com/blog/572-bypassing-jekyll-on-github-pages).
+	[turn off Jekyll processing](https://github.com/blog/572-bypassing-jekyll-on-github-pages)
 
 ### Code Quality
 
 *	Provides `lint` task
+    `check` task depends on all `Test` tasks and new `lint` task.
 
 *	Applies
 [`codenarc` plugin](https://docs.gradle.org/current/userguide/codenarc_plugin.html)
 
 *	Provides `codenarc` task that runs all CodeNarc tasks.
-	Includes this task in execution list for `lint` task.
+	Includes this task in execution list for `lint` task
 
 *	Provides `codenarcBuildSrc` task for `build.gradle` itself
-	and accompanying Groovy scripts.
+	and accompanying Groovy scripts
 
 *	Sets default configuration for all `codenarc` tasks.
 	Adds `disabledRules` property to each task, so that specific rules
 	could be disabled per task
+
+### Artifacts Publishing
+
+*	Applies
+	[`signing` plugin](https://docs.gradle.org/current/userguide/signing_plugin.html)
+
+*	Provides read-only `isRelease` and `changeLog` project properties
+	for working with semantic release
+
+*	Provides `publicReleases` project property used by other plugins
+
+	Setting it to true turns on all public-release tasks: publishing
+	artifacts to Maven Central, JCenter and so on.
+
+	By default it is false.
 
 ### Reports
 
@@ -103,94 +134,93 @@ in version.
 	*	`txtReportsDir`
 
 *	Applies and configures `reporting-base` plugin. Redirects
-	all reports	to `build/reports/<format>` directory.
+	all reports	to `build/reports/<format>` directory
 
 	<BLOCKED: grv87 2018-06-19>
 	Known limitation: `gradle --profile` reports are not redirected.
 	They stay in `build/reports/profile` directory.
-	See https://github.com/FIDATA/gradle-base-plugins/issues/1.
+	See https://github.com/FIDATA/gradle-base-plugins/issues/1
 
 ### Build Diagnostics and Troubleshooting
 
 *	Applies plugins:
 	*	[`project-report`](https://docs.gradle.org/current/userguide/project_reports_plugin.html)
 
-		Provides `projectReport` and other tasks
+		Provides `projectReport` and other tasks.
 
 	*	[`cz.malohlava`](https://github.com/mmalohlava/gradle-visteg)
 
-		Generates dependency graph in Graphviz format
+		Generates dependency graph in Graphviz format.
 
 	*	[`com.dorongold.task-tree`](https://github.com/dorongold/gradle-task-tree)
 
-		Provides `taskTree` task
+		Provides `taskTree` task.
 
 *	Provides `inputsOutputs` task which generates reports about all task
-	file inputs and outputs.
+	file inputs and outputs
 
 All these tasks are put into `Diagnostics` group.
 
 ### Other features
 
-*	Sets `group` to `org.fidata` if it hasn't been set already.
+*	Sets `group` to `org.fidata` if it hasn't been set already
 
-*	Provides `license` property used by other plugins.
-	[SPDX license identifiers](https://spdx.org/licenses/)
-	are supported.
+*	Provides `license` property used by other plugins
+
+	It should be set with [SPDX license identifier](https://spdx.org/licenses/)
 
 *	Applies
 	[`nebula.contacts` plugin](https://github.com/nebula-plugins/gradle-contacts-plugin)
 
 	Provides `contacts` extension.
 
-*	Applies and configures
-	[`com.jfrog.artifactory` plugin](https://www.jfrog.com/confluence/display/RTF/Gradle+Artifactory+Plugin)
-
-	Allows us to resolve artifacts from
-	[FIDATA Artifactory](https://artifactory.fidata.org/).
-
-*	Applies
-	[`signing` plugin](https://docs.gradle.org/current/userguide/signing_plugin.html)
-
-*	Provides read-only `isRelease` and `changeLog` project properties
-	for work with semantic release.
-
-*	Provides `publicReleases` project property used by other plugins.
-
-	Setting it to true turns on all public-release tasks: publishing
-	artifacts to Maven Central, JCenter and so on.
-
-	By default it is false.
-
-*	Configures `wrapper` task to specific Gradle version.
-
 ### Supported Gradle and JDK versions:
 
 *	Requires Gradle >= 4.8
 *	Built and tested with JDK 8
 
-## `org.fidata.project.jdk` plugin
+## `org.fidata.base.jvm` plugin
 
-JDK-based project.
+Project which uses JVM-based language.
+This plugin should not be applied manually.
 
 Applies [`org.fidata.project` plugin](#orgfidataproject-plugin),
 and also:
-
 *	Applies
-	[`java`](https://docs.gradle.org/current/userguide/java_plugin.html)
+	[`java-base`](https://docs.gradle.org/current/userguide/java_plugin.html)
 	and
 	[`java-library`](https://docs.gradle.org/current/userguide/java_library_plugin.html)
 	plugins
 
-*	Adds license file into JAR `META-INF` directory
+*   Provides `jvm` extension.
+    This extension has one property `javadocLinks`.
+
+    It contains links to external documentation
+    used by `javadoc` and `groovydoc`.
+    If a dependency is added automatically, its documentation is also
+    added here automatically.
+    Otherwise, you add link manually, like this:
+    ```
+    jvm.javadocLinks['com.example.super.cool.external.library'] = uri('https://example.com/javadoc/com/example/super.cool.external.library/1.0/')
+    ```
+
+### Testing
 
 *	Adds [JUnit](http://junit.org/junit4/) dependency
 	to `testImplementation` configuration
 
-*	Adds and configures `functionalTest` task (framework-agnostic)
+*	Adds and configures `functionalTest` source set and task
+    which uses [Spock framework](https://spockframework.org/)
+
+	Also adds
+	[Spock Reports](https://github.com/renatoathaydes/spock-reports).
+
+	JUnit is also available whenever Spock is.
+
+### Artifact Publishing
 
 *	Applies
-	[`maven` plugin](https://docs.gradle.org/current/userguide/maven_plugin.html)
+	[`maven-publish` plugin](https://docs.gradle.org/current/userguide/publishing_maven.html)
 
 	Configures Maven publication to Artifactory.
 
@@ -200,30 +230,50 @@ and also:
 	[`com.jfrog.bintray` plugin](https://github.com/bintray/gradle-bintray-plugin)
 	and configures publication to JCenter
 
-*	Applies `javadoc.io-linker` plugin
+### Other features
 
-*	Adds `javadoc` output to GitHub Pages publication
+*	Adds license file into JAR `META-INF` directory
+
+## `org.fidata.project.java` plugin
+
+Java language project.
+
+Applies [`org.fidata.base.jvm` plugin](#orgfidatabasejvm-plugin),
+and also:
+
+*	Applies
+	[`java`](https://docs.gradle.org/current/userguide/java_plugin.html)
+	plugin
+
+*   Applies [`io.franzbecker.gradle-lombok` plugin](https://github.com/franzbecker/gradle-lombok)
+    providing [Lombok](https://projectlombok.org/) for Java sources
+
+*   Configures `javadoc` to parse sources through Delombok first
+
+*   Adds `javadoc` output to GitHub Pages publication
+
+## `org.fidata.base.groovy` plugin
+
+Project which uses Groovy language.
+This plugin should not be applied manually.
+
+Applies [`org.fidata.base.jvm` plugin](#orgfidatabasejvm-plugin),
+and also:
+
+*	Applies
+	[`groovy-base` plugin](https://docs.gradle.org/current/userguide/groovy_plugin.html)
 
 ## `org.fidata.project.groovy` plugin
 
 Groovy language project.
 
-Applies [`org.fidata.project.jdk` plugin](#orgfidataprojectjdk-plugin),
+Applies [`org.fidata.base.groovy` plugin](#orgfidatabasegroovy-plugin),
 and also:
 
 *	Applies
 	[`groovy` plugin](https://docs.gradle.org/current/userguide/groovy_plugin.html)
 
-	Adds Groovy to `api` configuration.
-
-*	Adds [Spock](https://spockframework.org/) dependency
-	to `testImplementation` configuration for functional testing
-
-	Configures `functionalTest` task to use Spock.
-
-*	Adds
-	[Spock Reports](https://github.com/renatoathaydes/spock-reports)
-	dependency to `testRuntimeOnly` configuration
+*   Adds local Groovy to `api` configuration
 
 *	Configures GroovyDoc:
 	*	Adds links to Java SE API documentation
@@ -233,8 +283,8 @@ and also:
 
 Gradle plugin project.
 
-This plugin depends on at least one of JDK-based project plugins:
-*	[`org.fidata.project.jdk`](#orgfidataprojectjdk-plugin)
+This plugin depends on at least one of JVM-based project plugins:
+*	[`org.fidata.project.java`](#orgfidataprojectjava-plugin)
 *	[`org.fidata.project.groovy`](#orgfidataprojectgroovy-plugin)
 
 or others developed later.
@@ -245,22 +295,26 @@ used in the project.
 *	Applies
 	[`java-gradle-plugin` plugin](https://docs.gradle.org/current/userguide/javaGradle_plugin.html)
 
-*	Applies
-	[`org.ajoberstar.stutter`](https://github.com/ajoberstar/gradle-stutter)
-	and
-	[`org.ysb33r.gradletest`](https://ysb33r.github.io/gradleTest/)
-	plugins
-
-	Allows us to test plugins under several different Gradle versions
+*	Configures `groovydoc` links to Gradle API
 
 *	Adds
 	[Gradle TestKit](https://docs.gradle.org/current/userguide/test_kit.html)
-	dependency to `testImplementation` configuration
+	dependency to `functionalTest` source set configurations
+
+*	Applies
+	[`org.ysb33r.gradletest`](https://ysb33rorg.gitlab.io/gradleTest/)
+	and
+	[`org.ajoberstar.stutter`](https://github.com/ajoberstar/gradle-stutter)
+	plugins
+
+	Provides and configures `gradleTest` and `compatTest` source sets.
+	Allows us to test plugins under several different Gradle versions.
 
 *	If `publicReleases` is on — applies
 	[`com.gradle.plugin-publish` plugin](https://plugins.gradle.org/docs/publish-plugin)
 
-*	Configures `groovydoc` links to Gradle API
+	`pluginBundle.plugins` should be configured manually. Other
+	properties are set automatically.
 
 # Properties
 
@@ -273,8 +327,8 @@ artifactoryPassword | It is actually API key
 gitUsername <td rowspan="2"> Git push during release |
 gitPassword |
 ghToken | Create release on GitHub |
-gpgKeyId                <td rowspan="2"> Sign artifacts, git commits and git tags |
-gpgKeySecretKeyRingFile |
+gpgKeyId             <td rowspan="2"> Sign artifacts, git commits and git tags |
+gpgSecretKeyRingFile |
 bintrayUser   <td rowspan="2"> Release to Bintray |
 bintrayAPIKey |
 

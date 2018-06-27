@@ -19,7 +19,6 @@
  */
 package org.fidata.gradle.utils
 
-import static org.junit.Assert.assertEquals
 import org.junit.runner.RunWith
 import org.junit.Test
 import junitparams.JUnitParamsRunner
@@ -29,7 +28,7 @@ import junitparams.naming.TestCaseName
 /**
  * Unit tests for {@link VersionUtils} class
  */
-@RunWith(JUnitParamsRunner.class)
+@RunWith(JUnitParamsRunner)
 class VersionUtilsTest {
   /**
    * Test method for {@link VersionUtils#isPreReleaseVersion(java.lang.String)}.
@@ -38,11 +37,11 @@ class VersionUtilsTest {
   @Parameters
   @TestCaseName('{index}: isPreReleaseVersion({0}) == {1}')
   void testIsPreReleaseVersion(final String version, final Boolean expectedResult) {
-    assertEquals expectedResult, VersionUtils.isPreReleaseVersion(version)
+    assert expectedResult == VersionUtils.isPreReleaseVersion(version)
   }
 
   static Object[] parametersForTestIsPreReleaseVersion() {
-    [
+    ([
       // SemVer
       [null                   , null],
       [''                     , null],
@@ -63,6 +62,6 @@ class VersionUtilsTest {
       ['2.0.0.CR1'            , true],
       // com.google.guava:guava
       ['23.5-jre'             , false],
-    ].collect { it.toArray(new Object[2]) }.toArray(new Object[0])
+    ]*.toArray(new Object[2])).toArray(new Object[0])
   }
 }

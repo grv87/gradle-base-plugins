@@ -19,21 +19,18 @@
  */
 package org.fidata.gradle
 
-import org.gradle.api.tasks.javadoc.Javadoc
-
-import static GroovyProjectPluginDependencies.PLUGIN_DEPENDENCIES
+import static org.gradle.api.plugins.JavaPlugin.API_CONFIGURATION_NAME
 import static org.gradle.api.plugins.JavaPlugin.API_ELEMENTS_CONFIGURATION_NAME
+import static org.gradle.api.plugins.JavaPlugin.JAVADOC_TASK_NAME
+import org.fidata.gradle.utils.PluginDependeesUtils
 import groovy.transform.CompileStatic
 import org.fidata.gradle.internal.AbstractPlugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.javadoc.Groovydoc
-import org.gradle.api.JavaVersion
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition
-import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.tasks.compile.GroovyCompile
 import org.ajoberstar.gradle.git.publish.GitPublishExtension
-
-import static org.gradle.api.plugins.JavaPlugin.JAVADOC_TASK_NAME
+import org.gradle.api.tasks.javadoc.Javadoc
 
 /**
  * Provides an environment for a Groovy project
@@ -43,19 +40,12 @@ final class GroovyProjectPlugin extends AbstractPlugin {
   @Override
   void apply(Project project) {
     super.apply(project)
-    project.plugins.with {
-      apply JDKProjectPlugin
 
-      PLUGIN_DEPENDENCIES.findAll() { Map.Entry<String, ? extends Map> depNotation -> depNotation.value.getOrDefault('enabled', true) }.keySet().each { String id ->
-        apply id
-      }
-    }
+    project.pluginManager.apply GroovyBasePlugin
+    PluginDependeesUtils.applyPlugins project, GroovyProjectPluginDependees.PLUGIN_DEPENDEES
 
-    project.dependencies.add('api', [
-      group: 'org.codehaus.groovy',
-      name: 'groovy-all',
-      version: GroovySystem.version
-    ])
+    project.plugins.getPlugin(GroovyBasePlugin).addGroovyDependency project.configurations.getByName(API_CONFIGURATION_NAME)
+
     /*
      * CAVEAT:
      * Compatibility with `java-library` plugin. See
@@ -68,24 +58,27 @@ final class GroovyProjectPlugin extends AbstractPlugin {
       builtBy: project.tasks.withType(GroovyCompile).getByName('compileGroovy')
     )
 
-    configureGroovydoc()
-
-    project.extensions.getByType(GitPublishExtension).contents.from(project.tasks.getByName('groovydoc')).into "$project.version/groovydoc"
+    configureDocumentation()
   }
 
-  private void configureGroovydoc() {
+  private void configureDocumentation() {
+    URI groovydocLink = project.uri("http://docs.groovy-lang.org/${ GroovySystem.version }/html/api/")
+    project.extensions.getByType(JVMBaseExtension).javadocLinks.with {
+      putAt 'groovy', groovydocLink
+      putAt 'org.codehaus.groovy', groovydocLink
+    }
+
     Javadoc javadoc = project.tasks.withType(Javadoc).getByName(JAVADOC_TASK_NAME)
-    javadoc.onlyIf{ false }
+    javadoc.onlyIf { false }
     project.tasks.withType(Groovydoc) { Groovydoc task ->
-      task.with {
-        source javadoc.source
-        project.plugins.getPlugin(JDKProjectPlugin).getJavadocLinks().each { String key, GString value ->
-          link value, "$key."
+      task.source javadoc.source
+      task.doFirst {
+        task.project.extensions.getByType(JVMBaseExtension).javadocLinks.each { String key, URI value ->
+          task.link value.toString(), "$key."
         }
-        GString groovydocLink = "http://docs.groovy-lang.org/${ GroovySystem.version }/html/api/"
-        link groovydocLink, "groovy."
-        link groovydocLink, "org.codehaus.groovy."
       }
     }
+
+    project.extensions.getByType(GitPublishExtension).contents.from(project.tasks.getByName('groovydoc')).into "$project.version/groovydoc"
   }
 }

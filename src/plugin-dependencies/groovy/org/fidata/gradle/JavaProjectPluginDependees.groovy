@@ -1,6 +1,6 @@
 #!/usr/bin/env groovy
 /*
- * GroovyProjectPluginDependencies class
+ * JavaProjectPluginDependees class
  * Copyright © 2017-2018  Basil Peace
  *
  * This file is part of gradle-base-plugins.
@@ -20,21 +20,27 @@
 package org.fidata.gradle
 
 import groovy.transform.CompileStatic
+import org.fidata.gradle.utils.PluginDependee
 
 /**
- * List of dependencies of org.fidata.project.groovy plugin
+ * List of dependees of org.fidata.project.java plugin
  */
 @CompileStatic
-final class GroovyProjectPluginDependencies {
+final class JavaProjectPluginDependees {
   /**
-   * List of plugin dependencies with IDs
+   * List of plugin dependees with IDs
    */
-  static final Map<String, ? extends Map> PLUGIN_DEPENDENCIES = [
-    'org.gradle.groovy': [:],
+  static final Map<String, PluginDependee> PLUGIN_DEPENDEES = [
+    'org.gradle.java': new PluginDependee(),
+    'io.franzbecker.gradle-lombok': new PluginDependee(
+      configurationName: 'implementation',
+      group: 'io.franzbecker',
+      module: 'gradle-lombok',
+    ),
   ]
 
   // Suppress default constructor for noninstantiability
-  private GroovyProjectPluginDependencies() {
+  private JavaProjectPluginDependees() {
     throw new AssertionError()
   }
 }

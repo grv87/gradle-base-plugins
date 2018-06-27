@@ -1,7 +1,7 @@
 #!/usr/bin/env groovy
 /*
- * GradleRunnerUtils class
- * Copyright © 2018  Basil Peace
+ * PluginDependeesUtils class
+ * Copyright © 2017-2018  Basil Peace
  *
  * This file is part of gradle-base-plugins.
  *
@@ -20,28 +20,26 @@
 package org.fidata.gradle.utils
 
 import groovy.transform.CompileStatic
-import org.gradle.api.internal.tasks.TaskExecutionOutcome;
+import org.gradle.api.Project
 
 /**
- * Utils for {@link org.gradle.testkit.runner.GradleRunner}
+ * Class to handle list of plugin dependees
  */
 @CompileStatic
-final class GradleRunnerUtils {
+final class PluginDependeesUtils {
   /**
-   * WORKAROUND:
-   * No tasks are returned in {@link org.gradle.testkit.runner.BuildResult#taskPaths} dry-run mode.
-   * https://github.com/gradle/gradle/issues/2732
-   * When this issue is fixed, <code>.taskPaths(TaskExecutionOutcome.SKIPPED)</code> should be used directly
-   * @param output Gradle dry-run output
-   * @return list of skipped task names
-   * <grv87 2018-06-22>
+   * Apply list of plugin dependees to the project
+   * @param project project
+   * @param pluginDependees list of plugin dependees
    */
-  static List<String> skippedTaskPathsGradleBugWorkaround(String output) {
-    output.readLines().findAll { it.endsWith(" ${ TaskExecutionOutcome.SKIPPED.message }") }.collect { it[0..it.lastIndexOf(' ')] }
+  static final void applyPlugins(Project project, Map<String, PluginDependee> pluginDependees) {
+    pluginDependees.findAll { String key, PluginDependee value -> value.enabled }.keySet().each { String id ->
+      project.pluginManager.apply id
+    }
   }
 
   // Suppress default constructor for noninstantiability
-  GradleRunnerUtils() {
+  private PluginDependeesUtils() {
     throw new AssertionError()
   }
 }

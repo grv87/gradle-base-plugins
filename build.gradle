@@ -18,7 +18,7 @@
  * permissions and limitations under the License.
  */
 plugins {
-  id 'org.fidata.project.jdk'
+  id 'org.fidata.project.java'
   id 'org.fidata.project.groovy'
   id 'org.fidata.plugin'
 }
@@ -29,15 +29,6 @@ ext.rootDir = '.'
 
 license = 'Apache-2.0'
 publicReleases = false
-
-stutter {
-  java(8) {
-    compatibleRange '4.8'
-  }
-  java(9) {
-    compatibleRange '4.8'
-  }
-}
 
 contacts {
   'grv87@yandex.ru' {
@@ -51,30 +42,55 @@ apply from: "${ project.ext.rootDir }/gradle/dependencies-compile.gradle"
 
 sourceSets.main.groovy.srcDirs += ["${ project.ext.rootDir }/src/plugin-dependencies/groovy"]
 
-dependencies {
-  testImplementation group: 'pl.pragmatists', name: 'JUnitParams', version: 'latest.release'
-}
-
-test {
-    testLogging {
-        exceptionFormat = 'full'
-    }
-}
-
-tasks['codenarcMain'].disabledRules = ['JavaIoPackageAccess']
-
-task('codenarcMainResources', type: CodeNarc) {
-  for (File srcDir in sourceSets.main.resources.srcDirs) {
-    source project.fileTree(dir: srcDir, includes: ['**/*.groovy'])
-  }
-}
-
 /*
  * WORKAROUND:
  * https://github.com/DanySK/javadoc.io-linker/issues/5
  * `org.danilopianini.javadoc.io-linker` plugin doesn't work with `java-library` plugin
  * <grv87 2018-06-23>
  */
-project.afterEvaluate {
-  tasks['groovydoc'].link "https://static.javadoc.io/org.spdx/spdx-tools/${ configurations.getByName('compileClasspath').resolvedConfiguration.firstLevelModuleDependencies.find { it.moduleGroup == 'org.spdx' && it.moduleName == 'spdx-tools' }.moduleVersion }/", 'org.spdx.'
+afterEvaluate {
+  jvm.javadocLinks['org.spdx'] = uri("https://static.javadoc.io/org.spdx/spdx-tools/${ configurations.getByName('compileClasspath').resolvedConfiguration.firstLevelModuleDependencies.find { it.moduleGroup == 'org.spdx' && it.moduleName == 'spdx-tools' }.moduleVersion }/")
 }
+
+dependencies {
+  testImplementation group: 'pl.pragmatists', name: 'JUnitParams', version: 'latest.release'
+}
+
+gradlePlugin {
+  testSourceSets sourceSets.functionalTest
+}
+
+stutter {
+  java(8) {
+    compatibleRange '4.8'
+  }
+  java(9) {
+    compatibleRange '4.8'
+  }
+}
+
+tasks.codenarcMain.disabledRules.add 'JavaIoPackageAccess'
+/*
+ * WORKAROUND:
+ * CodeNarc bug in org.fidata.gradle.GradlePluginPlugin:
+ * [SRC]import static JDKProjectPlugin.FUNCTIONAL_TEST_SOURCE_SET_NAME
+ * [MSG]The [JDKProjectPlugin] import is never referenced *
+ * While FUNCTIONAL_TEST_SOURCE_SET_NAME is really used in GString in the code
+ * <grv87 2018-06-26>
+ */
+tasks.codenarcMain.disabledRules.add 'UnusedImport'
+
+task('codenarcMainResources', type: CodeNarc) {
+  for (File srcDir in sourceSets.main.resources.srcDirs) {
+    source fileTree(dir: srcDir, includes: ['**/*.groovy'])
+  }
+  /*
+   * WORKAROUND:
+   * Indentation rule doesn't work correctly.
+   * https://github.com/CodeNarc/CodeNarc/issues/310
+   * <grv87 2018-06-26>
+   */
+  disabledRules.add 'Indentation'
+}
+
+println licenseInfo.toString()

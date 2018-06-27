@@ -19,25 +19,21 @@
  */
 package org.fidata.gradle
 
-import groovy.transform.PackageScope
-import org.gradle.api.JavaVersion
-import org.gradle.api.artifacts.repositories.MavenArtifactRepository
-import org.gradle.api.tasks.javadoc.Javadoc
-import org.gradle.external.javadoc.StandardJavadocDocletOptions
-import org.jfrog.gradle.plugin.artifactory.dsl.ArtifactoryPluginConvention
-import org.jfrog.gradle.plugin.artifactory.dsl.PublisherConfig
-import org.jfrog.gradle.plugin.artifactory.task.ArtifactoryTask
-
-import static JDKProjectPluginDependencies.PLUGIN_DEPENDENCIES
-import static org.gradle.api.tasks.SourceSet.TEST_SOURCE_SET_NAME
-import static org.gradle.api.plugins.JavaPlugin.COMPILE_JAVA_TASK_NAME
-import static org.gradle.api.plugins.JavaPlugin.JAVADOC_TASK_NAME
 import static org.gradle.api.plugins.JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME
 import static org.gradle.api.plugins.JavaPlugin.RUNTIME_ONLY_CONFIGURATION_NAME
+import static org.gradle.api.tasks.SourceSet.TEST_SOURCE_SET_NAME
+import static org.gradle.api.plugins.JavaPlugin.JAVADOC_TASK_NAME
 import static org.gradle.api.tasks.SourceSet.MAIN_SOURCE_SET_NAME
 import static org.ajoberstar.gradle.git.release.base.BaseReleasePlugin.RELEASE_TASK_NAME
 import static ProjectPlugin.LICENSE_FILE_NAMES
 import static ProjectPlugin.ARTIFACTORY_URL
+import static org.gradle.internal.FileUtils.toSafeFileName
+import org.fidata.gradle.utils.PluginDependeesUtils
+import org.gradle.api.publish.PublishingExtension
+import org.gradle.plugins.signing.SigningExtension
+import org.gradle.api.artifacts.repositories.MavenArtifactRepository
+import org.jfrog.gradle.plugin.artifactory.dsl.ArtifactoryPluginConvention
+import org.jfrog.gradle.plugin.artifactory.task.ArtifactoryTask
 import org.fidata.gradle.tasks.CodeNarcTaskConvention
 import org.gradle.api.artifacts.ModuleDependency
 import org.gradle.api.internal.plugins.DslObject
@@ -56,25 +52,21 @@ import org.gradle.api.reporting.ReportingExtension
 import org.ajoberstar.gradle.git.publish.GitPublishExtension
 import com.jfrog.bintray.gradle.BintrayExtension
 import com.jfrog.bintray.gradle.tasks.BintrayPublishTask
-import io.franzbecker.gradle.lombok.task.DelombokTask
-
-import static org.gradle.internal.FileUtils.toSafeFileName
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 /**
  * Provides an environment for a JDK project
  */
 @CompileStatic
-final class JDKProjectPlugin extends AbstractPlugin implements PropertyChangeListener {
+final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListener {
   @Override
   void apply(Project project) {
     super.apply(project)
-    project.plugins.with {
-      apply ProjectPlugin
 
-      PLUGIN_DEPENDENCIES.findAll() { Map.Entry<String, ? extends Map> depNotation -> depNotation.value.getOrDefault('enabled', true) }.keySet().each { String id ->
-        apply id
-      }
-    }
+    project.pluginManager.apply ProjectPlugin
+    PluginDependeesUtils.applyPlugins project, JVMBasePluginDependees.PLUGIN_DEPENDEES
+
+    project.extensions.add 'jvm', new JVMBaseExtension(project)
 
     project.convention.getPlugin(ProjectConvention).addPropertyChangeListener this
     configurePublicReleases()
@@ -83,22 +75,11 @@ final class JDKProjectPlugin extends AbstractPlugin implements PropertyChangeLis
       task.from(LICENSE_FILE_NAMES).into 'META-INF'
     }
 
-    configureJavadoc()
+    configureTesting()
 
-    configureDelombok()
+    configureDocumentation()
 
-    addJUnitDependency project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(TEST_SOURCE_SET_NAME)
-
-    configureFunctionalTests()
-
-    project.convention.getPlugin(JavaPluginConvention).testReportDirName = project.extensions.getByType(ReportingExtension).baseDir.toPath().relativize(new File(project.convention.getPlugin(ProjectConvention).htmlReportsDir, 'tests').toPath()).toString() // TODO: ???
-
-    // project.extensions.getByType(SigningExtension).sign project.extensions.getByType(PublishingExtension).publications
-    // TODO Caused by: org.gradle.api.InvalidUserDataException: Cannot configure the 'publishing' extension after it has been accessed.
-
-    configureArtifactory()
-
-    project.extensions.getByType(GitPublishExtension).contents.from(project.tasks.getByName(JAVADOC_TASK_NAME)).into "$project.version/javadoc"
+    configureArtifactsPublishing()
   }
 
   /**
@@ -122,33 +103,12 @@ final class JDKProjectPlugin extends AbstractPlugin implements PropertyChangeLis
     }
   }
 
-  public String DELOMBOK_TASK_NAME = 'delombok'
-
-  private void configureDelombok() {
-    DelombokTask delombokTask = project.tasks.create(DELOMBOK_TASK_NAME, DelombokTask) { DelombokTask task ->
-      task.with {
-        dependsOn project.tasks.getByName(COMPILE_JAVA_TASK_NAME)
-        File outputDir = new File(project.buildDir, 'delombok')
-        outputs.dir outputDir
-        project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(MAIN_SOURCE_SET_NAME).java.srcDirs.each { File dir ->
-          inputs.dir dir
-          args dir, "-d", outputDir
-        }
-        classpath project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(MAIN_SOURCE_SET_NAME).compileClasspath
-      }
-    }
-    project.tasks.withType(Javadoc).getByName(JAVADOC_TASK_NAME) { Javadoc task ->
-      task.dependsOn delombokTask
-      task.source = delombokTask.outputs
-    }
-  }
-
   /**
    * Adds JUnit dependency to specified source set configuration
    * @param sourceSet source set
    */
   void addJUnitDependency(SourceSet sourceSet) {
-    project.dependencies.add("${ sourceSet.name }${ IMPLEMENTATION_CONFIGURATION_NAME.capitalize() }", [
+    project.dependencies.add(sourceSet.implementationConfigurationName, [
       group: 'junit',
       name: 'junit',
       version: '[4.0,5.0)'
@@ -158,11 +118,11 @@ final class JDKProjectPlugin extends AbstractPlugin implements PropertyChangeLis
   /**
    * Adds Spock to specified source set and task
    * @param sourceSet source set
-   * @param task test task
+   * @param task test task.
    *        If null, task with the same name as source set is used
    */
   void addSpockDependency(SourceSet sourceSet, Test task = null) {
-    addSpockDependency sourceSet, [project.tasks.withType(Test).getByName(sourceSet.name)], Closure.IDENTITY
+    addSpockDependency sourceSet, [task ?: project.tasks.withType(Test).getByName(sourceSet.name)], Closure.IDENTITY
   }
 
   /**
@@ -172,37 +132,40 @@ final class JDKProjectPlugin extends AbstractPlugin implements PropertyChangeLis
    * @param reportDirNamer closure to set report directory name from task name
    */
   void addSpockDependency(SourceSet sourceSet, Iterable<Test> tasks, Closure<GString> reportDirNamer) {
-    project.plugins.apply 'org.gradle.groovy'
-    String sourceSetName = sourceSet.name
+    addJUnitDependency sourceSet
+
+    project.pluginManager.apply GroovyBasePlugin
+
     project.dependencies.with {
-      add("$sourceSetName${ IMPLEMENTATION_CONFIGURATION_NAME.capitalize() }", [
-              group  : 'org.spockframework',
-              name   : 'spock-core',
-              version: "1.1-groovy-2.4" // ${ (GroovySystem.version =~ /^(\d+\.\d+)/).group(0) } // TODO: ???
+      add(sourceSet.implementationConfigurationName, [
+        group  : 'org.spockframework',
+        name   : 'spock-core',
+        version: "1.1-groovy-${ ((List<String>)(GroovySystem.version =~ /^(\d+\.\d+)/)[0])[1] }"
       ]) { ModuleDependency dependency ->
         dependency.exclude(
-                group: 'org.codehaus.groovy',
-                module: 'groovy-all'
+          group: 'org.codehaus.groovy',
+          module: 'groovy-all'
         )
       }
-      add("$sourceSetName${ RUNTIME_ONLY_CONFIGURATION_NAME.capitalize() }", [
-              group  : 'com.athaydes',
-              name   : 'spock-reports',
-              version: 'latest.release'
+      add(sourceSet.runtimeOnlyConfigurationName, [
+        group  : 'com.athaydes',
+        name   : 'spock-reports',
+        version: 'latest.release'
       ]) { ModuleDependency dependency ->
         dependency.transitive = false
       }
-      add("$sourceSetName${ IMPLEMENTATION_CONFIGURATION_NAME.capitalize() }", [
-              group  : 'org.slf4j',
-              name   : 'slf4j-api',
-              version: 'latest.release'
+      add(sourceSet.implementationConfigurationName, [
+        group  : 'org.slf4j',
+        name   : 'slf4j-api',
+        version: 'latest.release'
       ])
-      add("$sourceSetName${ IMPLEMENTATION_CONFIGURATION_NAME.capitalize() }", [
-              group  : 'org.slf4j',
-              name   : 'slf4j-simple',
-              version: 'latest.release'
+      add(sourceSet.implementationConfigurationName, [
+        group  : 'org.slf4j',
+        name   : 'slf4j-simple',
+        version: 'latest.release'
       ])
     }
+    project.plugins.getPlugin(GroovyBasePlugin).addGroovyDependency project.configurations.getByName(sourceSet.implementationConfigurationName)
 
     tasks.each { Test task ->
       task.with {
@@ -211,20 +174,20 @@ final class JDKProjectPlugin extends AbstractPlugin implements PropertyChangeLis
       }
     }
 
-    new DslObject(project.tasks.getByName("codenarc${ sourceSetName.capitalize() }")).convention.getPlugin(CodeNarcTaskConvention).disabledRules.addAll(['MethodName', 'FactoryMethodName'])
+    new DslObject(project.tasks.getByName("codenarc${ sourceSet.name.capitalize() }")).convention.getPlugin(CodeNarcTaskConvention).disabledRules.addAll(['MethodName', 'FactoryMethodName', 'JUnitPublicProperty', 'JUnitPublicNonTestMethod', /* WORKAROUND: https://github.com/CodeNarc/CodeNarc/issues/308 <grv87 2018-06-26> */ 'Indentation' ])
   }
 
   /**
    * Configures integration test source set classpath
-   * See https://docs.gradle.org/current/userguide/java_testing.html#sec:configuring_java_integration_tests
+   * See <a href="https://docs.gradle.org/current/userguide/java_testing.html#sec:configuring_java_integration_tests">https://docs.gradle.org/current/userguide/java_testing.html#sec:configuring_java_integration_tests</a>
    * @param sourceSet source set to configure
-   * @return
    */
   void configureIntegrationTestSourceSetClasspath(SourceSet sourceSet) {
-    sourceSet.compileClasspath += project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(MAIN_SOURCE_SET_NAME).output
-    sourceSet.runtimeClasspath += sourceSet.output + sourceSet.compileClasspath
+    project.configurations.getByName(sourceSet.implementationConfigurationName).extendsFrom project.configurations.getByName(IMPLEMENTATION_CONFIGURATION_NAME)
+    project.configurations.getByName(sourceSet.runtimeOnlyConfigurationName).extendsFrom project.configurations.getByName(RUNTIME_ONLY_CONFIGURATION_NAME)
 
-    // project.configurations["${ sourceSet.name }${ IMPLEMENTATION_CONFIGURATION_NAME.capitalize() }"].extendsFrom project.configurations['implementation']
+    sourceSet.compileClasspath += project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(MAIN_SOURCE_SET_NAME).output
+    sourceSet.runtimeClasspath += sourceSet.output + project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(MAIN_SOURCE_SET_NAME).output
   }
 
   /**
@@ -244,6 +207,14 @@ final class JDKProjectPlugin extends AbstractPlugin implements PropertyChangeLis
    */
   public static final String FUNCTIONAL_TEST_REPORTS_DIR_NAME = 'functionalTest'
 
+  /*
+   * WORKAROUND:
+   * Groovy error. Usage of `destination =` instead of setDestination leads to error:
+   * [Static type checking] - Cannot set read-only property: destination
+   * Also may be CodeNarc error
+   * <grv87 2018-06-26>
+   */
+  @SuppressWarnings(['UnnecessarySetter'])
   private void configureFunctionalTests() {
     SourceSet functionalTestSourceSet = project.convention.getPlugin(JavaPluginConvention).with {
       sourceSets.create(FUNCTIONAL_TEST_SOURCE_SET_NAME) { SourceSet sourceSet ->
@@ -265,45 +236,48 @@ final class JDKProjectPlugin extends AbstractPlugin implements PropertyChangeLis
       }
     }
 
-    addJUnitDependency functionalTestSourceSet
     addSpockDependency functionalTestSourceSet, functionalTestTask
   }
 
-  private void configureArtifactory() {
-    if (project.hasProperty('artifactoryUser') && project.hasProperty('artifactoryPassword')) {
-      project.convention.getPlugin(ArtifactoryPluginConvention).clientConfig.publisher.with {
-        repoKey = project.convention.getPlugin(ProjectConvention).isRelease ? 'libs-release-local' : 'libs-snapshot-local'
-        username = project.property('artifactoryUser')
-        password = project.property('artifactoryPassword')
-        maven = true
-        /*defaults {
-            // publications
-            publishConfigs 'archive' // Configurations
-            // publications('mavenGroovy') // TODO
-          }*/
-      }
-      project.tasks.getByName(RELEASE_TASK_NAME).finalizedBy project.tasks.withType(ArtifactoryTask)
-      project.repositories.maven { MavenArtifactRepository mavenArtifactRepository ->
-        mavenArtifactRepository.with {
-          url = "$ARTIFACTORY_URL/${ project.convention.getPlugin(ProjectConvention).isRelease ? 'libs-release' : 'libs-snapshot' }/"
-          credentials.username = project.property('artifactoryUser')
-          credentials.password = project.property('artifactoryPassword')
-        }
-      }
-    } else {
-      project.repositories.with {
-        jcenter()
-        mavenCentral()
-      }
+  private void configureTesting() {
+    project.convention.getPlugin(JavaPluginConvention).testReportDirName = project.extensions.getByType(ReportingExtension).baseDir.toPath().relativize(new File(project.convention.getPlugin(ProjectConvention).htmlReportsDir, 'tests').toPath()).toString() // TODO: ???
+    project.tasks.withType(Test) { Test task ->
+      task.testLogging.exceptionFormat = TestExceptionFormat.FULL
     }
+
+    addJUnitDependency project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(TEST_SOURCE_SET_NAME)
+
+    configureFunctionalTests()
   }
 
+  private void configureArtifactory() {
+    project.convention.getPlugin(ArtifactoryPluginConvention).with {
+      clientConfig.publisher.repoKey = "libs-${ project.convention.getPlugin(ProjectConvention).isRelease ? 'release' : 'snapshot' }-local"
+      clientConfig.publisher.username = project.extensions.extraProperties['artifactoryUser']
+      clientConfig.publisher.password = project.extensions.extraProperties['artifactoryPassword']
+      clientConfig.publisher.maven = true
+      /*defaults {
+          // publications
+          publishConfigs 'archive' // Configurations
+          // publications('mavenGroovy') // TODO
+        }*/
+    }
+    project.tasks.getByName(RELEASE_TASK_NAME).finalizedBy project.tasks.withType(ArtifactoryTask)
+  }
+
+  private void configureArtifactsPublishing() {
+    // project.extensions.getByType(SigningExtension).sign project.extensions.getByType(PublishingExtension).publications TODO
+
+    configureArtifactory()
+  }
+
+  @SuppressWarnings(['UnnecessaryObjectReferences'])
   private void configureBintray() {
-    project.plugins.apply 'com.jfrog.bintray'
+    project.pluginManager.apply 'com.jfrog.bintray'
 
     AnyLicenseInfo licenseInfo = project.convention.getPlugin(ProjectConvention).licenseInfo
-    List<String> licenseList = new ArrayList<String>()
-    if (licenseInfo instanceof LicenseSet) {
+    List<String> licenseList = []
+    if (LicenseSet.isInstance(licenseInfo)) {
       for (AnyLicenseInfo license in ((LicenseSet)licenseInfo).members) {
         licenseList.add license.toString()
       }
@@ -312,14 +286,14 @@ final class JDKProjectPlugin extends AbstractPlugin implements PropertyChangeLis
     }
 
     project.extensions.getByType(BintrayExtension).with {
-      user = project.property('bintrayUser').toString()
-      key = project.property('bintrayAPIKey').toString()
+      user = project.extensions.extraProperties['bintrayUser'].toString()
+      key = project.extensions.extraProperties['bintrayAPIKey'].toString()
       pkg.repo = 'generic'
       pkg.name = 'gradle-project'
       pkg.userOrg = 'fidata'
       pkg.licenses = licenseList.toArray(new String[licenseList.size()])
       pkg.vcsUrl = project.convention.getPlugin(ProjectConvention).vcsUrl
-      pkg.desc = '' // Version description
+      pkg.desc = project.convention.getPlugin(ProjectConvention).changeLog.toString()
       pkg.version.name = ''
       pkg.version.vcsTag = '' // TODO
       pkg.version.gpg.sign = true // TODO ?
@@ -328,19 +302,7 @@ final class JDKProjectPlugin extends AbstractPlugin implements PropertyChangeLis
     project.tasks.getByName(RELEASE_TASK_NAME).finalizedBy project.tasks.withType(BintrayPublishTask)
   }
 
-  @PackageScope
-  Map<String, GString> getJavadocLinks() {
-    ['java': "https://docs.oracle.com/javase/${ (JavaVersion.toVersion(project.convention.getPlugin(JavaPluginConvention).targetCompatibility) ?: JavaVersion.current()).majorVersion }/docs/api/"]
+  private void configureDocumentation() {
+    project.extensions.getByType(GitPublishExtension).contents.from(project.tasks.getByName(JAVADOC_TASK_NAME)).into "$project.version/javadoc"
   }
-
-  private void configureJavadoc() {
-    project.tasks.withType(Javadoc) { Javadoc task ->
-      task.options { StandardJavadocDocletOptions options ->
-        getJavadocLinks().values().each {
-          options.links it
-        }
-      }
-    }
-  }
-
 }

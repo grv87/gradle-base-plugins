@@ -17,39 +17,70 @@
  * implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-
-configurations.all { resolutionStrategy.cacheChangingModulesFor 0, 'seconds' }
+import org.fidata.gradle.utils.PluginDependee
+import org.fidata.gradle.utils.PluginDependeeExclusion
 
 dependencies {
-  Closure addPluginDependencies = { Map pluginDependencies ->
-    pluginDependencies.findAll { !it.key.startsWith('org.gradle.') }*.value.each { Map depNotation ->
-      add(
-        depNotation.getOrDefault('configurationName', 'runtimeOnly'),
-        [
-          group: depNotation['group'],
-          name: depNotation['name'],
-          version: depNotation.getOrDefault('version', 'latest.release')
-        ]
-      ) {
-        depNotation.get('excludes', []).each { Map exclNotation ->
-          exclude(
-            group: exclNotation['group'],
-            module: exclNotation['module']
-          )
+  Closure addDependencies = { Map<String, PluginDependee> pluginDependees ->
+    pluginDependees.findAll { !it.key.startsWith('org.gradle.') }*.value.findAll().each { PluginDependee pluginDependee ->
+      pluginDependee.with {
+        add(
+          configurationName, [
+            group  : group,
+            name   : module,
+            version: version
+          ]
+        ) { ExternalModuleDependency dependency ->
+          excludes?.each { PluginDependeeExclusion exclusion ->
+            dependency.exclude(
+              group: exclusion.group,
+              module: exclusion.module
+            )
+          }
         }
       }
     }
   }
 
-  addPluginDependencies org.fidata.gradle.ProjectPluginDependencies.PLUGIN_DEPENDENCIES
-  addPluginDependencies org.fidata.gradle.JDKProjectPluginDependencies.PLUGIN_DEPENDENCIES
-  addPluginDependencies org.fidata.gradle.GroovyProjectPluginDependencies.PLUGIN_DEPENDENCIES
-  addPluginDependencies org.fidata.gradle.GradlePluginPluginDependencies.PLUGIN_DEPENDENCIES
+  addDependencies org.fidata.gradle.ProjectPluginDependees.PLUGIN_DEPENDEES
+  addDependencies org.fidata.gradle.JVMBasePluginDependees.PLUGIN_DEPENDEES
+  addDependencies org.fidata.gradle.JavaProjectPluginDependees.PLUGIN_DEPENDEES
+  addDependencies org.fidata.gradle.GroovyBaseProjectPluginDependees.PLUGIN_DEPENDEES
+  addDependencies org.fidata.gradle.GradlePluginPluginDependees.PLUGIN_DEPENDEES
 
-  implementation(group: 'com.google.guava', name: 'guava', version: '23.5-jre')
+  api(group: 'org.spdx', name: 'spdx-tools', version: 'latest.release')
   implementation(group: 'com.github.zafarkhaja', name: 'java-semver', version: 'latest.release')
-  api(group: 'org.spdx', name: 'spdx-tools', version: 'latest.release') {
-    exclude group: 'xerces', module: 'xercesImpl'
+  implementation(group: 'com.google.guava', name: 'guava', version: '25.1-jre')
+
+  /*
+   * WORKAROUND:
+   * org.codehaus.plexus:plexus-container-default still has google-collections dependency
+   * which is superseded by Guava
+   * <grv87 2018-06-24>
+   */
+  modules.module('com.google.collections:google-collections') {
+    replacedBy('com.google.guava:guava', 'google-collections is now part of Guava')
   }
-  api(group: 'xerces', name: 'xercesImpl', version: 'latest.release')
+}
+configurations.all {
+  resolutionStrategy {
+    force 'xerces:xercesImpl:[2,3)'
+    /*
+     * WORKAROUND:
+     * https://github.com/spdx/tools/issues/163
+     * spdx-tools uses old json-simple dependency which includes JUnit dependency and has a lot of other issues
+     * <grv87 2018-06-24>
+     */
+    dependencySubstitution {
+      substitute module('com.googlecode.json-simple:json-simple') with module('com.github.cliftonlabs:json-simple:[2,3)')
+    }
+    /*
+     * WORKAROUND:
+     * org.apache.maven:maven-ant-tasks has old plexus dependencies which have undesired JUnit dependency
+     * <grv87 2018-06-24>
+     */
+    force 'org.codehaus.plexus:plexus-container-default:[1,2)'
+    force 'org.codehaus.plexus:plexus-component-api:[1,2)'
+    force 'org.projectlombok:lombok:[1,2)'
+  }
 }

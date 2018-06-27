@@ -19,7 +19,6 @@
 package org.fidata.gradle.tasks
 
 import groovy.transform.CompileStatic
-import java.io.File
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction

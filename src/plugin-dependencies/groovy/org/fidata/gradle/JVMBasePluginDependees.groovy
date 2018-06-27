@@ -1,6 +1,6 @@
 #!/usr/bin/env groovy
 /*
- * JDKProjectPluginDependencies class
+ * JVMBasePluginDependees class
  * Copyright © 2017-2018  Basil Peace
  *
  * This file is part of gradle-base-plugins.
@@ -20,40 +20,30 @@
 package org.fidata.gradle
 
 import groovy.transform.CompileStatic
+import org.fidata.gradle.utils.PluginDependee
 
 /**
- * List of dependencies of org.fidata.project.jdk plugin
+ * List of dependees of org.fidata.base.jvm plugin
  */
 @CompileStatic
-final class JDKProjectPluginDependencies {
+final class JVMBasePluginDependees {
   /**
-   * List of plugin dependencies with IDs
+   * List of plugin dependees with IDs
    */
-  static final Map<String, ? extends Map> PLUGIN_DEPENDENCIES = [
-    'org.gradle.java': [:],
-    'org.gradle.java-library': [:],
-    'io.franzbecker.gradle-lombok': [
-      configurationName: 'implementation',
-      group: 'io.franzbecker',
-      name: 'gradle-lombok',
-    ],
-    'org.gradle.maven-publish': [:],
-    'com.jfrog.bintray': [
+  static final Map<String, PluginDependee> PLUGIN_DEPENDEES = [
+    'org.gradle.java-base': new PluginDependee(),
+    'org.gradle.java-library': new PluginDependee(),
+    'org.gradle.maven-publish': new PluginDependee(),
+    'com.jfrog.bintray': new PluginDependee(
       configurationName: 'implementation',
       group: 'com.jfrog.bintray.gradle',
-      name: 'gradle-bintray-plugin',
-      excludes: [
-        [
-          group: 'xerces',
-          module: 'xercesImpl'
-        ],
-      ],
+      module: 'gradle-bintray-plugin',
       enabled: false
-    ],
+    ),
   ]
 
   // Suppress default constructor for noninstantiability
-  private JDKProjectPluginDependencies() {
+  private JVMBasePluginDependees() {
     throw new AssertionError()
   }
 }

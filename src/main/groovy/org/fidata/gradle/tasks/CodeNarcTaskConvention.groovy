@@ -25,7 +25,6 @@ import groovy.text.StreamingTemplateEngine
 import groovy.text.Template
 import groovy.transform.CompileStatic
 import org.fidata.gradle.internal.AbstractExtension
-import org.gradle.api.internal.plugins.DslObject
 import org.gradle.api.plugins.quality.CodeNarc
 
 /**
@@ -41,20 +40,19 @@ class CodeNarcTaskConvention extends AbstractExtension {
   /**
    * List of disabled rules
    */
-  public List<String> disabledRules = new ArrayList<String>()
+  List<String> disabledRules = []
 
   CodeNarcTaskConvention(CodeNarc task) {
     super
     task.with {
       config = task.project.resources.text.fromString(CODENARC_DEFAULT_CONFIG)
-      doFirst {
-        // List<String> disabledRules = new DslObject(task).convention.getPlugin(CodeNarcTaskConvention).disabledRules
-        if (disabledRules?.size() > 0) {
-          config = project.resources.text.fromString(
-            config.asString() +
-            CODENARC_DISABLED_RULES_CONFIG_TEMPLATE.make(disabledRules: disabledRules.inspect()).toString()
-          )
-        }
+    }
+    task.doFirst {
+      if (disabledRules?.size() > 0) {
+        task.config = task.project.resources.text.fromString(
+          task.config.asString() +
+          CODENARC_DISABLED_RULES_CONFIG_TEMPLATE.make(disabledRules: disabledRules.inspect()).toString()
+        )
       }
     }
   }

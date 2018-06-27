@@ -19,14 +19,6 @@
  */
 package org.fidata.gradle
 
-import org.fidata.gradle.tasks.CodeNarcTaskConvention
-import org.gradle.api.artifacts.repositories.MavenArtifactRepository
-import org.gradle.api.file.ConfigurableFileTree
-import org.gradle.api.internal.plugins.DslObject
-import org.jfrog.gradle.plugin.artifactory.dsl.DoubleDelegateWrapper
-import org.jfrog.gradle.plugin.artifactory.dsl.ResolverConfig
-
-import static ProjectPluginDependencies.PLUGIN_DEPENDENCIES
 import static org.gradle.language.base.plugins.LifecycleBasePlugin.CHECK_TASK_NAME
 import static org.gradle.language.base.plugins.LifecycleBasePlugin.BUILD_TASK_NAME
 import static org.ajoberstar.gradle.git.release.base.BaseReleasePlugin.RELEASE_TASK_NAME
@@ -36,6 +28,11 @@ import static org.gradle.api.Project.DEFAULT_BUILD_DIR_NAME
 import static org.gradle.internal.FileUtils.toSafeFileName
 import static org.fidata.gradle.utils.VersionUtils.isPreReleaseVersion
 import static org.gradle.language.base.plugins.LifecycleBasePlugin.VERIFICATION_GROUP
+import de.gliderpilot.gradle.semanticrelease.SemanticReleasePluginExtension
+import org.gradle.api.artifacts.repositories.MavenArtifactRepository
+import org.fidata.gradle.tasks.CodeNarcTaskConvention
+import org.gradle.api.file.ConfigurableFileTree
+import org.gradle.api.internal.plugins.DslObject
 import groovy.transform.CompileStatic
 import org.fidata.gradle.internal.AbstractPlugin
 import org.gradle.api.Project
@@ -45,7 +42,10 @@ import org.fidata.gradle.tasks.NoJekyll
 import org.fidata.gradle.tasks.ResignGitCommit
 import org.gradle.buildinit.tasks.internal.TaskConfiguration
 import org.gradle.api.plugins.quality.CodeNarc
-import org.gradle.api.plugins.ProjectReportsPlugin
+import org.fidata.gradle.utils.PluginDependeesUtils
+import org.gradle.api.artifacts.Configuration
+import org.gradle.api.plugins.quality.CodeNarcExtension
+import org.gradle.util.GradleVersion
 import org.gradle.api.plugins.ProjectReportsPluginConvention
 import org.gradle.api.tasks.diagnostics.BuildEnvironmentReportTask
 import org.gradle.api.reporting.components.ComponentReport
@@ -64,7 +64,6 @@ import org.gradle.api.file.FileTreeElement
 import groovy.text.StreamingTemplateEngine
 import groovy.text.Template
 import org.gradle.api.logging.LogLevel
-import cz.malohlava.VisTaskExecGraphPlugin
 import cz.malohlava.VisTegPluginExtension
 import org.gradle.api.tasks.wrapper.Wrapper
 import org.gradle.api.reporting.ReportingExtension
@@ -92,13 +91,13 @@ final class ProjectPlugin extends AbstractPlugin {
    * List of filenames considered as license files
    */
   public static final List<String> LICENSE_FILE_NAMES = [
-    // These filenames are recognized by JFrog Artifactory
+    // License file names recognized by JFrog Artifactory
     'license',
     'LICENSE',
     'license.txt',
     'LICENSE.txt',
     'LICENSE.TXT',
-    // These are GPL standard file names
+    // GPL standard file names
     'COPYING',
     'COPYING.LESSER',
   ]
@@ -106,128 +105,111 @@ final class ProjectPlugin extends AbstractPlugin {
   @Override
   @SuppressWarnings('CouldBeElvis')
   void apply(Project project) {
+    assert GradleVersion.current() >= GradleVersion.version('4.8') : 'Gradle versions before 4.8 are not supported'
+
     super.apply(project)
-    PLUGIN_DEPENDENCIES.findAll() { Map.Entry<String, ? extends Map> depNotation -> depNotation.value.getOrDefault('enabled', true) }.keySet().each { String id ->
-      project.plugins.apply id
-    }
+
+    PluginDependeesUtils.applyPlugins project, ProjectPluginDependees.PLUGIN_DEPENDEES
 
     project.convention.plugins.put 'fidata', new ProjectConvention(project)
-
-    project.tasks.withType(Wrapper) { Wrapper task ->
-      task.with {
-        group = 'Chore'
-        gradleVersion = '4.8.1'
-      }
-    }
 
     if (!project.group) { project.group = 'org.fidata' }
 
     project.extensions.getByType(ReportingExtension).baseDir = project.convention.getPlugin(ProjectConvention).reportsDir
 
+    configureGit()
+
     configureLifecycle()
 
-    configureBuildToolsLifecycle()
-
-    configureDependencyResolution()
+    configurePrerequisitesLifecycle()
 
     configureArtifactory()
 
-    configureSigning()
+    configureDependencyResolution()
 
-    configureGit()
+    configureDocumentation()
 
-    configureSemanticRelease()
+    configureArtifactPublishing()
 
-    configureGitPublish()
-
-    configureCodeNarc()
+    configureCodeQuality()
 
     configureDiagnostics()
   }
 
-  /**
-   * Name of lint task
-   */
-  public static final String LINT_TASK_NAME = 'lint'
-
   private void configureLifecycle() {
     project.tasks.getByName(BUILD_TASK_NAME).dependsOn.remove CHECK_TASK_NAME
     project.tasks.getByName(RELEASE_TASK_NAME).with {
-      // dependsOn BUILD_TASK_NAME TOTEST
+      dependsOn BUILD_TASK_NAME
       dependsOn project.tasks.getByName(CHECK_TASK_NAME)
-      if (project.convention.getPlugin(ProjectConvention).isRelease) {
-        dependsOn project.tasks.getByName(/*GitPublishPlugin.PUSH_TASK*/'gitPublishPush')
-      }
     }
-    Task lintTask = project.tasks.create(LINT_TASK_NAME) { Task task ->
-      task.with {
-        group = VERIFICATION_GROUP
-        description = 'Runs all static code analyses'
-      }
-    }
-    project.tasks.getByName(CHECK_TASK_NAME).dependsOn lintTask
     project.tasks.withType(Test) { Test task ->
       task.project.tasks.getByName(CHECK_TASK_NAME).dependsOn task
+    }
+
+    project.extensions.getByType(SemanticReleasePluginExtension).branchNames.replace 'develop', ''
+
+    if (project.hasProperty('ghToken')) {
+      project.tasks.withType(UpdateGithubRelease).getByName('updateGithubRelease').repo.ghToken = project.extensions.extraProperties['ghToken'].toString()
     }
   }
 
   /**
-   * Name of buildToolsInstall task
+   * Name of prerequisitesInstall task
    */
-  public static final String BUILD_TOOLS_INSTALL_TASK_NAME = 'buildToolsInstall'
+  public static final String PREREQUISITES_INSTALL_TASK_NAME = 'prerequisitesInstall'
   /**
-   * Name of buildToolsUpdate task
+   * Name of prerequisitesUpdate task
    */
-  public static final String BUILD_TOOLS_UPDATE_TASK_NAME = 'buildToolsUpdate'
+  public static final String PREREQUISITES_UPDATE_TASK_NAME = 'prerequisitesUpdate'
   /**
-   * Name of buildToolsOutdated task
+   * Name of prerequisitesOutdated task
    */
-  public static final String BUILD_TOOLS_OUTDATED_TASK_NAME = 'buildToolsOutdated'
+  public static final String PREREQUISITES_OUTDATED_TASK_NAME = 'prerequisitesOutdated'
   /**
    * Name of resolveAndLockAll task
    */
   public static final String RESOLVE_AND_LOCK_ALL_TASK_NAME = 'resolveAndLockAll'
 
-  @SuppressWarnings('BracesForForLoop')
-  private void configureBuildToolsLifecycle() {
-    Task buildToolsInstall = project.tasks.create(BUILD_TOOLS_INSTALL_TASK_NAME) { Task task ->
+  @SuppressWarnings(['BracesForForLoop', 'UnnecessaryObjectReferences'])
+  private void configurePrerequisitesLifecycle() {
+    Task prerequisitesInstall = project.tasks.create(PREREQUISITES_INSTALL_TASK_NAME) { Task task ->
       task.with {
         group = TaskConfiguration.GROUP
-        description = 'Install all buildTools for build'
+        description = 'Install all prerequisites for build'
       }
     }
-    Task buildToolsUpdate = project.tasks.create(BUILD_TOOLS_UPDATE_TASK_NAME) { Task task ->
+    Task prerequisitesUpdate = project.tasks.create(PREREQUISITES_UPDATE_TASK_NAME) { Task task ->
       task.with {
         group = TaskConfiguration.GROUP
-        description = 'Update all buildTools that support automatic update'
-        mustRunAfter buildToolsInstall
+        description = 'Update all prerequisites that support automatic update'
+        mustRunAfter prerequisitesInstall
       }
     }
-    Task buildToolsOutdated = project.tasks.create(BUILD_TOOLS_OUTDATED_TASK_NAME) { Task task ->
+    Task prerequisitesOutdated = project.tasks.create(PREREQUISITES_OUTDATED_TASK_NAME) { Task task ->
       task.with {
         group = TaskConfiguration.GROUP
-        description = 'Show outdated buildTools'
-        mustRunAfter buildToolsInstall
+        description = 'Show outdated prerequisites'
+        mustRunAfter prerequisitesInstall
       }
     }
     project.afterEvaluate {
       for (Task task in
         project.tasks
-        - buildToolsInstall
-        - buildToolsInstall.taskDependencies.getDependencies(buildToolsInstall)
-        - buildToolsInstall.mustRunAfter.getDependencies(buildToolsInstall)
-        - buildToolsInstall.shouldRunAfter.getDependencies(buildToolsInstall)
+        - prerequisitesInstall
+        - prerequisitesInstall.taskDependencies.getDependencies(prerequisitesInstall)
+        - prerequisitesInstall.mustRunAfter.getDependencies(prerequisitesInstall)
+        - prerequisitesInstall.shouldRunAfter.getDependencies(prerequisitesInstall)
       ) {
-        task.mustRunAfter buildToolsInstall
+        task.mustRunAfter prerequisitesInstall
       }
       for (Task task in
         project.tasks
-        - buildToolsUpdate
-        - buildToolsUpdate.taskDependencies.getDependencies(buildToolsUpdate)
-        - buildToolsUpdate.mustRunAfter.getDependencies(buildToolsUpdate)
-        - buildToolsUpdate.shouldRunAfter.getDependencies(buildToolsUpdate)
+        - prerequisitesUpdate
+        - prerequisitesUpdate.taskDependencies.getDependencies(prerequisitesUpdate)
+        - prerequisitesUpdate.mustRunAfter.getDependencies(prerequisitesUpdate)
+        - prerequisitesUpdate.shouldRunAfter.getDependencies(prerequisitesUpdate)
       ) {
-        task.mustRunAfter buildToolsUpdate
+        task.mustRunAfter prerequisitesUpdate
       }
 
       project.dependencyLocking.lockAllConfigurations()
@@ -235,7 +217,7 @@ final class ProjectPlugin extends AbstractPlugin {
       Task resolveAndLockAll = project.tasks.create(RESOLVE_AND_LOCK_ALL_TASK_NAME) { Task task ->
         task.with {
           doFirst {
-              assert project.gradle.startParameter.writeDependencyLocks
+            assert project.gradle.startParameter.writeDependencyLocks
           }
           doLast {
             project.configurations.each {
@@ -246,35 +228,30 @@ final class ProjectPlugin extends AbstractPlugin {
           }
         }
       }
-      buildToolsUpdate.dependsOn resolveAndLockAll
-
-      project.tasks.withType(DependencyUpdatesTask) { DependencyUpdatesTask task ->
-        task.group = 'Chore'
-        buildToolsOutdated.dependsOn task
-      }
-    }
-  }
-
-  private void configureDependencyResolution() {
-    project.dependencies.components.all { ComponentMetadataDetails details ->
-      if (details.status == 'release' && isPreReleaseVersion(details.id.version)) {
-        details.status = 'milestone'
-      }
+      prerequisitesUpdate.dependsOn resolveAndLockAll
     }
 
     project.tasks.withType(DependencyUpdatesTask) { DependencyUpdatesTask task ->
-      task.with {
-        revision = 'release'
-        outputFormatter = 'xml'
-        outputDir = new File(project.convention.getPlugin(ProjectConvention).xmlReportsDir, 'dependencyUpdates').toString()
-        resolutionStrategy = { ResolutionStrategy resolutionStrategy ->
-          resolutionStrategy.componentSelection { ComponentSelectionRules rules ->
-            rules.all { ComponentSelection selection ->
-              if (revision == 'release' && isPreReleaseVersion(selection.candidate.version)) {
-                selection.reject 'Pre-release version'
-              }
+      task.group = null
+      task.revision = 'release'
+      task.outputFormatter = 'xml'
+      task.outputDir = new File(project.convention.getPlugin(ProjectConvention).xmlReportsDir, 'dependencyUpdates').toString()
+      task.resolutionStrategy = { ResolutionStrategy resolutionStrategy ->
+        resolutionStrategy.componentSelection { ComponentSelectionRules rules ->
+          rules.all { ComponentSelection selection ->
+            if (task.revision == 'release' && isPreReleaseVersion(selection.candidate.version)) {
+              selection.reject 'Pre-release version'
             }
           }
+        }
+      }
+      prerequisitesOutdated.dependsOn task
+    }
+
+    project.tasks.withType(Wrapper) { Wrapper task ->
+      task.with {
+        if (name == 'wrapper') {
+          gradleVersion = '4.8.1'
         }
       }
     }
@@ -286,34 +263,46 @@ final class ProjectPlugin extends AbstractPlugin {
   public static final String ARTIFACTORY_URL = 'https://fidata.jfrog.io/fidata'
 
   private void configureArtifactory() {
-    if (project.hasProperty('artifactoryUser') && project.hasProperty('artifactoryPassword')) {
-      String repository = project.convention.getPlugin(ProjectConvention).isRelease ? 'libs-release' : 'libs-snapshot'
-      project.convention.getPlugin(ArtifactoryPluginConvention).with {
-        contextUrl = ARTIFACTORY_URL
-        clientConfig.resolver.repoKey = repository
-        clientConfig.resolver.username = project.property('artifactoryUser')
-        clientConfig.resolver.password = project.property('artifactoryPassword')
-        clientConfig.resolver.maven = true
+    project.convention.getPlugin(ArtifactoryPluginConvention).contextUrl = ARTIFACTORY_URL
+  }
+
+  private void configureDependencyResolution() {
+    project.repositories.maven { MavenArtifactRepository mavenArtifactRepository ->
+      mavenArtifactRepository.with {
+        /*
+         * WORKAROUND:
+         * Groovy bug?
+         * When GString is used, URI property setter is called anyway, and we got cast error
+         * <grv87 2018-06-26>
+         */
+        url = project.uri("$ARTIFACTORY_URL/libs-${ project.convention.getPlugin(ProjectConvention).isRelease ? 'release' : 'snapshot' }/")
+        credentials.username = project.extensions.extraProperties['artifactoryUser']
+        credentials.password = project.extensions.extraProperties['artifactoryPassword']
+      }
+    }
+
+    project.configurations.all { Configuration configuration ->
+      configuration.resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+    }
+
+    project.dependencies.components.all { ComponentMetadataDetails metadata ->
+      metadata.with {
+        if (status == 'release' && isPreReleaseVersion(id.version)) {
+          status = 'milestone'
+        }
       }
     }
   }
 
-  private void configureSigning() {
-    System.setProperty 'signing.keyId', project.property('gpgKeyId').toString()
-    System.setProperty 'signing.secretKeyRingFile', project.property('gpgSecretKeyRingFile').toString()
+  private void configureArtifactPublishing() {
+    System.setProperty 'signing.keyId', project.extensions.extraProperties['gpgKeyId'].toString()
+    System.setProperty 'signing.secretKeyRingFile', project.extensions.extraProperties['gpgSecretKeyRingFile'].toString()
   }
 
   private void configureGit() {
-    if (project.hasProperty('gitUsername') && project.property('gitPassword')) {
-      System.setProperty 'org.ajoberstar.grgit.auth.username', project.property('gitUsername').toString()
-      System.setProperty 'org.ajoberstar.grgit.auth.password', project.property('gitPassword').toString()
-    }
-  }
-
-  private void configureSemanticRelease() {
-    if (project.hasProperty('ghToken')) {
-      /*project.extensions.getByType(SemanticReleasePluginExtension.class)*/ // TODO
-      project.tasks.withType(UpdateGithubRelease).getByName('updateGithubRelease').repo.ghToken = project.property('ghToken').toString()
+    if (project.hasProperty('gitUsername') && project.extensions.extraProperties['gitPassword']) {
+      System.setProperty 'org.ajoberstar.grgit.auth.username', project.extensions.extraProperties['gitUsername'].toString()
+      System.setProperty 'org.ajoberstar.grgit.auth.password', project.extensions.extraProperties['gitPassword'].toString()
     }
   }
 
@@ -322,7 +311,7 @@ final class ProjectPlugin extends AbstractPlugin {
    */
   public static final String NO_JEKYLL_TASK_NAME = 'noJekyll'
 
-  private void configureGitPublish() {
+  private void configureDocumentation() {
     project.extensions.getByType(GitPublishExtension).with {
       branch.set 'gh-pages'
       preserve.include '**'
@@ -348,18 +337,43 @@ final class ProjectPlugin extends AbstractPlugin {
      * See https://bugs.eclipse.org/bugs/show_bug.cgi?id=382212
      * <grv87 2018-06-22>
      */
-    ResignGitCommit resignGitCommit = project.tasks.create("${ /*GitPublishPlugin.COMMIT_TASK*/ 'gitPublishCommit' }Resign", ResignGitCommit) { ResignGitCommit task ->
+    ResignGitCommit resignGitCommit = project.tasks.create("${ /* WORKAROUND: GitPublishPlugin.COMMIT_TASK has package scope <grv87 2018-06-23> */ 'gitPublishCommit' }Resign", ResignGitCommit) { ResignGitCommit task ->
       task.description = 'Amend git publish commit adding sign to it'
     }
     project.tasks.getByName(/* WORKAROUND: GitPublishPlugin.COMMIT_TASK has package scope <grv87 2018-06-23> */ 'gitPublishCommit').finalizedBy resignGitCommit
+
+    if (project.convention.getPlugin(ProjectConvention).isRelease) {
+      project.tasks.getByName(RELEASE_TASK_NAME).dependsOn project.tasks.getByName(/*GitPublishPlugin.PUSH_TASK*/'gitPublishPush')
+    }
   }
+
+  /**
+   * Name of lint task
+   */
+  public static final String LINT_TASK_NAME = 'lint'
 
   /**
    * Name of CodeNarc common task
    */
   public static final String CODENARC_TASK_NAME = 'codenarc'
 
-  private void configureCodeNarc() {
+  /*
+   * WORKAROUND:
+   * Groovy bug. Usage of `destination =` instead of setDestination leads to error:
+   * [Static type checking] - Cannot set read-only property: destination
+   * Also may be CodeNarc error
+   * <grv87 2018-06-26>
+   */
+  @SuppressWarnings(['UnnecessarySetter'])
+  private void configureCodeQuality() {
+    Task lintTask = project.tasks.create(LINT_TASK_NAME) { Task task ->
+      task.with {
+        group = VERIFICATION_GROUP
+        description = 'Runs all static code analyses'
+      }
+    }
+    project.tasks.getByName(CHECK_TASK_NAME).dependsOn lintTask
+
     Task codeNarcTask = project.tasks.create(CODENARC_TASK_NAME) { Task task ->
       task.with {
         group = 'Verification'
@@ -368,6 +382,12 @@ final class ProjectPlugin extends AbstractPlugin {
     }
     project.tasks.getByName(LINT_TASK_NAME).dependsOn codeNarcTask
 
+    project.extensions.getByType(CodeNarcExtension).with {
+      reportFormat = 'console'
+    }
+
+    Task checkTask = project.tasks.getByName(CHECK_TASK_NAME)
+
     project.tasks.withType(CodeNarc) { CodeNarc task ->
       new DslObject(task).convention.plugins.put 'disabledRules', new CodeNarcTaskConvention(task)
 
@@ -375,14 +395,14 @@ final class ProjectPlugin extends AbstractPlugin {
         String reportFileName = "codenarc/${ toSafeFileName((name - ~/^codenarc/ /* WORKAROUND: CodeNarcPlugin.getTaskBaseName has protected scope <grv87 2018-06-23> */).uncapitalize()) }"
         reports.xml.enabled = true
         reports.xml.setDestination new File(project.convention.getPlugin(ProjectConvention).xmlReportsDir, "${ reportFileName }.xml")
-        // reports.console.enabled = true // TODO
         reports.html.enabled = true
         reports.html.setDestination new File(project.convention.getPlugin(ProjectConvention).htmlReportsDir, "${ reportFileName }.html")
       }
       codeNarcTask.dependsOn task
+      checkTask.taskDependencies.getDependencies(checkTask).remove task
     }
 
-    project.tasks.create(/* CodeNarcPlugin.getTaskBaseName() */ "codenarc${ DEFAULT_BUILD_SRC_DIR.capitalize() }", CodeNarc) { CodeNarc task ->
+    project.tasks.create("${ /* WORKAROUND: CodeNarcPlugin.getTaskBaseName has protected scope <grv87 2018-06-23> */ 'codenarc' }${ DEFAULT_BUILD_SRC_DIR.capitalize() }", CodeNarc) { CodeNarc task ->
       Closure excludeBuildDir = { FileTreeElement fte ->
         String[] p = fte.relativePath.segments
         int i = 0
@@ -405,6 +425,13 @@ final class ProjectPlugin extends AbstractPlugin {
         source 'Jenkinsfile'
         source project.fileTree(dir: project.file('config'), includes: ['**/*.groovy'])
       }
+      /*
+       * WORKAROUND:
+       * Indentation rule doesn't work correctly.
+       * https://github.com/CodeNarc/CodeNarc/issues/310
+       * <grv87 2018-06-26>
+       */
+      new DslObject(task).convention.getPlugin(CodeNarcTaskConvention).disabledRules.add 'Indentation'
     }
   }
 
@@ -418,45 +445,51 @@ final class ProjectPlugin extends AbstractPlugin {
    */
   public static final String INPUTS_OUTPUTS_TASK_NAME = 'inputsOutputs'
 
+  /*
+   * WORKAROUND:
+   * Groovy error. Usage of `destination =` instead of setDestination leads to error:
+   * [Static type checking] - Cannot set read-only property: destination
+   * Also may be CodeNarc error
+   * <grv87 2018-06-26>
+   */
+  @SuppressWarnings(['UnnecessarySetter'])
   private void configureDiagnostics() {
-    project.plugins.withType(ProjectReportsPlugin) {
-      project.convention.getPlugin(ProjectReportsPluginConvention).projectReportDirName = project.convention.getPlugin(ProjectConvention).reportsDir.toPath().relativize(new File(project.convention.getPlugin(ProjectConvention).txtReportsDir, 'project').toPath()).toString()
+    project.convention.getPlugin(ProjectReportsPluginConvention).projectReportDirName = project.convention.getPlugin(ProjectConvention).reportsDir.toPath().relativize(new File(project.convention.getPlugin(ProjectConvention).txtReportsDir, 'project').toPath()).toString()
 
-      project.tasks.withType(BuildEnvironmentReportTask) { BuildEnvironmentReportTask task ->
-        task.group = DIAGNOSTICS_TASK_GROUP_NAME
-      }
-      project.tasks.withType(ComponentReport) { ComponentReport task ->
-        task.group = DIAGNOSTICS_TASK_GROUP_NAME
-      }
-      project.tasks.withType(DependencyReportTask) { DependencyReportTask task ->
-        task.group = DIAGNOSTICS_TASK_GROUP_NAME
-      }
-      project.tasks.withType(DependencyInsightReportTask) { DependencyInsightReportTask task ->
-        task.group = DIAGNOSTICS_TASK_GROUP_NAME
-      }
-      project.tasks.withType(DependentComponentsReport) { DependentComponentsReport task ->
-        task.group = DIAGNOSTICS_TASK_GROUP_NAME
-      }
-      project.tasks.withType(ModelReport) { ModelReport task ->
-        task.group = DIAGNOSTICS_TASK_GROUP_NAME
-      }
-      project.tasks.withType(ProjectReportTask) { ProjectReportTask task ->
-        task.group = DIAGNOSTICS_TASK_GROUP_NAME
-      }
-      project.tasks.withType(PropertyReportTask) { PropertyReportTask task ->
-        task.group = DIAGNOSTICS_TASK_GROUP_NAME
-      }
-      project.tasks.withType(HtmlDependencyReportTask) { HtmlDependencyReportTask task ->
-        task.with {
-          group = DIAGNOSTICS_TASK_GROUP_NAME
-          reports.html.setDestination new File(project.convention.getPlugin(ProjectConvention).htmlReportsDir, 'dependencies')
-        }
-      }
-      project.tasks.withType(TaskReportTask) { TaskReportTask task ->
-        task.group = DIAGNOSTICS_TASK_GROUP_NAME
-      }
-      project.tasks.getByName(PROJECT_REPORT).group = DIAGNOSTICS_TASK_GROUP_NAME
+    project.tasks.withType(BuildEnvironmentReportTask) { BuildEnvironmentReportTask task ->
+      task.group = DIAGNOSTICS_TASK_GROUP_NAME
     }
+    project.tasks.withType(ComponentReport) { ComponentReport task ->
+      task.group = DIAGNOSTICS_TASK_GROUP_NAME
+    }
+    project.tasks.withType(DependencyReportTask) { DependencyReportTask task ->
+      task.group = DIAGNOSTICS_TASK_GROUP_NAME
+    }
+    project.tasks.withType(DependencyInsightReportTask) { DependencyInsightReportTask task ->
+      task.group = DIAGNOSTICS_TASK_GROUP_NAME
+    }
+    project.tasks.withType(DependentComponentsReport) { DependentComponentsReport task ->
+      task.group = DIAGNOSTICS_TASK_GROUP_NAME
+    }
+    project.tasks.withType(ModelReport) { ModelReport task ->
+      task.group = DIAGNOSTICS_TASK_GROUP_NAME
+    }
+    project.tasks.withType(ProjectReportTask) { ProjectReportTask task ->
+      task.group = DIAGNOSTICS_TASK_GROUP_NAME
+    }
+    project.tasks.withType(PropertyReportTask) { PropertyReportTask task ->
+      task.group = DIAGNOSTICS_TASK_GROUP_NAME
+    }
+    project.tasks.withType(HtmlDependencyReportTask) { HtmlDependencyReportTask task ->
+      task.with {
+        group = DIAGNOSTICS_TASK_GROUP_NAME
+        reports.html.setDestination new File(project.convention.getPlugin(ProjectConvention).htmlReportsDir, 'dependencies')
+      }
+    }
+    project.tasks.withType(TaskReportTask) { TaskReportTask task ->
+      task.group = DIAGNOSTICS_TASK_GROUP_NAME
+    }
+    project.tasks.getByName(PROJECT_REPORT).group = DIAGNOSTICS_TASK_GROUP_NAME
 
     project.tasks.create(INPUTS_OUTPUTS_TASK_NAME, InputsOutputs) { InputsOutputs task ->
       task.with {
@@ -466,18 +499,16 @@ final class ProjectPlugin extends AbstractPlugin {
       }
     }
 
-    project.plugins.withType(VisTaskExecGraphPlugin) {
-      project.extensions.getByType(VisTegPluginExtension).with {
-        enabled        = (project.logging.level ?: project.gradle.startParameter.logLevel) <= LogLevel.INFO
-        colouredNodes  = true
-        colouredEdges  = true
-        destination    = new File(project.convention.getPlugin(ProjectConvention).reportsDir, 'visteg.dot').toString()
-        exporter       = 'dot'
-        colorscheme    = 'paired12'
-        nodeShape      = 'box'
-        startNodeShape = 'hexagon'
-        endNodeShape   = 'doubleoctagon'
-      }
+    project.extensions.getByType(VisTegPluginExtension).with {
+      enabled        = (project.logging.level ?: project.gradle.startParameter.logLevel) <= LogLevel.INFO
+      colouredNodes  = true
+      colouredEdges  = true
+      destination    = new File(project.convention.getPlugin(ProjectConvention).reportsDir, 'visteg.dot').toString()
+      exporter       = 'dot'
+      colorscheme    = 'paired12'
+      nodeShape      = 'box'
+      startNodeShape = 'hexagon'
+      endNodeShape   = 'doubleoctagon'
     }
   }
 }
