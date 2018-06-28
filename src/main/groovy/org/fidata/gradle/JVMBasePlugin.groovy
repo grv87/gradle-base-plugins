@@ -26,19 +26,17 @@ import static org.gradle.api.plugins.JavaPlugin.JAVADOC_TASK_NAME
 import static org.gradle.api.tasks.SourceSet.MAIN_SOURCE_SET_NAME
 import static org.ajoberstar.gradle.git.release.base.BaseReleasePlugin.RELEASE_TASK_NAME
 import static ProjectPlugin.LICENSE_FILE_NAMES
-import static ProjectPlugin.ARTIFACTORY_URL
+import static org.jfrog.gradle.plugin.artifactory.task.ArtifactoryTask.ARTIFACTORY_PUBLISH_TASK_NAME
 import static org.gradle.internal.FileUtils.toSafeFileName
+import org.gradle.api.publish.maven.MavenPublication
+import org.gradle.plugins.signing.SigningExtension
 import org.fidata.gradle.utils.PluginDependeesUtils
 import org.gradle.api.publish.PublishingExtension
-import org.gradle.plugins.signing.SigningExtension
-import org.gradle.api.artifacts.repositories.MavenArtifactRepository
 import org.jfrog.gradle.plugin.artifactory.dsl.ArtifactoryPluginConvention
 import org.jfrog.gradle.plugin.artifactory.task.ArtifactoryTask
 import org.fidata.gradle.tasks.CodeNarcTaskConvention
 import org.gradle.api.artifacts.ModuleDependency
 import org.gradle.api.internal.plugins.DslObject
-import org.spdx.rdfparser.license.AnyLicenseInfo
-import org.spdx.rdfparser.license.LicenseSet
 import groovy.transform.CompileStatic
 import org.fidata.gradle.internal.AbstractPlugin
 import org.gradle.api.Project
@@ -256,17 +254,18 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
       clientConfig.publisher.username = project.extensions.extraProperties['artifactoryUser']
       clientConfig.publisher.password = project.extensions.extraProperties['artifactoryPassword']
       clientConfig.publisher.maven = true
-      /*defaults {
-          // publications
-          publishConfigs 'archive' // Configurations
-          // publications('mavenGroovy') // TODO
-        }*/
     }
     project.tasks.getByName(RELEASE_TASK_NAME).finalizedBy project.tasks.withType(ArtifactoryTask)
+    project.tasks.withType(ArtifactoryTask).getByName(ARTIFACTORY_PUBLISH_TASK_NAME).each { ArtifactoryTask task ->
+      task.mavenPublications.addAll project.extensions.getByType(PublishingExtension).publications.withType(MavenPublication)
+    }
   }
 
   private void configureArtifactsPublishing() {
-    // project.extensions.getByType(SigningExtension).sign project.extensions.getByType(PublishingExtension).publications TODO
+    /*project.extensions.getByType(PublishingExtension).publications.create('mavenJava', MavenPublication) { MavenPublication publication ->
+      publication.from project.components.getByName('java' /* TODO *//*)
+    }*/
+    project.extensions.getByType(SigningExtension).sign project.extensions.getByType(PublishingExtension).publications
 
     configureArtifactory()
   }
@@ -275,23 +274,13 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
   private void configureBintray() {
     project.pluginManager.apply 'com.jfrog.bintray'
 
-    AnyLicenseInfo licenseInfo = project.convention.getPlugin(ProjectConvention).licenseInfo
-    List<String> licenseList = []
-    if (LicenseSet.isInstance(licenseInfo)) {
-      for (AnyLicenseInfo license in ((LicenseSet)licenseInfo).members) {
-        licenseList.add license.toString()
-      }
-    } else {
-      licenseList.add licenseInfo.toString()
-    }
-
     project.extensions.getByType(BintrayExtension).with {
       user = project.extensions.extraProperties['bintrayUser'].toString()
       key = project.extensions.extraProperties['bintrayAPIKey'].toString()
       pkg.repo = 'generic'
       pkg.name = 'gradle-project'
       pkg.userOrg = 'fidata'
-      pkg.licenses = licenseList.toArray(new String[licenseList.size()])
+      pkg.licenses = [project.convention.getPlugin(ProjectConvention).license].toArray(new String[0])
       pkg.vcsUrl = project.convention.getPlugin(ProjectConvention).vcsUrl
       pkg.desc = project.convention.getPlugin(ProjectConvention).changeLog.toString()
       pkg.version.name = ''

@@ -20,6 +20,7 @@ package org.fidata.gradle.tasks
 
 import groovy.transform.CompileStatic
 import org.gradle.api.DefaultTask
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
 import org.gradle.process.ExecSpec
 
@@ -33,12 +34,17 @@ import org.gradle.process.ExecSpec
  */
 @CompileStatic
 class ResignGitCommit extends DefaultTask {
+  @Input
+  File workingDir
+
   /**
    * Resigns previous git commit
    */
   @TaskAction
   void resign() {
     project.exec { ExecSpec execSpec ->
+      if (workingDir)
+        execSpec.workingDir workingDir
       execSpec.commandLine 'git', 'commit', '--amend', '--no-edit', "--gpg-sign=${ project.extensions.extraProperties['gpgKeyId'] }"
     }
   }

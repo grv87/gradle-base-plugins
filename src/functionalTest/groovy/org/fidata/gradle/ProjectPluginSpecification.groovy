@@ -212,8 +212,24 @@ class ProjectPluginSpecification extends Specification {
     noExceptionThrown()
 
     when:
+    'license property set empty'
+    project.license == ''
+
+    then:
+    'no exception is thrown'
+    noExceptionThrown()
+
+    when:
+    'license property set null'
+    project.license == null
+
+    then:
+    'no exception is thrown'
+    noExceptionThrown()
+
+    when:
     'license property set with invalid SPDX license identifier'
-    project.license == 'dfjhshasdfasdfhlafukjh'
+    project.license = 'Apache2.0'
 
     then:
     thrown InvalidLicenseStringException

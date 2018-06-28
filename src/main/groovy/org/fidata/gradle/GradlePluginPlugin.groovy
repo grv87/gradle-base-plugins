@@ -24,6 +24,7 @@ import static org.ajoberstar.gradle.git.release.base.BaseReleasePlugin.RELEASE_T
 import static ProjectPlugin.ARTIFACTORY_URL
 import static JVMBasePlugin.FUNCTIONAL_TEST_SOURCE_SET_NAME
 import static org.gradle.internal.FileUtils.toSafeFileName
+import org.gradle.api.Task
 import org.gradle.api.tasks.SourceSet
 import org.gradle.plugin.devel.GradlePluginDevelopmentExtension
 import org.fidata.gradle.utils.PluginDependeesUtils
@@ -95,7 +96,9 @@ final class GradlePluginPlugin extends AbstractPlugin implements PropertyChangeL
   }
 
   private void configureBuildToolsLifecycle() {
-    project.tasks.getByName(PREREQUISITES_UPDATE_TASK_NAME).dependsOn project.tasks.getByName('stutterWriteLocks')
+    Task stutterWriteLocksTask = project.tasks.getByName('stutterWriteLocks')
+    stutterWriteLocksTask.group = null
+    project.tasks.getByName(PREREQUISITES_UPDATE_TASK_NAME).dependsOn stutterWriteLocksTask
   }
 
   private void configureTesting() {

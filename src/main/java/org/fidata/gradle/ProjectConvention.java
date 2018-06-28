@@ -28,10 +28,8 @@ import com.github.zafarkhaja.semver.Version;
 import de.gliderpilot.gradle.semanticrelease.SemanticReleasePluginExtension;
 import de.gliderpilot.gradle.semanticrelease.SemanticReleaseChangeLogService;
 import org.ajoberstar.gradle.git.release.base.ReleaseVersion;
-import org.spdx.rdfparser.license.SpdxNoneLicense;
 import org.spdx.spdxspreadsheet.InvalidLicenseStringException;
 import org.spdx.rdfparser.license.LicenseInfoFactory;
-import org.spdx.rdfparser.license.AnyLicenseInfo;
 import groovy.lang.Writable;
 
 /**
@@ -114,18 +112,12 @@ public class ProjectConvention extends AbstractExtension {
    */
   public void setLicense(String newValue) throws InvalidLicenseStringException {
     String oldLicense = license;
-    AnyLicenseInfo oldLicenseInfo = licenseInfo;
     license = newValue;
-    this.licenseInfo = LicenseInfoFactory.parseSPDXLicenseString(license);
+    if (!LicenseInfoFactory.isSpdxListedLicenseID(newValue)) {
+      throw new InvalidLicenseStringException(String.format("License identifier is not in SPDX list: %s", newValue));
+    }
     getPropertyChangeSupport().firePropertyChange("license", oldLicense, newValue);
-    getPropertyChangeSupport().firePropertyChange("licenseInfo", oldLicenseInfo, licenseInfo);
   }
-
-  /**
-   * @return project license information
-   */
-  @Getter
-  private SpdxListedLicense spdxListedLicense = new SpdxNoneLicense();
 
   /**
    * @return whether releases of this project are public

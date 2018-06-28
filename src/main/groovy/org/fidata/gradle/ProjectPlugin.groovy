@@ -28,6 +28,9 @@ import static org.gradle.api.Project.DEFAULT_BUILD_DIR_NAME
 import static org.gradle.internal.FileUtils.toSafeFileName
 import static org.fidata.gradle.utils.VersionUtils.isPreReleaseVersion
 import static org.gradle.language.base.plugins.LifecycleBasePlugin.VERIFICATION_GROUP
+import static com.dorongold.gradle.tasktree.TaskTreePlugin.TASK_TREE_TASK_NAME
+import groovy.transform.CompileDynamic
+import org.ajoberstar.grgit.Grgit
 import de.gliderpilot.gradle.semanticrelease.SemanticReleasePluginExtension
 import org.gradle.api.artifacts.repositories.MavenArtifactRepository
 import org.fidata.gradle.tasks.CodeNarcTaskConvention
@@ -73,6 +76,7 @@ import org.gradle.api.artifacts.ComponentSelectionRules
 import org.gradle.api.artifacts.ResolutionStrategy
 import de.gliderpilot.gradle.semanticrelease.UpdateGithubRelease
 import org.jfrog.gradle.plugin.artifactory.dsl.ArtifactoryPluginConvention
+import com.dorongold.gradle.tasktree.TaskTreeTask
 
 /**
  * Provides an environment for a general, language-agnostic project
@@ -102,10 +106,14 @@ final class ProjectPlugin extends AbstractPlugin {
     'COPYING.LESSER',
   ]
 
+  /**
+   * Minimum supported version of Gradle
+   */
+  public static final String GRADLE_MINIMUM_SUPPORTED_VERSION = '4.8'
   @Override
   @SuppressWarnings('CouldBeElvis')
   void apply(Project project) {
-    assert GradleVersion.current() >= GradleVersion.version('4.8') : 'Gradle versions before 4.8 are not supported'
+    assert GradleVersion.current() >= GradleVersion.version(GRADLE_MINIMUM_SUPPORTED_VERSION) : "Gradle versions before $GRADLE_MINIMUM_SUPPORTED_VERSION are not supported"
 
     super.apply(project)
 
@@ -136,9 +144,15 @@ final class ProjectPlugin extends AbstractPlugin {
     configureDiagnostics()
   }
 
+  /**
+   * Release task group name
+   */
+  public static final String RELEASE_TASK_GROUP_NAME = 'Release'
+
   private void configureLifecycle() {
     project.tasks.getByName(BUILD_TASK_NAME).dependsOn.remove CHECK_TASK_NAME
     project.tasks.getByName(RELEASE_TASK_NAME).with {
+      group = RELEASE_TASK_GROUP_NAME
       dependsOn BUILD_TASK_NAME
       dependsOn project.tasks.getByName(CHECK_TASK_NAME)
     }
@@ -295,8 +309,8 @@ final class ProjectPlugin extends AbstractPlugin {
   }
 
   private void configureArtifactPublishing() {
-    System.setProperty 'signing.keyId', project.extensions.extraProperties['gpgKeyId'].toString()
-    System.setProperty 'signing.secretKeyRingFile', project.extensions.extraProperties['gpgSecretKeyRingFile'].toString()
+    project.extensions.extraProperties['signing.keyId'] = project.extensions.extraProperties['gpgKeyId'].toString()
+    project.extensions.extraProperties['signing.secretKeyRingFile'] = project.extensions.extraProperties['gpgSecretKeyRingFile'].toString()
   }
 
   private void configureGit() {
@@ -304,6 +318,14 @@ final class ProjectPlugin extends AbstractPlugin {
       System.setProperty 'org.ajoberstar.grgit.auth.username', project.extensions.extraProperties['gitUsername'].toString()
       System.setProperty 'org.ajoberstar.grgit.auth.password', project.extensions.extraProperties['gitPassword'].toString()
     }
+  }
+
+  /*
+   * TODO
+   */
+  @CompileDynamic
+  private boolean isRepoClean() {
+    ((Grgit)project.extensions.extraProperties.get('grgit')).status().clean
   }
 
   /**
@@ -315,7 +337,11 @@ final class ProjectPlugin extends AbstractPlugin {
     project.extensions.getByType(GitPublishExtension).with {
       branch.set 'gh-pages'
       preserve.include '**'
-      preserve.exclude '*-SNAPSHOT/**' // TODO - keep other branches ?
+      /*
+       * CAVEAT:
+       * SNAPSHOT documentation for other branches should be removed manually
+       */
+      preserve.exclude "$project.version/" // TODO - directory ? **
       commitMessage.set COMMIT_MESSAGE_TEMPLATE.make(
         type: 'docs',
         subject: "publish documentation for version ${ project.version }",
@@ -323,13 +349,17 @@ final class ProjectPlugin extends AbstractPlugin {
       ).toString()
     }
 
+    Closure<Boolean> repoClean = { ((Grgit)project.extensions.extraProperties.get('grgit')).status().clean }
+
     NoJekyll noJekyllTask = project.tasks.create(NO_JEKYLL_TASK_NAME, NoJekyll) { NoJekyll task ->
       task.with {
+        onlyIf repoClean
         description = 'Generates .nojekyll file in gitPublish repository'
         destinationDir = project.extensions.getByType(GitPublishExtension).repoDir.asFile.get()
       }
     }
-    project.tasks.getByName(/* WORKAROUND: GitPublishPlugin.COMMIT_TASK has package scope <grv87 2018-06-23> */ 'gitPublishCommit').dependsOn noJekyllTask
+
+    project.tasks.getByName(/* WORKAROUND: GitPublishPlugin.COPY_TASK has package scope <grv87 2018-06-23> */'gitPublishCopy').onlyIf repoClean
 
     /*
      * WORKAROUND:
@@ -337,14 +367,21 @@ final class ProjectPlugin extends AbstractPlugin {
      * See https://bugs.eclipse.org/bugs/show_bug.cgi?id=382212
      * <grv87 2018-06-22>
      */
-    ResignGitCommit resignGitCommit = project.tasks.create("${ /* WORKAROUND: GitPublishPlugin.COMMIT_TASK has package scope <grv87 2018-06-23> */ 'gitPublishCommit' }Resign", ResignGitCommit) { ResignGitCommit task ->
-      task.description = 'Amend git publish commit adding sign to it'
+    ResignGitCommit resignGitCommit = project.tasks.create("${ /* GitPublishPlugin.COMMIT_TASK */ 'gitPublishCommit' }Resign", ResignGitCommit) { ResignGitCommit task ->
+      task.with {
+        onlyIf repoClean
+        description = 'Amend git publish commit adding sign to it'
+        workingDir = project.extensions.getByType(GitPublishExtension).repoDir.asFile.get()
+      }
     }
-    project.tasks.getByName(/* WORKAROUND: GitPublishPlugin.COMMIT_TASK has package scope <grv87 2018-06-23> */ 'gitPublishCommit').finalizedBy resignGitCommit
+    project.tasks.getByName(/* WORKAROUND: GitPublishPlugin.COMMIT_TASK has package scope <grv87 2018-06-23> */ 'gitPublishCommit').with {
+      onlyIf repoClean
+      dependsOn noJekyllTask
+      finalizedBy resignGitCommit
+    }
 
-    if (project.convention.getPlugin(ProjectConvention).isRelease) {
-      project.tasks.getByName(RELEASE_TASK_NAME).dependsOn project.tasks.getByName(/*GitPublishPlugin.PUSH_TASK*/'gitPublishPush')
-    }
+    project.tasks.getByName(/* WORKAROUND: GitPublishPlugin.PUSH_TASK has package scope <grv87 2018-06-23> */'gitPublishPush').onlyIf repoClean
+    project.tasks.getByName(RELEASE_TASK_NAME).dependsOn project.tasks.getByName(/* GitPublishPlugin.PUSH_TASK */'gitPublishPush')
   }
 
   /**
@@ -498,6 +535,8 @@ final class ProjectPlugin extends AbstractPlugin {
         outputFile = new File(project.convention.getPlugin(ProjectConvention).txtReportsDir, InputsOutputs.DEFAULT_OUTPUT_FILE_NAME)
       }
     }
+
+    project.tasks.withType(TaskTreeTask).getByName(TASK_TREE_TASK_NAME).group = DIAGNOSTICS_TASK_GROUP_NAME
 
     project.extensions.getByType(VisTegPluginExtension).with {
       enabled        = (project.logging.level ?: project.gradle.startParameter.logLevel) <= LogLevel.INFO

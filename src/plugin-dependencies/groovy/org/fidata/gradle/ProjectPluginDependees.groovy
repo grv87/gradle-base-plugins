@@ -47,6 +47,7 @@ final class ProjectPluginDependees {
       configurationName: 'implementation',
       group: 'org.jfrog.buildinfo',
       module: 'build-info-extractor-gradle',
+      version: '4.6.2',
       excludes: [
         new PluginDependeeExclusion(
           group: 'org.codehaus.groovy',
@@ -76,14 +77,15 @@ final class ProjectPluginDependees {
     'org.gradle.reporting-base': new PluginDependee(),
     'org.gradle.codenarc': new PluginDependee(),
     'org.gradle.project-report': new PluginDependee(),
+    'com.dorongold.task-tree': new PluginDependee(
+      configurationName: 'implementation',
+      group: 'gradle.plugin.com.dorongold.plugins',
+      module: 'task-tree',
+    ),
     'cz.malohlava': new PluginDependee(
       configurationName: 'implementation',
       group: 'cz.malohlava',
       module: 'visteg',
-    ),
-    'com.dorongold.task-tree': new PluginDependee(
-      group: 'gradle.plugin.com.dorongold.plugins',
-      module: 'task-tree',
     ),
   ]
 

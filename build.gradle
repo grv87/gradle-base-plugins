@@ -78,7 +78,7 @@ tasks.codenarcMain.disabledRules.add 'JavaIoPackageAccess'
  * While FUNCTIONAL_TEST_SOURCE_SET_NAME is really used in GString in the code
  * <grv87 2018-06-26>
  */
-tasks.codenarcMain.disabledRules.add 'UnusedImport'
+// tasks.codenarcMain.disabledRules.add 'UnusedImport'
 
 task('codenarcMainResources', type: CodeNarc) {
   for (File srcDir in sourceSets.main.resources.srcDirs) {
@@ -92,5 +92,3 @@ task('codenarcMainResources', type: CodeNarc) {
    */
   disabledRules.add 'Indentation'
 }
-
-println licenseInfo.toString()
