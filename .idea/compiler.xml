@@ -5,6 +5,7 @@
       <profile default="true" name="Default" enabled="true" />
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="gradle-base-plugins_integTest" target="1.8" />
       <module name="gradle-base-plugins_main~1" target="1.8" />
       <module name="gradle-base-plugins_test~1" target="1.8" />
     </bytecodeTargetLevel>

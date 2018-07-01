@@ -22,6 +22,7 @@ package org.fidata.gradle
 import static org.gradle.api.plugins.JavaPlugin.COMPILE_JAVA_TASK_NAME
 import static org.gradle.api.plugins.JavaPlugin.JAVADOC_TASK_NAME
 import static org.gradle.api.tasks.SourceSet.MAIN_SOURCE_SET_NAME
+import org.gradle.api.tasks.SourceSet
 import groovy.transform.CompileStatic
 import io.franzbecker.gradle.lombok.task.DelombokTask
 import org.ajoberstar.gradle.git.publish.GitPublishExtension
@@ -52,14 +53,16 @@ final class JavaProjectPlugin extends AbstractPlugin {
   private void configureDelombok() {
     DelombokTask delombokTask = project.tasks.create(DELOMBOK_TASK_NAME, DelombokTask) { DelombokTask task ->
       task.with {
+        SourceSet mainSourceSet = project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(MAIN_SOURCE_SET_NAME)
+
         dependsOn project.tasks.getByName(COMPILE_JAVA_TASK_NAME)
         File outputDir = new File(project.buildDir, 'delombok')
         outputs.dir outputDir
-        project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(MAIN_SOURCE_SET_NAME).java.srcDirs.each { File dir ->
+        mainSourceSet.java.srcDirs.each { File dir ->
           inputs.dir dir
           args dir, '-d', outputDir
         }
-        classpath project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(MAIN_SOURCE_SET_NAME).compileClasspath
+        classpath mainSourceSet.compileClasspath
       }
     }
     project.tasks.withType(Javadoc).getByName(JAVADOC_TASK_NAME) { Javadoc task ->

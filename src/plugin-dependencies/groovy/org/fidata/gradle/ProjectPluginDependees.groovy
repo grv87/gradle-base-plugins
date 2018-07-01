@@ -47,7 +47,6 @@ final class ProjectPluginDependees {
       configurationName: 'implementation',
       group: 'org.jfrog.buildinfo',
       module: 'build-info-extractor-gradle',
-      version: '4.4.18',
       excludes: [
         new PluginDependeeExclusion(
           group: 'org.codehaus.groovy',

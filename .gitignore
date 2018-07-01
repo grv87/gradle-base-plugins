@@ -9,5 +9,8 @@ build/
 # Idea
 *.iml
 .idea/workspace.xml
+out/
+# TODO
+.idea/dictionaries/
 
 .groovy/

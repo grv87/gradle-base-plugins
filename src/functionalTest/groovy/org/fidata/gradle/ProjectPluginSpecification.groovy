@@ -35,11 +35,25 @@ import spock.lang.Unroll
 class ProjectPluginSpecification extends Specification {
   // fields
   @Rule
-  TemporaryFolder testProjectDir = new TemporaryFolder()
+  final TemporaryFolder testProjectDir = new TemporaryFolder()
 
   Project project
 
+  static final Map<String, String> EXTRA_PROPERTIES = [
+    'artifactoryUser'    : 'dummyArtifactoryUser',
+    'artifactoryPassword': 'dummyArtifactoryPassword',
+    'gitUsername': 'dummyGitUser',
+    'gitPassword': 'dummyGitPassword',
+    'ghToken': 'dummyGhToken',
+    'gpgKeyId'            : 'ABCD1234',
+    'gpgKeyPassword'      : '',
+    'gpgSecretKeyRingFile': 'dummyGPGSecretKeyRingFile',
+  ]
+
   // fixture methods
+
+  // run before the first feature method
+  // void setupSpec() { }
 
   // run before every feature method
   void setup() {
@@ -54,29 +68,19 @@ class ProjectPluginSpecification extends Specification {
       'git commit --message "Initial commit" --allow-empty',
     ].each { it.execute(null, testProjectDir.root).waitFor() }
     project = ProjectBuilder.builder().withProjectDir(testProjectDir.root).build()
-    project.ext.setProperty('artifactoryUser', 'dummyArtifactoryUser')
-    project.ext.setProperty('artifactoryPassword', 'dummyArtifactoryPassword')
-    project.ext.setProperty('gitUsername', 'dummyGitUser')
-    project.ext.setProperty('gitPassword', 'dummyGitPassword')
-    project.ext.setProperty('ghToken', 'dummyGhToken')
-    project.ext.setProperty('gpgKeyId', 'ABCD1234')
-    project.ext.setProperty('gpgSecretKeyRingFile', 'dummyGPGSecretKeyRingFile')
+    EXTRA_PROPERTIES.each { String key, String value ->
+      project.ext.setProperty key, value
+    }
   }
 
   // run after every feature method
-  void cleanup() {
-    testProjectDir.delete()
-  }
-
-  // run before the first feature method
-  // void setupSpec() { }
+  // void cleanup() { }
 
   // run after the last feature method
   // void cleanupSpec() { }
 
   // feature methods
 
-  @Unroll
   void 'provides lifecycle tasks'() {
     when:
     'plugin is applied'

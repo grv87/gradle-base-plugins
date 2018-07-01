@@ -340,6 +340,7 @@ gitUsername <td rowspan="2"> Git push during release |
 gitPassword |
 ghToken | Create release on GitHub |
 gpgKeyId             <td rowspan="2"> Sign artifacts, git commits and git tags |
+gpgKeyPassword       |
 gpgSecretKeyRingFile |
 bintrayUser   <td rowspan="2"> Release to Bintray |
 bintrayAPIKey |

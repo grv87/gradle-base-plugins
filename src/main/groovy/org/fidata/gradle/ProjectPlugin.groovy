@@ -123,7 +123,10 @@ final class ProjectPlugin extends AbstractPlugin {
 
     if (!project.group) { project.group = 'org.fidata' }
 
-    project.extensions.getByType(ReportingExtension).baseDir = project.convention.getPlugin(ProjectConvention).reportsDir
+    project.extensions.configure(ReportingExtension) { ReportingExtension extension ->
+      extension.baseDir = project.convention.getPlugin(ProjectConvention).reportsDir
+    }
+    // project.extensions.getByType(ReportingExtension).baseDir = project.convention.getPlugin(ProjectConvention).reportsDir
 
     configureGit()
 
@@ -162,9 +165,7 @@ final class ProjectPlugin extends AbstractPlugin {
 
     project.extensions.getByType(SemanticReleasePluginExtension).branchNames.replace 'develop', ''
 
-    if (project.hasProperty('ghToken')) {
-      project.tasks.withType(UpdateGithubRelease).getByName('updateGithubRelease').repo.ghToken = project.extensions.extraProperties['ghToken'].toString()
-    }
+    project.tasks.withType(UpdateGithubRelease).getByName('updateGithubRelease').repo.ghToken = project.extensions.extraProperties['ghToken'].toString()
   }
 
   /**
@@ -309,15 +310,20 @@ final class ProjectPlugin extends AbstractPlugin {
   }
 
   private void configureArtifactPublishing() {
-    project.extensions.extraProperties['signing.keyId'] = project.extensions.extraProperties['gpgKeyId'].toString()
+    /*
+     * WORKAROUND:
+     * https://github.com/gradle/gradle/issues/1918
+     * Signing plugin doesn't support GPG 2 key IDs
+     * <grv87 2018-07-01>
+     */
+    project.extensions.extraProperties['signing.keyId'] = project.extensions.extraProperties['gpgKeyId'].toString()[-8..-1]
+    project.extensions.extraProperties['signing.password'] = project.extensions.extraProperties['gpgKeyPassword'].toString()
     project.extensions.extraProperties['signing.secretKeyRingFile'] = project.extensions.extraProperties['gpgSecretKeyRingFile'].toString()
   }
 
   private void configureGit() {
-    if (project.hasProperty('gitUsername') && project.extensions.extraProperties['gitPassword']) {
-      System.setProperty 'org.ajoberstar.grgit.auth.username', project.extensions.extraProperties['gitUsername'].toString()
-      System.setProperty 'org.ajoberstar.grgit.auth.password', project.extensions.extraProperties['gitPassword'].toString()
-    }
+    System.setProperty 'org.ajoberstar.grgit.auth.username', project.extensions.extraProperties['gitUsername'].toString()
+    System.setProperty 'org.ajoberstar.grgit.auth.password', project.extensions.extraProperties['gitPassword'].toString()
   }
 
   /*

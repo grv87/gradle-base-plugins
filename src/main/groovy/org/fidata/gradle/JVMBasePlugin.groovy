@@ -19,8 +19,6 @@
  */
 package org.fidata.gradle
 
-import static org.gradle.api.plugins.JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME
-import static org.gradle.api.plugins.JavaPlugin.RUNTIME_ONLY_CONFIGURATION_NAME
 import static org.gradle.api.tasks.SourceSet.TEST_SOURCE_SET_NAME
 import static org.gradle.api.plugins.JavaPlugin.JAVADOC_TASK_NAME
 import static org.gradle.api.tasks.SourceSet.MAIN_SOURCE_SET_NAME
@@ -28,6 +26,8 @@ import static org.ajoberstar.gradle.git.release.base.BaseReleasePlugin.RELEASE_T
 import static ProjectPlugin.LICENSE_FILE_NAMES
 import static org.jfrog.gradle.plugin.artifactory.task.ArtifactoryTask.ARTIFACTORY_PUBLISH_TASK_NAME
 import static org.gradle.internal.FileUtils.toSafeFileName
+import org.gradle.plugins.signing.Sign
+import org.gradle.api.file.CopySpec
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.plugins.signing.SigningExtension
 import org.fidata.gradle.utils.PluginDependeesUtils
@@ -70,7 +70,9 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
     configurePublicReleases()
 
     project.tasks.withType(ProcessResources) { ProcessResources task ->
-      task.from(LICENSE_FILE_NAMES).into 'META-INF'
+      task.from(LICENSE_FILE_NAMES) { CopySpec copySpec ->
+        copySpec.into 'META-INF'
+      }
     }
 
     configureTesting()
@@ -181,11 +183,14 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
    * @param sourceSet source set to configure
    */
   void configureIntegrationTestSourceSetClasspath(SourceSet sourceSet) {
-    project.configurations.getByName(sourceSet.implementationConfigurationName).extendsFrom project.configurations.getByName(IMPLEMENTATION_CONFIGURATION_NAME)
-    project.configurations.getByName(sourceSet.runtimeOnlyConfigurationName).extendsFrom project.configurations.getByName(RUNTIME_ONLY_CONFIGURATION_NAME)
+    // https://docs.gradle.org/current/userguide/java_testing.html#sec:configuring_java_integration_tests
+    // +
+    SourceSet mainSourceSet = project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(MAIN_SOURCE_SET_NAME)
+    sourceSet.compileClasspath += mainSourceSet.output
+    sourceSet.runtimeClasspath += sourceSet.output + mainSourceSet.output // TOTEST
 
-    sourceSet.compileClasspath += project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(MAIN_SOURCE_SET_NAME).output
-    sourceSet.runtimeClasspath += sourceSet.output + project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(MAIN_SOURCE_SET_NAME).output
+    project.configurations.getByName(sourceSet.implementationConfigurationName).extendsFrom project.configurations.getByName(mainSourceSet.implementationConfigurationName)
+    project.configurations.getByName(sourceSet.runtimeOnlyConfigurationName).extendsFrom project.configurations.getByName(mainSourceSet.runtimeOnlyConfigurationName)
   }
 
   /**
@@ -255,16 +260,18 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
       clientConfig.publisher.password = project.extensions.extraProperties['artifactoryPassword']
       clientConfig.publisher.maven = true
     }
-    project.tasks.getByName(RELEASE_TASK_NAME).finalizedBy project.tasks.withType(ArtifactoryTask)
-    project.tasks.withType(ArtifactoryTask).getByName(ARTIFACTORY_PUBLISH_TASK_NAME).each { ArtifactoryTask task ->
+    project.tasks.withType(ArtifactoryTask).getByName(ARTIFACTORY_PUBLISH_TASK_NAME).with { ArtifactoryTask task ->
       task.mavenPublications.addAll project.extensions.getByType(PublishingExtension).publications.withType(MavenPublication)
+
+      task.dependsOn project.extensions.getByType(PublishingExtension).publications.withType(MavenPublication).collect { MavenPublication mavenPublication -> project.tasks.withType(Sign).getByName("sign${ mavenPublication.name.capitalize() }Publication") }
     }
+    project.tasks.getByName(RELEASE_TASK_NAME).finalizedBy project.tasks.withType(ArtifactoryTask)
   }
 
   private void configureArtifactsPublishing() {
-    /*project.extensions.getByType(PublishingExtension).publications.create('mavenJava', MavenPublication) { MavenPublication publication ->
-      publication.from project.components.getByName('java' /* TODO *//*)
-    }*/
+    project.extensions.getByType(PublishingExtension).publications.create('mavenJava', MavenPublication) { MavenPublication publication ->
+      publication.from project.components.getByName('java' /* TODO */)
+    }
     project.extensions.getByType(SigningExtension).sign project.extensions.getByType(PublishingExtension).publications
 
     configureArtifactory()
