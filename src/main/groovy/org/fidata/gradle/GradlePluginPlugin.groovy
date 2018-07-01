@@ -110,8 +110,9 @@ final class GradlePluginPlugin extends AbstractPlugin implements PropertyChangeL
       }
     }
 
-    SourceSet gradleTestSourceSet = project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(TestSet.baseName(/* WORKAROUND: org.ysb33r.gradle.gradletest.Names.DEFAULT_TASK has package scope <> */ 'gradleTest'))
-    project.plugins.getPlugin(JVMBasePlugin).addSpockDependency gradleTestSourceSet
+    project.afterEvaluate {
+      project.plugins.getPlugin(JVMBasePlugin).addSpockDependency project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(TestSet.baseName(/* WORKAROUND: org.ysb33r.gradle.gradletest.Names.DEFAULT_TASK has package scope <> */ 'gradleTest'))
+    }
 
     Pattern compatTestPattern = ~/^compatTest(.+)/
     project.plugins.getPlugin(JVMBasePlugin).addSpockDependency(
@@ -123,13 +124,15 @@ final class GradlePluginPlugin extends AbstractPlugin implements PropertyChangeL
       "compatTest/${ compatTestMatcher.group(1).uncapitalize() }"
     }
 
-    project.extensions.getByType(GradlePluginDevelopmentExtension).testSourceSets((project.extensions.getByType(GradlePluginDevelopmentExtension).testSourceSets + [gradleTestSourceSet, project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(FUNCTIONAL_TEST_SOURCE_SET_NAME)]).toArray(new SourceSet[0]))
-    // https://docs.gradle.org/current/userguide/test_kit.html#sub:test-kit-automatic-classpath-injection
-    project.extensions.getByType(GradlePluginDevelopmentExtension).testSourceSets.each { SourceSet sourceSet ->
-      /*SourceSet mainSourceSet = project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(MAIN_SOURCE_SET_NAME)
-      sourceSet.compileClasspath += mainSourceSet.output
-      sourceSet.runtimeClasspath += sourceSet.output + mainSourceSet.output*/
-      project.plugins.getPlugin(JVMBasePlugin).configureIntegrationTestSourceSetClasspath sourceSet
+    project.afterEvaluate {
+      project.extensions.getByType(GradlePluginDevelopmentExtension).testSourceSets((project.extensions.getByType(GradlePluginDevelopmentExtension).testSourceSets + [project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(TestSet.baseName(/* WORKAROUND: org.ysb33r.gradle.gradletest.Names.DEFAULT_TASK has package scope <> */ 'gradleTest')), project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(FUNCTIONAL_TEST_SOURCE_SET_NAME)]).toArray(new SourceSet[0]))
+      // https://docs.gradle.org/current/userguide/test_kit.html#sub:test-kit-automatic-classpath-injection
+      project.extensions.getByType(GradlePluginDevelopmentExtension).testSourceSets.each { SourceSet sourceSet ->
+        /*SourceSet mainSourceSet = project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(MAIN_SOURCE_SET_NAME)
+        sourceSet.compileClasspath += mainSourceSet.output
+        sourceSet.runtimeClasspath += sourceSet.output + mainSourceSet.output*/
+        project.plugins.getPlugin(JVMBasePlugin).configureIntegrationTestSourceSetClasspath sourceSet
+      }
     }
 
     project.tasks.matching { Task task -> task.name ==~ ~/^compatTest/ || task.name == 'gradleTest' }.each { Task task ->
