@@ -95,11 +95,11 @@ class ProjectPluginSpecification extends Specification {
     Task check = project.tasks.findByName('check')
     and: 'release task exists'
     Task release = project.tasks.findByName('release')
-    and: 'release task depends on build'
+    and: 'release task depends on build task'
     release.taskDependencies.getDependencies(release).contains(build)
-    and: 'release task depends on check'
+    and: 'release task depends on check task'
     release.taskDependencies.getDependencies(release).contains(check)
-    and: 'build task does not depend on check'
+    and: 'build task does not depend on check task'
     !build.taskDependencies.getDependencies(build).contains(check)
   }
 
@@ -126,7 +126,7 @@ class ProjectPluginSpecification extends Specification {
     then:
     'lint task exists'
     Task lint = project.tasks.findByName('lint')
-    and: 'check task depends on lint'
+    and: 'check task depends on lint task'
     Task check = project.tasks['check']
     check.taskDependencies.getDependencies(check).contains(lint)
   }
@@ -151,10 +151,10 @@ class ProjectPluginSpecification extends Specification {
     Task codenarcBuildSrc = project.tasks.findByName('codenarcBuildSrc')
     and: 'codenarcBuildSrc task is an instance of CodeNarc'
     CodeNarc.isInstance(codenarcBuildSrc)
-    and: 'codenarc task depends on codenarcBuildSrc'
+    and: 'codenarc task depends on codenarcBuildSrc task'
     Task codenarc = project.tasks['codenarc']
     codenarc.taskDependencies.getDependencies(codenarc).contains(codenarcBuildSrc)
-    and: 'check task does not depend on codenarcBuildSrc'
+    and: 'check task does not depend on codenarcBuildSrc task'
     Task check = project.tasks['check']
     !check.taskDependencies.getDependencies(check).contains(codenarcBuildSrc)
   }
