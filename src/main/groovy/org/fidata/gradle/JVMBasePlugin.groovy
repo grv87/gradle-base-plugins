@@ -26,7 +26,6 @@ import static org.gradle.api.tasks.SourceSet.MAIN_SOURCE_SET_NAME
 import static org.ajoberstar.gradle.git.release.base.BaseReleasePlugin.RELEASE_TASK_NAME
 import static ProjectPlugin.LICENSE_FILE_NAMES
 import static org.jfrog.gradle.plugin.artifactory.task.ArtifactoryTask.ARTIFACTORY_PUBLISH_TASK_NAME
-import static org.gradle.internal.FileUtils.toSafeFileName
 import org.gradle.plugins.signing.Sign
 import org.gradle.api.file.CopySpec
 import org.gradle.api.publish.maven.MavenPublication
@@ -131,6 +130,8 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
    * @param sourceSet source set
    * @param tasks list of test tasks.
    * @param reportDirNamer closure to set report directory name from task name
+   *        Nested directories are supported.
+   *        Call <code>org.gradle.internal.FileUtils.toSafeFileName</code> manually on individual directory/file names
    */
   void addSpockDependency(SourceSet sourceSet, Iterable<Test> tasks, Closure<GString> reportDirNamer) {
     addJUnitDependency sourceSet
@@ -171,7 +172,7 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
     tasks.each { Test task ->
       task.with {
         reports.html.enabled = false
-        systemProperty 'com.athaydes.spockframework.report.outputDir', new File(project.convention.getPlugin(ProjectConvention).htmlReportsDir, "spock/${ toSafeFileName(reportDirNamer.call(name)) }").absolutePath
+        systemProperty 'com.athaydes.spockframework.report.outputDir', new File(project.convention.getPlugin(ProjectConvention).htmlReportsDir, "spock/${ reportDirNamer.call(name) }").absolutePath
       }
     }
 

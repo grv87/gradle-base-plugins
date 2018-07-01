@@ -124,7 +124,7 @@ final class GradlePluginPlugin extends AbstractPlugin implements PropertyChangeL
     ) { String name ->
       Matcher compatTestMatcher = (name =~ compatTestPattern)
       compatTestMatcher.find()
-      "compatTest/${ compatTestMatcher.group(1).uncapitalize() }"
+      "compatTest/${ toSafeFileName(compatTestMatcher.group(1).uncapitalize()) }"
     }
 
     project.afterEvaluate {
