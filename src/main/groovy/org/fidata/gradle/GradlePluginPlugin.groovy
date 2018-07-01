@@ -23,6 +23,7 @@ import static ProjectPlugin.PREREQUISITES_UPDATE_TASK_NAME
 import static org.ajoberstar.gradle.git.release.base.BaseReleasePlugin.RELEASE_TASK_NAME
 import static ProjectPlugin.ARTIFACTORY_URL
 import static JVMBasePlugin.FUNCTIONAL_TEST_SOURCE_SET_NAME
+import static JVMBasePlugin.FUNCTIONAL_TEST_TASK_NAME
 import static org.gradle.internal.FileUtils.toSafeFileName
 import org.gradle.api.Task
 import org.gradle.api.tasks.SourceSet
@@ -129,6 +130,10 @@ final class GradlePluginPlugin extends AbstractPlugin implements PropertyChangeL
       sourceSet.compileClasspath += mainSourceSet.output
       sourceSet.runtimeClasspath += sourceSet.output + mainSourceSet.output*/
       project.plugins.getPlugin(JVMBasePlugin).configureIntegrationTestSourceSetClasspath sourceSet
+    }
+
+    project.tasks.matching { Task task -> task.name ==~ ~/^compatTest/ || task.name == 'gradleTest' }.each { Task task ->
+      task.shouldRunAfter project.tasks.getByName(FUNCTIONAL_TEST_TASK_NAME)
     }
   }
 
