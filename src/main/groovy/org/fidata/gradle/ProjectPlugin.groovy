@@ -386,6 +386,7 @@ final class ProjectPlugin extends AbstractPlugin {
     }
 
     project.tasks.getByName(/* WORKAROUND: GitPublishPlugin.PUSH_TASK has package scope <grv87 2018-06-23> */'gitPublishPush').enabled = repoClean
+    project.tasks.getByName(RELEASE_TASK_NAME).dependsOn project.tasks.getByName(/* GitPublishPlugin.PUSH_TASK */ 'gitPublishPush')
   }
 
   /**
