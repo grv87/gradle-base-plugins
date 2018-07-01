@@ -103,6 +103,15 @@ class GradlePluginPluginSpecification extends Specification {
 
   // feature methods
 
+  /*
+   * WORKAROUND:
+   * This can't be tested in functional tests
+   * since `org.fidata.plugin` requires `enableFeaturePreview('STABLE_PUBLISHING')` in `settings.gradle`.
+   * Without that we got error:
+   * `org.gradle.api.InvalidUserDataException: Cannot configure the 'publishing' extension after it has been accessed.`
+   * Looks like ProjectBuilder doesn't support `settings.gradle`.
+   * <grv87 2018-07-01>
+   */
   @Unroll
   void 'adds #taskName task'() {
     when: '#taskName and functionalTest tasks are run'
