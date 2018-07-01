@@ -77,6 +77,9 @@ import org.gradle.api.artifacts.ResolutionStrategy
 import de.gliderpilot.gradle.semanticrelease.UpdateGithubRelease
 import org.jfrog.gradle.plugin.artifactory.dsl.ArtifactoryPluginConvention
 import com.dorongold.gradle.tasktree.TaskTreeTask
+import java.util.regex.Matcher
+import java.util.regex.Pattern
+import com.github.zafarkhaja.semver.Version
 
 /**
  * Provides an environment for a general, language-agnostic project
@@ -347,7 +350,20 @@ final class ProjectPlugin extends AbstractPlugin {
        * CAVEAT:
        * SNAPSHOT documentation for other branches should be removed manually
        */
-      preserve.exclude "$project.version/" // TODO - directory ? **
+      preserve.exclude { FileTreeElement fileTreeElement ->
+        Pattern snapshotSuffix = ~/-SNAPSHOT$/
+        Matcher m = snapshotSuffix.matcher(fileTreeElement.relativePath.segments[0])
+        if (!m.find()) {
+          return false
+        }
+        String dirVersion = m.replaceFirst('')
+        String projectVersion = project.version.toString().replaceFirst(snapshotSuffix, '')
+        try {
+          return Version.valueOf(dirVersion).preReleaseVersion == Version.valueOf(projectVersion).preReleaseVersion
+        } catch (ignored) {
+          return false
+        }
+      }
       commitMessage.set COMMIT_MESSAGE_TEMPLATE.make(
         type: 'docs',
         subject: "publish documentation for version ${ project.version }",
