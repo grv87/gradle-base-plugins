@@ -35,9 +35,9 @@ class GradlePluginPluginSpecification extends Specification {
 
   final File testProjectDir = Files.createTempDirectory('compatTest').toFile()
 
-  File buildFile
-  File settingsFile
-  File propertiesFile
+  File buildFile = new File(testProjectDir, 'build.gradle')
+  File settingsFile = new File(testProjectDir, 'settings.gradle')
+  File propertiesFile = new File(testProjectDir, 'gradle.properties')
 
   static final Map<String, String> EXTRA_PROPERTIES = [
     'artifactoryUser'    : 'dummyArtifactoryUser',
@@ -68,18 +68,16 @@ class GradlePluginPluginSpecification extends Specification {
       'git commit --message "Initial commit" --allow-empty',
     ].each { it.execute(null, testProjectDir).waitFor() }
 
-    buildFile = new File(testProjectDir, 'build.gradle')
     buildFile << '''\
       plugins {
         id 'org.fidata.plugin'
       }
     '''.stripIndent()
-    settingsFile = new File(testProjectDir, 'settings.gradle')
+
     settingsFile << '''\
       enableFeaturePreview('STABLE_PUBLISHING')
     '''.stripIndent()
 
-    propertiesFile = new File(testProjectDir, 'gradle.properties')
     propertiesFile.withPrintWriter { PrintWriter printWriter ->
       EXTRA_PROPERTIES.each { String key, String value ->
         printWriter.println "$key=$value"

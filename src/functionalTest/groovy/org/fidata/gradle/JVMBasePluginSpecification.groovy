@@ -64,7 +64,9 @@ class JVMBasePluginSpecification extends Specification {
       'git init',
       'git commit --message "Initial commit" --allow-empty',
     ].each { it.execute(null, testProjectDir.root).waitFor() }
-    testProjectDir.newFile('settings.gradle') << 'enableFeaturePreview(\'STABLE_PUBLISHING\')'
+    testProjectDir.newFile('settings.gradle') << '''\
+      enableFeaturePreview('STABLE_PUBLISHING')
+    '''.stripIndent()
     project = ProjectBuilder.builder().withProjectDir(testProjectDir.root).build()
     EXTRA_PROPERTIES.each { String key, String value ->
       project.ext.setProperty key, value
@@ -86,8 +88,7 @@ class JVMBasePluginSpecification extends Specification {
 
     then:
     'functionalTest task exists'
-    Task functionalTest = project.tasks.findByName('functionalTest')
-    assert functionalTest != null
+    Task functionalTest = project.tasks.getByName('functionalTest')
     and:
     'functionalTest should be run after test task'
     functionalTest.shouldRunAfter.getDependencies(functionalTest).contains(project.tasks['test'])

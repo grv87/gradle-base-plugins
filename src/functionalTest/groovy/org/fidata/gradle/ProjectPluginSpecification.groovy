@@ -90,11 +90,11 @@ class ProjectPluginSpecification extends Specification {
     'clean task exists'
     project.tasks.findByName('clean')
     and: 'build task exists'
-    Task build = project.tasks.findByName('build')
+    Task build = project.tasks.getByName('build')
     and: 'check task exists'
-    Task check = project.tasks.findByName('check')
+    Task check = project.tasks.getByName('check')
     and: 'release task exists'
-    Task release = project.tasks.findByName('release')
+    Task release = project.tasks.getByName('release')
     and: 'release task depends on build task'
     release.taskDependencies.getDependencies(release).contains(build)
     and: 'release task depends on check task'
@@ -111,7 +111,7 @@ class ProjectPluginSpecification extends Specification {
 
     then:
     '#task task exists'
-    project.tasks.findByName(task)
+    project.tasks.getByName(task)
 
     where:
     task << ['prerequisitesInstall', 'prerequisitesUpdate', 'prerequisitesOutdated']
@@ -125,7 +125,7 @@ class ProjectPluginSpecification extends Specification {
 
     then:
     'lint task exists'
-    Task lint = project.tasks.findByName('lint')
+    Task lint = project.tasks.getByName('lint')
     and: 'check task depends on lint task'
     Task check = project.tasks['check']
     check.taskDependencies.getDependencies(check).contains(lint)
@@ -138,7 +138,7 @@ class ProjectPluginSpecification extends Specification {
 
     then:
     'codenarc task exists'
-    project.tasks.findByName('codenarc')
+    project.tasks.getByName('codenarc')
   }
 
   void 'provides codenarcBuildSrc task'() {
@@ -148,7 +148,7 @@ class ProjectPluginSpecification extends Specification {
 
     then:
     'codenarcBuildSrc task exists'
-    Task codenarcBuildSrc = project.tasks.findByName('codenarcBuildSrc')
+    Task codenarcBuildSrc = project.tasks.getByName('codenarcBuildSrc')
     and: 'codenarcBuildSrc task is an instance of CodeNarc'
     CodeNarc.isInstance(codenarcBuildSrc)
     and: 'codenarc task depends on codenarcBuildSrc task'
@@ -189,7 +189,7 @@ class ProjectPluginSpecification extends Specification {
 
     then:
     'taskTree task exists'
-    project.tasks.findByName('taskTree')
+    project.tasks.getByName('taskTree')
   }
 
   void 'sets project group'() {

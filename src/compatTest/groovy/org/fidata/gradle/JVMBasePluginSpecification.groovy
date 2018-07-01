@@ -20,7 +20,6 @@
 package org.fidata.gradle
 
 import org.gradle.testkit.runner.GradleRunner
-import org.gradle.api.Project
 import spock.lang.Specification
 import java.nio.file.Files
 
@@ -33,7 +32,8 @@ class JVMBasePluginSpecification extends Specification {
 
   final File testProjectDir = Files.createTempDirectory('compatTest').toFile()
 
-  Project project
+  File buildFile = new File(testProjectDir, 'build.gradle')
+  File propertiesFile = new File(testProjectDir, 'gradle.properties')
 
   static final Map<String, String> EXTRA_PROPERTIES = [
     'artifactoryUser'    : 'dummyArtifactoryUser',
@@ -64,14 +64,12 @@ class JVMBasePluginSpecification extends Specification {
       'git commit --message "Initial commit" --allow-empty',
     ].each { it.execute(null, testProjectDir).waitFor() }
 
-    File buildFile = new File(testProjectDir, 'build.gradle')
-    buildFile << '''
+    buildFile << '''\
       plugins {
         id 'org.fidata.base.jvm'
       }
-    '''
+    '''.stripIndent()
 
-    File propertiesFile = new File(testProjectDir, 'gradle.properties')
     propertiesFile.withPrintWriter { PrintWriter printWriter ->
       EXTRA_PROPERTIES.each { String key, String value ->
         printWriter.println "$key=$value"
