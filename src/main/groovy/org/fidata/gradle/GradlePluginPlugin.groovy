@@ -25,6 +25,9 @@ import static ProjectPlugin.ARTIFACTORY_URL
 import static JVMBasePlugin.FUNCTIONAL_TEST_SOURCE_SET_NAME
 import static JVMBasePlugin.FUNCTIONAL_TEST_TASK_NAME
 import static org.gradle.internal.FileUtils.toSafeFileName
+import static JVMBasePlugin.MAVEN_JAVA_PUBICATION_NAME
+import org.gradle.api.publish.Publication
+import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.Task
 import org.gradle.api.tasks.SourceSet
 import org.gradle.plugin.devel.GradlePluginDevelopmentExtension
@@ -145,6 +148,10 @@ final class GradlePluginPlugin extends AbstractPlugin implements PropertyChangeL
   }
 
   private void configureArtifactsPublishing() {
+    project.extensions.getByType(PublishingExtension).publications.removeAll { Publication publication ->
+      publication.name == MAVEN_JAVA_PUBICATION_NAME
+    }
+
     GString repository = "plugins-${ project.convention.getPlugin(ProjectConvention).isRelease ? 'release' : 'snapshot' }"
     project.convention.getPlugin(ArtifactoryPluginConvention).clientConfig.with {
       publisher.repoKey = "$repository-local"

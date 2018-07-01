@@ -120,6 +120,27 @@ class GradlePluginPluginSpecification extends Specification {
     taskName << ['compatTest', 'gradleTest']
   }
 
+  void 'does not have mavenJava publication'() {
+    given:
+    'task to print list of publications'
+    buildFile << '''\
+      task('listPublications').doLast {
+        file('publications').withPrintWriter { PrintWriter printWriter ->
+          publishing.publications.each {
+            printWriter.println it.name
+          }
+        }
+      }
+    '''.stripIndent()
+    when:
+    'task is queries'
+    build('listPublications')
+
+    then:
+    'mavenJava publication is not in the list'
+    !new File(testProjectDir, 'publications').text.split().contains('mavenJava')
+  }
+
   // helper methods
   protected BuildResult build(String... arguments) {
     GradleRunner.create()

@@ -266,6 +266,9 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
       project.extensions.getByType(PublishingExtension).publications.withType(MavenPublication) { MavenPublication mavenPublication ->
         task.mavenPublications.add mavenPublication
       }
+      project.extensions.getByType(PublishingExtension).publications.whenObjectRemoved { MavenPublication mavenPublication ->
+        task.mavenPublications.remove mavenPublication
+      }
 
       task.dependsOn project.tasks.withType(Sign).matching { Sign sign ->
         project.extensions.getByType(PublishingExtension).publications.withType(MavenPublication).any { MavenPublication mavenPublication ->
@@ -276,8 +279,13 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
     project.tasks.getByName(RELEASE_TASK_NAME).finalizedBy project.tasks.withType(ArtifactoryTask)
   }
 
+  /**
+   * Name of maven java publication
+   */
+  public static final String MAVEN_JAVA_PUBICATION_NAME = 'mavenJava'
+
   private void configureArtifactsPublishing() {
-    project.extensions.getByType(PublishingExtension).publications.create('mavenJava', MavenPublication) { MavenPublication publication ->
+    project.extensions.getByType(PublishingExtension).publications.create(MAVEN_JAVA_PUBICATION_NAME, MavenPublication) { MavenPublication publication ->
       publication.from project.components.getByName('java' /* TODO */)
     }
     project.extensions.getByType(SigningExtension).sign project.extensions.getByType(PublishingExtension).publications
