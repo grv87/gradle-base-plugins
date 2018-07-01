@@ -49,3 +49,5 @@ sourceSets.main {
   groovy.srcDirs = ["${ project.ext.rootDir }/src/plugin-dependencies/groovy", "${ project.ext.rootDir }/src/main/groovy"]
   resources.srcDirs = ["${ project.ext.rootDir }/src/main/resources"]
 }
+
+apply from: "${ project.ext.rootDir }/gradle/gradle-plugin-markers.gradle"

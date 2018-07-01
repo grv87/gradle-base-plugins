@@ -52,6 +52,8 @@ afterEvaluate {
   jvm.javadocLinks['org.spdx'] = uri("https://static.javadoc.io/org.spdx/spdx-tools/${ configurations.getByName('compileClasspath').resolvedConfiguration.firstLevelModuleDependencies.find { it.moduleGroup == 'org.spdx' && it.moduleName == 'spdx-tools' }.moduleVersion }/")
 }
 
+apply from: "${ project.ext.rootDir }/gradle/gradle-plugin-markers.gradle"
+
 dependencies {
   testImplementation group: 'pl.pragmatists', name: 'JUnitParams', version: 'latest.release'
 }

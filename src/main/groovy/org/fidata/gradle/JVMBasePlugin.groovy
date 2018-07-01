@@ -263,9 +263,15 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
       clientConfig.publisher.maven = true
     }
     project.tasks.withType(ArtifactoryTask).getByName(ARTIFACTORY_PUBLISH_TASK_NAME).with { ArtifactoryTask task ->
-      task.mavenPublications.addAll project.extensions.getByType(PublishingExtension).publications.withType(MavenPublication)
+      project.extensions.getByType(PublishingExtension).publications.withType(MavenPublication) { MavenPublication mavenPublication ->
+        task.mavenPublications.add mavenPublication
+      }
 
-      task.dependsOn project.extensions.getByType(PublishingExtension).publications.withType(MavenPublication).collect { MavenPublication mavenPublication -> project.tasks.withType(Sign).getByName("sign${ mavenPublication.name.capitalize() }Publication") }
+      task.dependsOn project.tasks.withType(Sign).matching { Sign sign ->
+        project.extensions.getByType(PublishingExtension).publications.withType(MavenPublication).any { MavenPublication mavenPublication ->
+          sign.name == "sign${ mavenPublication.name.capitalize() }Publication"
+        }
+      }
     }
     project.tasks.getByName(RELEASE_TASK_NAME).finalizedBy project.tasks.withType(ArtifactoryTask)
   }
