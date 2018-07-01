@@ -359,15 +359,12 @@ final class ProjectPlugin extends AbstractPlugin {
 
     NoJekyll noJekyllTask = project.tasks.create(NO_JEKYLL_TASK_NAME, NoJekyll) { NoJekyll task ->
       task.with {
-        onlyIf { repoClean }
         description = 'Generates .nojekyll file in gitPublish repository'
         destinationDir = project.extensions.getByType(GitPublishExtension).repoDir.asFile.get()
       }
     }
 
-    project.tasks.getByName(/* WORKAROUND: GitPublishPlugin.COPY_TASK has package scope <grv87 2018-06-23> */ 'gitPublishCopy').onlyIf {
-      repoClean
-    }
+    project.tasks.getByName(/* WORKAROUND: GitPublishPlugin.COPY_TASK has package scope <grv87 2018-06-23> */ 'gitPublishCopy')
 
     /*
      * WORKAROUND:
@@ -377,26 +374,18 @@ final class ProjectPlugin extends AbstractPlugin {
      */
     ResignGitCommit resignGitCommit = project.tasks.create("${ /* GitPublishPlugin.COMMIT_TASK */ 'gitPublishCommit' }Resign", ResignGitCommit) { ResignGitCommit task ->
       task.with {
-        onlyIf { repoClean }
+        enabled = repoClean
         description = 'Amend git publish commit adding sign to it'
         workingDir = project.extensions.getByType(GitPublishExtension).repoDir.asFile.get()
       }
     }
     project.tasks.getByName(/* WORKAROUND: GitPublishPlugin.COMMIT_TASK has package scope <grv87 2018-06-23> */ 'gitPublishCommit').with {
-      onlyIf { repoClean }
+      enabled = repoClean
       dependsOn noJekyllTask
       finalizedBy resignGitCommit
     }
 
-    /*
-     * TODO:
-     * Execution failed for task ':gitPublishReset'.
-     * > Checkout returned unexpected result NO_CHANGE
-     */
-    // project.tasks.getByName(/* WORKAROUND: GitPublishPlugin.PUSH_TASK has package scope <grv87 2018-06-23> */'gitPublishPush').onlyIf { repoClean }
-    if (repoClean) {
-      project.tasks.getByName(RELEASE_TASK_NAME).dependsOn project.tasks.getByName(/* GitPublishPlugin.PUSH_TASK */ 'gitPublishPush')
-    }
+    project.tasks.getByName(/* WORKAROUND: GitPublishPlugin.PUSH_TASK has package scope <grv87 2018-06-23> */'gitPublishPush').enabled = repoClean
   }
 
   /**
