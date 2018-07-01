@@ -238,6 +238,17 @@ and also:
 
 	Configures Maven publication to Artifactory.
 
+	Your `settings.gradle` should contain this row:
+	```
+	enableFeaturePreview('STABLE_PUBLISHING')
+    ```
+
+    to prevent the following error:
+
+    ```
+    org.gradle.api.InvalidUserDataException: Cannot configure the 'publishing' extension after it has been accessed.
+    ```
+
 	If `publicReleases` is on — configures publication to Maven Central.
 
 *	If `publicReleases` is on — applies [`com.jfrog.bintray` plugin
