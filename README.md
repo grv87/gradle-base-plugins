@@ -330,20 +330,23 @@ used in the project.
 
 # Properties
 
-Provided via `gradle.properties` file.
+Should be provided via `gradle.properties` file.
 
-Property | Usage | Notes
----------|-------|------
-artifactoryUser     <td rowspan="2"> Getting build tools and dependencies from Artifactory; use Gradle cache |
-artifactoryPassword | It is actually API key
-gitUsername <td rowspan="2"> Git push during release |
-gitPassword |
-ghToken | Create release on GitHub |
-gpgKeyId             <td rowspan="2"> Sign artifacts, git commits and git tags |
-gpgKeyPassword       |
-gpgSecretKeyRingFile |
-bintrayUser   <td rowspan="2"> Release to Bintray |
-bintrayAPIKey |
+<table>
+<thead><tr><th>Property</th><th>Usage</th><th>Notes</th></tr></thead>
+<tbody>
+    <tr><td>artifactoryUser    </td><td rowspan="2">Getting build tools and dependencies from Artifactory; use Gradle cache</td><td>&nbsp;                </td>
+    <tr><td>artifactoryPassword</td>                                                                                            <td>It is actually API key</td>
+    <tr><td>gitUsername</td><td rowspan="2">Git push during release</td><td>&nbsp;</td>
+    <tr><td>gitPassword</td>                                            <td>&nbsp;</td>
+    <tr><td>ghToken</td><td>Create release on GitHub</td><td>&nbsp;</td>
+    <tr><td>gpgKeyId            </td><td rowspan="3"> Sign artifacts, git commits and git tags</td><td>&nbsp;</td>
+    <tr><td>gpgKeyPassword      </td>                                                              <td>&nbsp;</td>
+    <tr><td>gpgSecretKeyRingFile</td>                                                              <td>&nbsp;</td>
+    <tr><td>bintrayUser  </td><td rowspan="2"> Release to Bintray</td><td>&nbsp;</td>
+    <tr><td>bintrayAPIKey</td>                                        <td>&nbsp;</td>
+</tbody>
+</table>
 
 # Development
 
