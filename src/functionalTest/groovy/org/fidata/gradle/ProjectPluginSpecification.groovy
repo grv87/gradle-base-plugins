@@ -82,12 +82,10 @@ class ProjectPluginSpecification extends Specification {
   // feature methods
 
   void 'provides lifecycle tasks'() {
-    when:
-    'plugin is applied'
+    when: 'plugin is applied'
     project.apply plugin: 'org.fidata.project'
 
-    then:
-    'clean task exists'
+    then: 'clean task exists'
     project.tasks.findByName('clean')
     and: 'build task exists'
     Task build = project.tasks.getByName('build')
@@ -105,12 +103,10 @@ class ProjectPluginSpecification extends Specification {
 
   @Unroll
   void 'provides prerequisites lifecycle tasks'() {
-    when:
-    'plugin is applied'
+    when: 'plugin is applied'
     project.apply plugin: 'org.fidata.project'
 
-    then:
-    '#task task exists'
+    then: '#task task exists'
     project.tasks.getByName(task)
 
     where:
@@ -119,12 +115,10 @@ class ProjectPluginSpecification extends Specification {
 
   @Unroll
   void 'provides link task'() {
-    when:
-    'plugin is applied'
+    when: 'plugin is applied'
     project.apply plugin: 'org.fidata.project'
 
-    then:
-    'lint task exists'
+    then: 'lint task exists'
     Task lint = project.tasks.getByName('lint')
     and: 'check task depends on lint task'
     Task check = project.tasks['check']
@@ -132,22 +126,18 @@ class ProjectPluginSpecification extends Specification {
   }
 
   void 'provides codenarc task'() {
-    when:
-    'plugin is applied'
+    when: 'plugin is applied'
     project.apply plugin: 'org.fidata.project'
 
-    then:
-    'codenarc task exists'
+    then: 'codenarc task exists'
     project.tasks.getByName('codenarc')
   }
 
   void 'provides codenarcBuildSrc task'() {
-    when:
-    'plugin is applied'
+    when: 'plugin is applied'
     project.apply plugin: 'org.fidata.project'
 
-    then:
-    'codenarcBuildSrc task exists'
+    then: 'codenarcBuildSrc task exists'
     Task codenarcBuildSrc = project.tasks.getByName('codenarcBuildSrc')
     and: 'codenarcBuildSrc task is an instance of CodeNarc'
     CodeNarc.isInstance(codenarcBuildSrc)
@@ -160,22 +150,18 @@ class ProjectPluginSpecification extends Specification {
   }
 
   void 'provides reportsDir properties'() {
-    when:
-    'plugin is applied'
+    when: 'plugin is applied'
     project.apply plugin: 'org.fidata.project'
 
-    then:
-    '#property property exists'
+    then: '#property property exists'
     Object propertyValue = project.property(property)
     and: '#property is an instance of File'
     File.isInstance(propertyValue)
 
-    when:
-    'property is tried to be set'
+    when: 'property is tried to be set'
     project.setProperty(property, project.file('dummyFile'))
 
-    then:
-    'GroovyRuntimeException is thrown'
+    then: 'GroovyRuntimeException is thrown'
     thrown(GroovyRuntimeException)
 
     where:
@@ -183,56 +169,44 @@ class ProjectPluginSpecification extends Specification {
   }
 
   void 'provides taskTree task'() {
-    when:
-    'plugin is applied'
+    when: 'plugin is applied'
     project.apply plugin: 'org.fidata.project'
 
-    then:
-    'taskTree task exists'
+    then: 'taskTree task exists'
     project.tasks.getByName('taskTree')
   }
 
   void 'sets project group'() {
-    when:
-    'plugin is applied'
+    when: 'plugin is applied'
     project.apply plugin: 'org.fidata.project'
 
-    then:
-    'project group is set'
+    then: 'project group is set'
     project.group == 'org.fidata'
   }
 
   void 'provides license property'() {
-    given:
-    'plugin is applied'
+    given: 'plugin is applied'
     project.apply plugin: 'org.fidata.project'
 
-    when:
-    'license property set with valid SPDX license identifier'
+    when: 'license property set with valid SPDX license identifier'
     project.license == 'Apache-2.0'
 
-    then:
-    'no exception is thrown'
+    then: 'no exception is thrown'
     noExceptionThrown()
 
-    when:
-    'license property set empty'
+    when: 'license property set empty'
     project.license == ''
 
-    then:
-    'no exception is thrown'
+    then: 'no exception is thrown'
     noExceptionThrown()
 
-    when:
-    'license property set null'
+    when: 'license property set null'
     project.license == null
 
-    then:
-    'no exception is thrown'
+    then: 'no exception is thrown'
     noExceptionThrown()
 
-    when:
-    'license property set with invalid SPDX license identifier'
+    when: 'license property set with invalid SPDX license identifier'
     project.license = 'Apache2.0'
 
     then:
@@ -240,20 +214,17 @@ class ProjectPluginSpecification extends Specification {
   }
 
   void 'provides contacts extension'() {
-    given:
-    'plugin is applied'
+    given: 'plugin is applied'
     project.apply plugin: 'org.fidata.project'
 
-    when:
-    'contacts extension is available'
+    when: 'contacts extension is available'
     project.contacts {
       'test@example.com' {
         moniker 'Tester'
       }
     }
 
-    then:
-    'no exception is thrown'
+    then: 'no exception is thrown'
     noExceptionThrown()
   }
 

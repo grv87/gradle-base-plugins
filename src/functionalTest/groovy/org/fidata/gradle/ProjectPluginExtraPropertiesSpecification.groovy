@@ -78,35 +78,29 @@ class ProjectPluginExtraPropertiesSpecification extends Specification {
 
   // feature methods
   void 'works when all extra properties are set'() {
-    given:
-    'all properties are set'
+    given: 'all properties are set'
     EXTRA_PROPERTIES.each { String key, String value ->
       project.ext.setProperty key, value
     }
 
-    when:
-    'plugin is applied'
+    when: 'plugin is applied'
     project.apply plugin: 'org.fidata.project'
 
-    then:
-    'no exception is thrown'
+    then: 'no exception is thrown'
     noExceptionThrown()
   }
 
   @Unroll
   void 'requires extra property #property'() {
-    given:
-    'all properties except #property are set'
+    given: 'all properties except #property are set'
     EXTRA_PROPERTIES.findAll { key, value -> key != property }.each { String key, String value ->
       project.ext.setProperty key, value
     }
 
-    when:
-    'plugin is applied'
+    when: 'plugin is applied'
     project.apply plugin: 'org.fidata.project'
 
-    then:
-    'PluginApplicationException is thrown'
+    then: 'PluginApplicationException is thrown'
     thrown(PluginApplicationException)
 
     where:

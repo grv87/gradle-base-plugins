@@ -105,12 +105,10 @@ class GradlePluginPluginSpecification extends Specification {
 
   @Unroll
   void 'adds #taskName task'() {
-    when:
-    '#taskName and functionalTest tasks are run'
+    when: '#taskName and functionalTest tasks are run'
     BuildResult result = build('--dry-run', taskName, 'functionalTest')
 
-    then:
-    '#taskName is run'
+    then: '#taskName is run'
     List<String> output = skippedTaskPathsGradleBugWorkaround(result.output)
     output.contains ':' + taskName
     and: '#taskName is run after functionalTest task'
@@ -121,8 +119,7 @@ class GradlePluginPluginSpecification extends Specification {
   }
 
   void 'does not have mavenJava publication'() {
-    given:
-    'task to print list of publications'
+    given: 'task to print list of publications'
     buildFile << '''\
       task('listPublications').doLast {
         file('publications').withPrintWriter { PrintWriter printWriter ->
@@ -132,12 +129,10 @@ class GradlePluginPluginSpecification extends Specification {
         }
       }
     '''.stripIndent()
-    when:
-    'task is queries'
+    when: 'task is queries'
     build('listPublications')
 
-    then:
-    'mavenJava publication is not in the list'
+    then: 'mavenJava publication is not in the list'
     !new File(testProjectDir, 'publications').text.split().contains('mavenJava')
   }
 

@@ -96,8 +96,7 @@ class JVMBasePluginSpecification extends Specification {
   // feature methods
 
   void 'copies license file into resources META-INF directory'() {
-    given:
-    'license file'
+    given: 'license file'
     new File(testProjectDir, 'LICENSE').text = 'Dummy license file'
 
     when:
@@ -108,8 +107,7 @@ class JVMBasePluginSpecification extends Specification {
       .withPluginClasspath()
       .build()
 
-    then:
-    'resources META-INF directory contains license file'
+    then: 'resources META-INF directory contains license file'
     new File(testProjectDir, 'build/resources/main/META-INF/LICENSE').text == 'Dummy license file' // TODO
 
     (success = true) != null
