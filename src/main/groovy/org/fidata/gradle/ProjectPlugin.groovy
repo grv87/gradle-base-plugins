@@ -238,9 +238,9 @@ final class ProjectPlugin extends AbstractPlugin {
             assert project.gradle.startParameter.writeDependencyLocks
           }
           doLast {
-            project.configurations.each {
-              if (it.canBeResolved) {
-                it.resolve()
+            project.configurations.each { Configuration configuration ->
+              if (configuration.canBeResolved) {
+                configuration.resolve()
               }
             }
           }
