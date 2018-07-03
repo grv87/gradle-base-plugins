@@ -21,6 +21,7 @@ package org.fidata.gradle
 
 import groovy.transform.CompileStatic
 import org.fidata.gradle.utils.PluginDependee
+import org.fidata.gradle.utils.PluginDependeeExclusion
 
 /**
  * List of dependees of org.fidata.base.jvm plugin
@@ -38,7 +39,18 @@ final class JVMBasePluginDependees {
       configurationName: 'implementation',
       group: 'com.jfrog.bintray.gradle',
       module: 'gradle-bintray-plugin',
-      enabled: false
+      enabled: false,
+      excludes: [
+        /*
+         * WORKAROUND:
+         * org.apache.maven:maven-ant-tasks has old plexus dependency which have undesired JUnit dependency
+         * <grv87 2018-06-24>
+         */
+        new PluginDependeeExclusion(
+          group: 'org.codehaus.plexus',
+          module: 'plexus-container-default'
+        )
+      ]
     ),
   ]
 

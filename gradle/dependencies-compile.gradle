@@ -48,39 +48,60 @@ dependencies {
   addDependencies org.fidata.gradle.GroovyBaseProjectPluginDependees.PLUGIN_DEPENDEES
   addDependencies org.fidata.gradle.GradlePluginPluginDependees.PLUGIN_DEPENDEES
 
-  api(group: 'org.spdx', name: 'spdx-tools', version: 'latest.release')
-  implementation(group: 'com.github.zafarkhaja', name: 'java-semver', version: 'latest.release')
-  implementation(group: 'com.google.guava', name: 'guava', version: '25.1-jre')
-
-  /*
-   * WORKAROUND:
-   * org.codehaus.plexus:plexus-container-default still has google-collections dependency
-   * which is superseded by Guava
-   * <grv87 2018-06-24>
-   */
-  modules.module('com.google.collections:google-collections') {
-    replacedBy('com.google.guava:guava', 'google-collections is now part of Guava')
-  }
-}
-configurations.all {
-  resolutionStrategy {
-    force 'xerces:xercesImpl:[2,3)'
+  api(group: 'org.spdx', name: 'spdx-tools', version: 'latest.release') {
     /*
      * WORKAROUND:
      * https://github.com/spdx/tools/issues/163
      * spdx-tools uses old json-simple dependency which includes JUnit dependency and has a lot of other issues
      * <grv87 2018-06-24>
      */
-    dependencySubstitution {
-      substitute module('com.googlecode.json-simple:json-simple') with module('com.github.cliftonlabs:json-simple:[2,3)')
-    }
+    exclude(group: 'com.googlecode.json-simple', module: 'json-simple')
+  }
+  implementation(group: 'com.github.cliftonlabs', name: 'json-simple', version: '[2, 3)')
+
+  implementation(group: 'com.github.zafarkhaja', name: 'java-semver', version: 'latest.release')
+  implementation(group: 'com.google.guava', name: 'guava', version: '25.1-jre')
+
+  /*
+   * CAVEAT:
+   * Gradle doesn't handle dependencyManagement (BOM) strictly.
+   * See https://github.com/gradle/gradle/issues/4979
+   * So, we have to use direct dependency instead of constraints
+   */
+  implementation(group: 'xerces', name: 'xercesImpl', version: '2.12.0')
+
+  /*
+   * WORKAROUND:
+   * org.apache.maven:maven-ant-tasks has old plexus dependency which have undesired JUnit dependency
+   * <grv87 2018-06-24>
+   */
+  implementation(group: 'org.codehaus.plexus', name: 'plexus-container-default', version: 'latest.release') {
     /*
      * WORKAROUND:
-     * org.apache.maven:maven-ant-tasks has old plexus dependencies which have undesired JUnit dependency
+     * org.codehaus.plexus:plexus-container-default still has google-collections dependency
+     * which is superseded by Guava
      * <grv87 2018-06-24>
      */
-    force 'org.codehaus.plexus:plexus-container-default:[1,2)'
-    force 'org.codehaus.plexus:plexus-component-api:[1,2)'
-    force 'org.projectlombok:lombok:[1,2)'
+    exclude group: 'com.google.collections', module: 'google-collections'
+  }
+
+  constraints {
+    annotationProcessor(group: 'org.projectlombok', name: 'lombok', version: 'latest.release')
+    compileOnly(group: 'org.projectlombok', name: 'lombok', version: 'latest.release')
+    testAnnotationProcessor(group: 'org.projectlombok', name: 'lombok', version: 'latest.release')
+    testCompileOnly(group: 'org.projectlombok', name: 'lombok', version: 'latest.release')
+  }
+}
+
+/*
+ * WORKAROUND:
+ * dependencySubstitution is still needed, or come configurations (i.e. codenarc) are not resolved
+ * <grv87 2018-07-03>
+ */
+configurations.all {
+  resolutionStrategy {
+    dependencySubstitution {
+      substitute module('com.googlecode.json-simple:json-simple') with module('com.github.cliftonlabs:json-simple:[2, 3)')
+    }
   }
 }
