@@ -60,7 +60,7 @@ dependencies {
   implementation(group: 'com.github.cliftonlabs', name: 'json-simple', version: '[2, 3)')
 
   implementation(group: 'com.github.zafarkhaja', name: 'java-semver', version: 'latest.release')
-  implementation(group: 'com.google.guava', name: 'guava', version: '25.1-jre')
+  implementation(group: 'com.google.guava', name: 'guava')
 
   /*
    * CAVEAT:
@@ -84,13 +84,6 @@ dependencies {
      */
     exclude group: 'com.google.collections', module: 'google-collections'
   }
-
-  constraints {
-    annotationProcessor(group: 'org.projectlombok', name: 'lombok', version: 'latest.release')
-    compileOnly(group: 'org.projectlombok', name: 'lombok', version: 'latest.release')
-    testAnnotationProcessor(group: 'org.projectlombok', name: 'lombok', version: 'latest.release')
-    testCompileOnly(group: 'org.projectlombok', name: 'lombok', version: 'latest.release')
-  }
 }
 
 /*
@@ -100,6 +93,35 @@ dependencies {
  */
 configurations.all {
   resolutionStrategy {
+    force 'org.projectlombok:lombok:[1, 2)'
+    force 'xerces:xercesImpl:[2, 3)'
+    force 'com.google.guava:guava:25.1-jre'
+    force 'org.apache.commons:commons-lang3:[3, 4)'
+    force 'org.apache.commons:commons-csv:[1, 2)'
+    force 'org.apache.commons:commons-compress:[1, 2)'
+    force 'org.apache.maven:maven-model:[3, 4)'
+    force 'org.apache.ant:ant:[1, 2)'
+    force 'org.apache.httpcomponents:httpclient:[4, 5)'
+    force 'org.apache.httpcomponents:httpcore:[4, 5)'
+    force 'org.slf4j:slf4j-api:[1, 2)'
+    force 'commons-io:commons-io:[2, 3)'
+    force 'commons-logging:commons-logging:[1, 2)'
+    force 'commons-lang:commons-lang:[2, 3)'
+    force 'commons-codec:commons-codec:[1, 2)'
+    force 'commons-beanutils:commons-beanutils:[1, 2)'
+    force 'commons-collections:commons-collections:[3, 4)'
+    force 'org.codehaus.plexus:plexus-utils:[3, 4)'
+    force 'org.antlr:antlr-runtime:[3, 4)'
+    force 'com.jcraft:jsch:[0, 1)'
+    force 'com.jcraft:jzlib:[1, 2)'
+    force 'com.jcabi:jcabi-log:[0, 1)'
+    force 'com.jcabi:jcabi-aspects:[0, 1)'
+    force 'xml-apis:xml-apis:[1, 2)'
+    force 'com.fasterxml.jackson.core:jackson-core:[2, 3)'
+    force 'com.fasterxml.jackson.core:jackson-databind:[2, 3)'
+    force 'junit:junit:[4, 5)'
+    force 'org.spockframework:spock-core:1.1-groovy-2.4'
+
     dependencySubstitution {
       substitute module('com.googlecode.json-simple:json-simple') with module('com.github.cliftonlabs:json-simple:[2, 3)')
     }

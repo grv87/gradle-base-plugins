@@ -301,7 +301,10 @@ final class ProjectPlugin extends AbstractPlugin {
     }
 
     project.configurations.all { Configuration configuration ->
-      configuration.resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+      configuration.resolutionStrategy.with {
+        failOnVersionConflict()
+        cacheChangingModulesFor 0, 'seconds'
+      }
     }
 
     project.dependencies.components.all { ComponentMetadataDetails metadata ->
