@@ -113,6 +113,7 @@ final class ProjectPlugin extends AbstractPlugin {
    * Minimum supported version of Gradle
    */
   public static final String GRADLE_MINIMUM_SUPPORTED_VERSION = '4.8'
+
   @Override
   @SuppressWarnings('CouldBeElvis')
   void apply(Project project) {
