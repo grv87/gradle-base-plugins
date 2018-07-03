@@ -69,15 +69,6 @@ stutter {
 
 tasks.codenarcMain.disabledRules.add 'JavaIoPackageAccess'
 tasks.codenarcCompatTest.disabledRules.add 'JavaIoPackageAccess'
-/*
- * WORKAROUND:
- * CodeNarc bug in org.fidata.gradle.GradlePluginPlugin:
- * [SRC]import static JDKProjectPlugin.FUNCTIONAL_TEST_SOURCE_SET_NAME
- * [MSG]The [JDKProjectPlugin] import is never referenced *
- * While FUNCTIONAL_TEST_SOURCE_SET_NAME is really used in GString in the code
- * <grv87 2018-06-26>
- */
-// tasks.codenarcMain.disabledRules.add 'UnusedImport'
 
 task('codenarcMainResources', type: CodeNarc) {
   for (File srcDir in sourceSets.main.resources.srcDirs) {
