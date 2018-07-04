@@ -167,7 +167,9 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
         version: 'latest.release'
       ])
     }
-    project.plugins.getPlugin(GroovyBasePlugin).addGroovyDependency project.configurations.getByName(sourceSet.implementationConfigurationName)
+    project.plugins.withType(GroovyBasePlugin) { GroovyBasePlugin plugin ->
+      plugin.addGroovyDependency project.configurations.getByName(sourceSet.implementationConfigurationName)
+    }
 
     tasks.each { Test task ->
       task.with {
@@ -176,7 +178,9 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
       }
     }
 
-    new DslObject(project.tasks.getByName("codenarc${ sourceSet.name.capitalize() }")).convention.getPlugin(CodeNarcTaskConvention).disabledRules.addAll(['MethodName', 'FactoryMethodName', 'JUnitPublicProperty', 'JUnitPublicNonTestMethod', /* WORKAROUND: https://github.com/CodeNarc/CodeNarc/issues/308 <grv87 2018-06-26> */ 'Indentation' ])
+    project.plugins.withType(GroovyBasePlugin) { GroovyBasePlugin plugin ->
+      new DslObject(project.tasks.getByName("codenarc${ sourceSet.name.capitalize() }")).convention.getPlugin(CodeNarcTaskConvention).disabledRules.addAll(['MethodName', 'FactoryMethodName', 'JUnitPublicProperty', 'JUnitPublicNonTestMethod', /* WORKAROUND: https://github.com/CodeNarc/CodeNarc/issues/308 <grv87 2018-06-26> */ 'Indentation'])
+    }
   }
 
   /**
