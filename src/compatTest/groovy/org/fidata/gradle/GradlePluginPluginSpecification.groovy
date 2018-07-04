@@ -172,7 +172,7 @@ class GradlePluginPluginSpecification extends Specification {
         }
       }
     '''.stripIndent()
-    when: 'task is queries'
+    when: 'task is queried'
     build('listPublications')
 
     then: 'mavenJava publication is not in the list'
