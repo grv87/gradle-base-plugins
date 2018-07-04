@@ -112,6 +112,40 @@ class GradlePluginPluginSpecification extends Specification {
    * Looks like ProjectBuilder doesn't support `settings.gradle`.
    * <grv87 2018-07-01>
    */
+  void 'sets project group by default'() {
+    given: 'task to print project group'
+    buildFile << '''\
+      task('printGroup').doLast {
+        file('group') << project.group
+      }
+    '''.stripIndent()
+
+    when: 'task is queried'
+    build('printGroup')
+
+    then: 'project group is set'
+    new File(testProjectDir, 'group').text == 'org.fidata.gradle'
+  }
+
+  void 'doesn\'t set project group when it has been already set'() {
+    given: 'task to print project group'
+    buildFile << '''\
+      task('printGroup').doLast {
+        file('group') << project.group
+      }
+    '''.stripIndent()
+    and: 'project group is already set'
+    buildFile << '''\
+      group = 'org.fidata'
+    '''
+
+    when: 'task is queried'
+    build('printGroup')
+
+    then: 'project group is not changed'
+    new File(testProjectDir, 'group').text == 'org.fidata'
+  }
+
   @Unroll
   void 'adds #taskName task'() {
     when: '#taskName and functionalTest tasks are run'

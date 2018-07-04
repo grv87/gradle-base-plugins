@@ -176,12 +176,26 @@ class ProjectPluginSpecification extends Specification {
     project.tasks.getByName('taskTree')
   }
 
-  void 'sets project group'() {
+  void 'sets project group by default'() {
     when: 'plugin is applied'
     project.apply plugin: 'org.fidata.project'
 
     then: 'project group is set'
-    project.group == 'org.fidata'
+    project.group.toString() == 'org.fidata'
+  }
+
+  void 'doesn\'t set project group when it has been already set'() {
+    given: 'project group is set'
+    project.group = group
+
+    when: 'plugin is applied'
+    project.apply plugin: 'org.fidata.project'
+
+    then: 'project group is not changed'
+    project.group.toString() == group
+
+    where:
+    group = 'com.example'
   }
 
   void 'provides license property'() {

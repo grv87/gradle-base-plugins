@@ -174,7 +174,7 @@ All these tasks are put into `Diagnostics` group.
 
 ### Other features
 
-*	Sets `group` to `org.fidata` if it hasn't been set already
+*	Sets project's `group` to `org.fidata` if it hasn't been set already
 
 *	Provides `license` property used by other plugins
 
@@ -338,6 +338,8 @@ used in the project.
 
 	`pluginBundle.plugins` should be configured manually. Other
 	properties are set automatically.
+
+*	Sets project's `group` to `org.fidata.gradle` if it hasn't been set already
 
 # Properties
 

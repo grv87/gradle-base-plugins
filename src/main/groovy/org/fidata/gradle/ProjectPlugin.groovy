@@ -37,6 +37,7 @@ import org.fidata.gradle.tasks.CodeNarcTaskConvention
 import org.gradle.api.file.ConfigurableFileTree
 import org.gradle.api.internal.plugins.DslObject
 import groovy.transform.CompileStatic
+import groovy.transform.PackageScope
 import org.fidata.gradle.internal.AbstractPlugin
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -114,6 +115,9 @@ final class ProjectPlugin extends AbstractPlugin {
    */
   public static final String GRADLE_MINIMUM_SUPPORTED_VERSION = '4.8'
 
+  @PackageScope
+  String defaultProjectGroup = 'org.fidata'
+
   @Override
   @SuppressWarnings('CouldBeElvis')
   void apply(Project project) {
@@ -125,7 +129,7 @@ final class ProjectPlugin extends AbstractPlugin {
 
     project.convention.plugins.put 'fidata', new ProjectConvention(project)
 
-    if (!project.group) { project.group = 'org.fidata' }
+    if (!project.group) { project.group = "${ -> defaultProjectGroup }" }
 
     project.extensions.configure(ReportingExtension) { ReportingExtension extension ->
       extension.baseDir = project.convention.getPlugin(ProjectConvention).reportsDir

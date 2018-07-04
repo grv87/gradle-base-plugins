@@ -23,8 +23,6 @@ plugins {
   id 'org.fidata.plugin'
 }
 
-group = 'org.fidata.gradle'
-
 ext.rootDir = '.'
 
 license = 'Apache-2.0'
