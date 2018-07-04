@@ -40,8 +40,8 @@ class VersionUtilsTest {
     assert expectedResult == VersionUtils.isPreReleaseVersion(version)
   }
 
-  static Object[] parametersForTestIsPreReleaseVersion() {
-    ([
+  static Object[][] parametersForTestIsPreReleaseVersion() {
+    [
       // SemVer
       [null                   , null],
       [''                     , null],
@@ -62,6 +62,6 @@ class VersionUtilsTest {
       ['2.0.0.CR1'            , true],
       // com.google.guava:guava
       ['23.5-jre'             , false],
-    ]*.toArray(new Object[2])).toArray(new Object[0])
+    ]
   }
 }
