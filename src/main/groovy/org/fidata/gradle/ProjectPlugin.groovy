@@ -244,7 +244,16 @@ final class ProjectPlugin extends AbstractPlugin {
           }
           doLast {
             project.configurations.each { Configuration configuration ->
-              if (configuration.canBeResolved) {
+              if (
+              /*
+               * WORKAROUND:
+               * CodeNarc doesn't work with its configuration locked
+               * https://github.com/gradle/gradle/issues/5894
+               * <grv87 2018-07-08>
+               */
+                configuration.name != 'codenarc' &&
+                configuration.canBeResolved
+              ) {
                 configuration.resolve()
               }
             }
