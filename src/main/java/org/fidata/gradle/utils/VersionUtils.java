@@ -27,7 +27,7 @@ import com.google.common.base.CharMatcher;
 import com.google.common.base.Predicate;
 
 /**
- * Utils to work with version strings and objects
+ * Utilities to work with version strings and objects
  */
 public final class VersionUtils {
 

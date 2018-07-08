@@ -1,5 +1,5 @@
 gradle-base-plugins
-====================
+===================
 
 Base plugins for Gradle projects and plugins developed by FIDATA.
 They provide reasonable defaults and sane environment
