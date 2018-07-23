@@ -85,16 +85,3 @@ dependencies {
     exclude group: 'com.google.collections', module: 'google-collections'
   }
 }
-
-/*
- * WORKAROUND:
- * dependencySubstitution is still needed, or come configurations (i.e. codenarc) are not resolved
- * <grv87 2018-07-03>
- */
-configurations.all {
-  resolutionStrategy {
-    dependencySubstitution {
-      substitute module('com.googlecode.json-simple:json-simple') with module('com.github.cliftonlabs:json-simple:[2, 3)')
-    }
-  }
-}
