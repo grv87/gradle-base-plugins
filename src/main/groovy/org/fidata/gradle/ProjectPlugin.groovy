@@ -396,23 +396,26 @@ final class ProjectPlugin extends AbstractPlugin {
 
     project.tasks.getByName(/* WORKAROUND: GitPublishPlugin.COPY_TASK has package scope <grv87 2018-06-23> */ 'gitPublishCopy')
 
+    Task gitPublishCommit = project.tasks.getByName(/* WORKAROUND: GitPublishPlugin.COMMIT_TASK has package scope <grv87 2018-06-23> */ 'gitPublishCommit')
+
     /*
      * WORKAROUND:
      * JGit doesn't support signed commits yet.
      * See https://bugs.eclipse.org/bugs/show_bug.cgi?id=382212
      * <grv87 2018-06-22>
      */
-    ResignGitCommit resignGitCommit = project.tasks.create("${ /* GitPublishPlugin.COMMIT_TASK */ 'gitPublishCommit' }Resign", ResignGitCommit) { ResignGitCommit task ->
+    ResignGitCommit resignGitPublishCommit = project.tasks.create("${ gitPublishCommit.name }Resign", ResignGitCommit) { ResignGitCommit task ->
       task.with {
         enabled = repoClean
         description = 'Amend git publish commit adding sign to it'
         workingDir = project.extensions.getByType(GitPublishExtension).repoDir.asFile.get()
+        onlyIf { gitPublishCommit.didWork }
       }
     }
-    project.tasks.getByName(/* WORKAROUND: GitPublishPlugin.COMMIT_TASK has package scope <grv87 2018-06-23> */ 'gitPublishCommit').with {
+    gitPublishCommit.with {
       enabled = repoClean
       dependsOn noJekyllTask
-      finalizedBy resignGitCommit
+      finalizedBy resignGitPublishCommit
     }
 
     project.tasks.getByName(/* WORKAROUND: GitPublishPlugin.PUSH_TASK has package scope <grv87 2018-06-23> */'gitPublishPush').enabled = repoClean
