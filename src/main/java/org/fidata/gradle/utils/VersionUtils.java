@@ -43,7 +43,7 @@ public final class VersionUtils {
       return null;
     };
     try {
-      return Version.valueOf(version).getPreReleaseVersion() != "";
+      return !Version.valueOf(version).getPreReleaseVersion().isEmpty();
     }
     catch (ParseException e) {
       return Iterables.any(Splitter.on(CharMatcher.anyOf("-\\._")).split(version), new Predicate<String>() {
