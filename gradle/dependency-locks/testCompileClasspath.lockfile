@@ -145,7 +145,7 @@ org.jfrog.buildinfo:build-info-extractor:2.11.3
 org.jsoup:jsoup:1.7.2
 org.multiverse:multiverse-core:0.7.0
 org.objenesis:objenesis:2.6
-org.projectlombok:lombok:1.18.0
+org.projectlombok:lombok:1.18.1
 org.slf4j:jcl-over-slf4j:1.7.21
 org.slf4j:slf4j-api:1.8.0-alpha2
 org.spdx:spdx-tools:2.1.12

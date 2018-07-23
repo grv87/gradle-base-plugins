@@ -283,7 +283,7 @@ final class ProjectPlugin extends AbstractPlugin {
     project.tasks.withType(Wrapper) { Wrapper task ->
       task.with {
         if (name == 'wrapper') {
-          gradleVersion = '4.8.1'
+          gradleVersion = '4.9'
         }
       }
     }
