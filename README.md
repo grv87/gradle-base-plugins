@@ -370,6 +370,16 @@ Gradle build script just doesn't work.
 If it is a compilation error, you can run `../gradlew build`
 in `buildSrc` directory to figure out what's going on.
 
+## Upgrading Gradle Version
+
+Whenever new Gradle version is released, the way to upgrade is this:
+
+1.  Read Release Notes and make necessary changes to the code
+2.  Run `./gradlew stutterWriteLock`
+3.  Run `./gradlew compatTest<new Gradle version>`
+4.  Change Gradle version for `wrapper` task in plugin code
+5.  Run `./gradlew wrapper && ./gradlew wrapper`
+
 
 ------------------------------------------------------------------------
 Copyright © 2017-2018  Basil Peace
