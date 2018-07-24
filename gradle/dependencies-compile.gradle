@@ -84,13 +84,6 @@ dependencies {
      */
     exclude group: 'com.google.collections', module: 'google-collections'
   }
-
-  constraints {
-    annotationProcessor(group: 'org.projectlombok', name: 'lombok', version: 'latest.release')
-    compileOnly(group: 'org.projectlombok', name: 'lombok', version: 'latest.release')
-    testAnnotationProcessor(group: 'org.projectlombok', name: 'lombok', version: 'latest.release')
-    testCompileOnly(group: 'org.projectlombok', name: 'lombok', version: 'latest.release')
-  }
 }
 
 /*

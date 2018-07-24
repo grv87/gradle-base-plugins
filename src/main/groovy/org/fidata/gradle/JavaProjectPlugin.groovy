@@ -22,6 +22,7 @@ package org.fidata.gradle
 import static org.gradle.api.plugins.JavaPlugin.COMPILE_JAVA_TASK_NAME
 import static org.gradle.api.plugins.JavaPlugin.JAVADOC_TASK_NAME
 import static org.gradle.api.tasks.SourceSet.MAIN_SOURCE_SET_NAME
+import io.franzbecker.gradle.lombok.LombokPluginExtension
 import org.gradle.api.tasks.SourceSet
 import groovy.transform.CompileStatic
 import io.franzbecker.gradle.lombok.task.DelombokTask
@@ -45,7 +46,16 @@ final class JavaProjectPlugin extends AbstractPlugin {
     project.pluginManager.apply JVMBasePlugin
     PluginDependeesUtils.applyPlugins project, JavaProjectPluginDependees.PLUGIN_DEPENDEES
 
+    configureLombok()
+
     configureDocumentation()
+  }
+
+  private void configureLombok() {
+    project.extensions.getByType(LombokPluginExtension).with {
+      version = 'latest.release'
+      sha256 = ''
+    }
   }
 
   public static final String DELOMBOK_TASK_NAME = 'delombok'
