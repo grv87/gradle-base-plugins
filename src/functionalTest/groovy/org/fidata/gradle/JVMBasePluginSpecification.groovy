@@ -109,7 +109,7 @@ class JVMBasePluginSpecification extends Specification {
     'mavenJava publication exists'
     project.publishing.publications.getByName('mavenJava')
     and:
-    '#taskName task exists'
+    'mavenJava task exists'
     project.tasks.getByName(taskName)
 
     where:

@@ -195,7 +195,7 @@ class GradlePluginPluginSpecification extends Specification {
     when: 'task to print list of tasks is queried'
     build('listTasks')
 
-    then: '#taskName task is not in the list'
+    then: 'mavenJava task is not in the list'
     !new File(testProjectDir, 'tasks').text.split().contains(taskName)
 
     (success = true) != null

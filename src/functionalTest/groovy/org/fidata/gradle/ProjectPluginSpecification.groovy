@@ -27,7 +27,6 @@ import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
 import org.gradle.api.Task
 import org.gradle.api.plugins.quality.CodeNarc
-import spock.lang.Unroll
 
 /**
  * Specification for {@link org.fidata.gradle.ProjectPlugin} class
@@ -105,19 +104,17 @@ class ProjectPluginSpecification extends Specification {
     !build.taskDependencies.getDependencies(build).contains(check)
   }
 
-  @Unroll
   void 'provides prerequisites lifecycle tasks'() {
     when: 'plugin is applied'
     project.apply plugin: 'org.fidata.project'
 
-    then: '#task task exists'
+    then: 'task exists'
     project.tasks.getByName(task)
 
     where:
     task << ['prerequisitesInstall', 'prerequisitesUpdate', 'prerequisitesOutdated']
   }
 
-  @Unroll
   void 'provides link task'() {
     when: 'plugin is applied'
     project.apply plugin: 'org.fidata.project'
@@ -161,13 +158,13 @@ class ProjectPluginSpecification extends Specification {
     !check.taskDependencies.getDependencies(check).contains(codenarcBuildSrc)
   }
 
-  void 'provides reportsDir properties'() {
+  void 'provides reportsDir read-only properties'() {
     when: 'plugin is applied'
     project.apply plugin: 'org.fidata.project'
 
-    then: '#property property exists'
+    then: 'property exists'
     Object propertyValue = project.property(property)
-    and: '#property is an instance of File'
+    and: 'property value is an instance of File'
     File.isInstance(propertyValue)
 
     when: 'property is tried to be set'
@@ -204,6 +201,7 @@ class ProjectPluginSpecification extends Specification {
 
   void 'doesn\'t set project group when it has been already set'() {
     given: 'project group is set'
+    String group = 'com.example'
     project.group = group
 
     when: 'plugin is applied'
@@ -217,9 +215,6 @@ class ProjectPluginSpecification extends Specification {
 
     then: 'project group is not changed'
     project.group.toString() == group
-
-    where:
-    group = 'com.example'
   }
 
   void 'provides license property'() {
