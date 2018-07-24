@@ -22,6 +22,7 @@ package org.fidata.gradle
 import org.gradle.testkit.runner.GradleRunner
 import spock.lang.Specification
 import java.nio.file.Files
+import org.apache.commons.io.FileUtils
 
 /**
  * Specification for {@link org.fidata.gradle.JVMBasePlugin} class
@@ -86,7 +87,7 @@ class JVMBasePluginSpecification extends Specification {
      * <grv87 2018-06-27>
      */
     if (success || System.getenv().with { containsKey('CI') || containsKey('JENKINS_URL') }) {
-      testProjectDir.delete()
+      FileUtils.deleteDirectory(testProjectDir)
     }
   }
 

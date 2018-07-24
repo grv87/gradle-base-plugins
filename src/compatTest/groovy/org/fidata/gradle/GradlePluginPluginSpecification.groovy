@@ -25,6 +25,7 @@ import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.BuildResult
 import spock.lang.Specification
 import java.nio.file.Files
+import org.apache.commons.io.FileUtils
 
 /**
  * Specification for {@link org.fidata.gradle.GradlePluginPlugin} class
@@ -94,7 +95,7 @@ class GradlePluginPluginSpecification extends Specification {
      * <grv87 2018-06-27>
      */
     if (success || System.getenv().with { containsKey('CI') || containsKey('JENKINS_URL') }) {
-      testProjectDir.delete()
+      FileUtils.deleteDirectory(testProjectDir)
     }
   }
 
@@ -124,6 +125,8 @@ class GradlePluginPluginSpecification extends Specification {
 
     then: 'project group is set'
     new File(testProjectDir, 'group').text == 'org.fidata.gradle'
+
+    (success = true) != null
   }
 
   void 'doesn\'t set project group when it has been already set'() {
@@ -143,6 +146,8 @@ class GradlePluginPluginSpecification extends Specification {
 
     then: 'project group is not changed'
     new File(testProjectDir, 'group').text == 'org.fidata'
+
+    (success = true) != null
   }
 
   @Unroll
@@ -155,6 +160,8 @@ class GradlePluginPluginSpecification extends Specification {
     output.contains ':' + taskName
     and: '#taskName is run after functionalTest task'
     output.indexOf(':' + taskName) > output.indexOf(':functionalTest')
+
+    (success = true) != null
 
     where:
     taskName << ['compatTest', 'gradleTest']
@@ -190,6 +197,8 @@ class GradlePluginPluginSpecification extends Specification {
 
     then: '#taskName task is not in the list'
     !new File(testProjectDir, 'tasks').text.split().contains(taskName)
+
+    (success = true) != null
 
     where:
     taskName << ['generateMetadataFileForMavenJavaPublication', 'generatePomFileForMavenJavaPublication']

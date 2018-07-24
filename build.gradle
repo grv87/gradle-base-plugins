@@ -54,6 +54,8 @@ apply from: "${ project.ext.rootDir }/gradle/gradle-plugin-markers.gradle"
 
 dependencies {
   testImplementation group: 'pl.pragmatists', name: 'JUnitParams', version: 'latest.release'
+
+  compatTestImplementation group: 'commons-io', name: 'commons-io', version: 'latest.release'
 }
 
 stutter {
