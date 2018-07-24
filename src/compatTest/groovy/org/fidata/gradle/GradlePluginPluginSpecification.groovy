@@ -20,10 +20,10 @@
 package org.fidata.gradle
 
 import static org.fidata.gradle.utils.GradleRunnerUtils.skippedTaskPathsGradleBugWorkaround
+import spock.lang.Specification
 import spock.lang.Unroll
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.BuildResult
-import spock.lang.Specification
 import java.nio.file.Files
 import org.apache.commons.io.FileUtils
 
