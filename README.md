@@ -218,6 +218,9 @@ and also:
     jvm.javadocLinks['com.example.super.cool.external.library'] = uri('https://example.com/javadoc/com/example/super.cool.external.library/1.0/')
     ```
 
+*   Adds `mavenJava` publication (except when `org.fidata.plugin`
+    is applied)
+
 ### Testing
 
 *	Adds [JUnit](http://junit.org/junit4/) dependency

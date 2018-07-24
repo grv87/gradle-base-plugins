@@ -26,6 +26,7 @@ import static org.gradle.api.tasks.SourceSet.MAIN_SOURCE_SET_NAME
 import static org.ajoberstar.gradle.git.release.base.BaseReleasePlugin.RELEASE_TASK_NAME
 import static ProjectPlugin.LICENSE_FILE_NAMES
 import static org.jfrog.gradle.plugin.artifactory.task.ArtifactoryTask.ARTIFACTORY_PUBLISH_TASK_NAME
+import groovy.transform.PackageScope
 import org.gradle.plugins.signing.Sign
 import org.gradle.api.file.CopySpec
 import org.gradle.api.publish.maven.MavenPublication
@@ -289,9 +290,16 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
    */
   public static final String MAVEN_JAVA_PUBICATION_NAME = 'mavenJava'
 
+  @PackageScope
+  boolean createMavenJavaPublication = true
+
   private void configureArtifactsPublishing() {
-    project.extensions.getByType(PublishingExtension).publications.create(MAVEN_JAVA_PUBICATION_NAME, MavenPublication) { MavenPublication publication ->
-      publication.from project.components.getByName('java' /* TODO */)
+    project.afterEvaluate {
+      if (createMavenJavaPublication) {
+        project.extensions.getByType(PublishingExtension).publications.create(MAVEN_JAVA_PUBICATION_NAME, MavenPublication) { MavenPublication publication ->
+          publication.from project.components.getByName('java' /* TODO */)
+        }
+      }
     }
     project.extensions.getByType(SigningExtension).sign project.extensions.getByType(PublishingExtension).publications
 

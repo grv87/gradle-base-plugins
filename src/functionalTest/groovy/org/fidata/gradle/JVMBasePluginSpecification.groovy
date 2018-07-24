@@ -94,5 +94,23 @@ class JVMBasePluginSpecification extends Specification {
     functionalTest.shouldRunAfter.getDependencies(functionalTest).contains(project.tasks['test'])
   }
 
+  void 'provides mavenJava publication'() {
+    when:
+    'plugin is applied'
+    project.apply plugin: 'org.fidata.base.jvm'
+    and: 'project evaluated'
+    project.evaluate()
+
+    then:
+    'mavenJava publication exists'
+    project.publishing.publications.getByName('mavenJava')
+    and:
+    '#taskName task exists'
+    project.tasks.getByName(taskName)
+
+    where:
+    taskName << ['generateMetadataFileForMavenJavaPublication', 'generatePomFileForMavenJavaPublication']
+  }
+
   // helper methods
 }

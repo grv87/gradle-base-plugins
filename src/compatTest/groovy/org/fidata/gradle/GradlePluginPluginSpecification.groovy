@@ -102,7 +102,6 @@ class GradlePluginPluginSpecification extends Specification {
   // void cleanupSpec() { }
 
   // feature methods
-
   /*
    * WORKAROUND:
    * This can't be tested in functional tests
@@ -161,8 +160,8 @@ class GradlePluginPluginSpecification extends Specification {
     taskName << ['compatTest', 'gradleTest']
   }
 
-  void 'does not have mavenJava publication'() {
-    given: 'task to print list of publications'
+  void 'does not provide mavenJava publication'() {
+    given: 'tasks to print lists of publications and tasks'
     buildFile << '''\
       task('listPublications').doLast {
         file('publications').withPrintWriter { PrintWriter printWriter ->
@@ -171,12 +170,29 @@ class GradlePluginPluginSpecification extends Specification {
           }
         }
       }
+
+      task('listTasks').doLast {
+        file('tasks').withPrintWriter { PrintWriter printWriter ->
+          tasks.each {
+            printWriter.println it.name
+          }
+        }
+      }
     '''.stripIndent()
-    when: 'task is queried'
+    when: 'task to print list of publications is queried'
     build('listPublications')
 
     then: 'mavenJava publication is not in the list'
     !new File(testProjectDir, 'publications').text.split().contains('mavenJava')
+
+    when: 'task to print list of tasks is queried'
+    build('listTasks')
+
+    then: '#taskName task is not in the list'
+    !new File(testProjectDir, 'tasks').text.split().contains(taskName)
+
+    where:
+    taskName << ['generateMetadataFileForMavenJavaPublication', 'generatePomFileForMavenJavaPublication']
   }
 
   // helper methods
