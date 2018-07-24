@@ -88,6 +88,12 @@ class ProjectPluginExtraPropertiesSpecification extends Specification {
 
     then: 'no exception is thrown'
     noExceptionThrown()
+
+    when: 'project evaluated'
+    project.evaluate()
+
+    then: 'no exception is thrown'
+    noExceptionThrown()
   }
 
   @Unroll
@@ -99,6 +105,8 @@ class ProjectPluginExtraPropertiesSpecification extends Specification {
 
     when: 'plugin is applied'
     project.apply plugin: 'org.fidata.project'
+    and: 'project evaluated'
+    project.evaluate()
 
     then: 'PluginApplicationException is thrown'
     thrown(PluginApplicationException)

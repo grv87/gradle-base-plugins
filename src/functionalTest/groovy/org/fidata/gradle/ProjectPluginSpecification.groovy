@@ -93,7 +93,11 @@ class ProjectPluginSpecification extends Specification {
     Task check = project.tasks.getByName('check')
     and: 'release task exists'
     Task release = project.tasks.getByName('release')
-    and: 'release task depends on build task'
+
+    when: 'project evaluated'
+    project.evaluate()
+
+    then: 'release task depends on build task'
     release.taskDependencies.getDependencies(release).contains(build)
     and: 'release task depends on check task'
     release.taskDependencies.getDependencies(release).contains(check)
@@ -120,7 +124,11 @@ class ProjectPluginSpecification extends Specification {
 
     then: 'lint task exists'
     Task lint = project.tasks.getByName('lint')
-    and: 'check task depends on lint task'
+
+    when: 'project evaluated'
+    project.evaluate()
+
+    then: 'check task depends on lint task'
     Task check = project.tasks['check']
     check.taskDependencies.getDependencies(check).contains(lint)
   }
@@ -141,7 +149,11 @@ class ProjectPluginSpecification extends Specification {
     Task codenarcBuildSrc = project.tasks.getByName('codenarcBuildSrc')
     and: 'codenarcBuildSrc task is an instance of CodeNarc'
     CodeNarc.isInstance(codenarcBuildSrc)
-    and: 'codenarc task depends on codenarcBuildSrc task'
+
+    when: 'project evaluated'
+    project.evaluate()
+
+    then: 'codenarc task depends on codenarcBuildSrc task'
     Task codenarc = project.tasks['codenarc']
     codenarc.taskDependencies.getDependencies(codenarc).contains(codenarcBuildSrc)
     and: 'check task does not depend on codenarcBuildSrc task'
@@ -182,6 +194,12 @@ class ProjectPluginSpecification extends Specification {
 
     then: 'project group is set'
     project.group.toString() == 'org.fidata'
+
+    when: 'project evaluated'
+    project.evaluate()
+
+    then: 'project group is set'
+    project.group.toString() == 'org.fidata'
   }
 
   void 'doesn\'t set project group when it has been already set'() {
@@ -190,6 +208,12 @@ class ProjectPluginSpecification extends Specification {
 
     when: 'plugin is applied'
     project.apply plugin: 'org.fidata.project'
+
+    then: 'project group is not changed'
+    project.group.toString() == group
+
+    when: 'project evaluated'
+    project.evaluate()
 
     then: 'project group is not changed'
     project.group.toString() == group

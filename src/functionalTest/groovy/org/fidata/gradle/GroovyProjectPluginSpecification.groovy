@@ -88,6 +88,13 @@ class GroovyProjectPluginSpecification extends Specification {
     then:
     'no exception is thrown'
     noExceptionThrown()
+
+    when: 'project evaluated'
+    project.evaluate()
+
+    then:
+    'no exception is thrown'
+    noExceptionThrown()
   }
 
   // helper methods

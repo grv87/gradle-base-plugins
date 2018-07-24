@@ -89,7 +89,11 @@ class JVMBasePluginSpecification extends Specification {
     then:
     'functionalTest task exists'
     Task functionalTest = project.tasks.getByName('functionalTest')
-    and:
+
+    when: 'project evaluated'
+    project.evaluate()
+
+    then:
     'functionalTest should be run after test task'
     functionalTest.shouldRunAfter.getDependencies(functionalTest).contains(project.tasks['test'])
   }
