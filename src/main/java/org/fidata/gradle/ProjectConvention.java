@@ -91,8 +91,8 @@ public class ProjectConvention extends AbstractExtension {
     this.project = project;
 
     reportsDir = new File(project.getBuildDir(), "reports");
-    xmlReportsDir = new File(reportsDir, "xml");
     htmlReportsDir = new File(reportsDir, "html");
+    xmlReportsDir = new File(reportsDir, "xml");
     txtReportsDir = new File(reportsDir, "txt");
 
     websiteUrl = getVcsUrl();
