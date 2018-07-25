@@ -147,7 +147,7 @@ plugin](https://github.com/FIDATA/gradle-semantic-release-plugin).
     Redirects all reports to `build/reports/<format>` directory.
 
 	Known limitation: `gradle --profile` reports are not redirected.
-	They stay in `build/reports/profile` directory.
+	They stay in `build/reports/profile` directory for now.
 	See https://github.com/FIDATA/gradle-base-plugins/issues/1
 
 ### Build Diagnostics and Troubleshooting
