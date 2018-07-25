@@ -362,6 +362,8 @@ Should be provided via `gradle.properties` file.
     <tr><td><code>gpgSecretKeyRingFile</code></td>                                                              <td>&nbsp;</td>
     <tr><td><code>bintrayUser</code>  </td><td rowspan="8"><code>org.fidata.base.jvm</code> for public releases</td><td rowspan="2"> Release to Bintray</td><td>nbsp;</td>
     <tr><td><code>bintrayAPIKey</code></td>                                                                                                                 <td>nbsp;</td>
+    <tr><td><code>gradlePluginsKey</code>   </td><td rowspan="8"><code>org.fidata.plugin</code> for public releases</td><td rowspan="2">Release to Gradle Plugin Portal</td><td>nbsp;</td>
+    <tr><td><code>gradlePluginsSecret</code></td>                                                                                                                           <td>nbsp;</td>
 </tbody>
 </table>
 

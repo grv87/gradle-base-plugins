@@ -24,6 +24,8 @@ import static org.ajoberstar.gradle.git.release.base.BaseReleasePlugin.RELEASE_T
 import static ProjectPlugin.ARTIFACTORY_URL
 import static JVMBasePlugin.FUNCTIONAL_TEST_SOURCE_SET_NAME
 import static JVMBasePlugin.FUNCTIONAL_TEST_TASK_NAME
+import static com.gradle.publish.PublishTask.GRADLE_PUBLISH_KEY
+import static com.gradle.publish.PublishTask.GRADLE_PUBLISH_SECRET
 import static org.gradle.internal.FileUtils.toSafeFileName
 import org.gradle.api.Task
 import org.gradle.api.tasks.SourceSet
@@ -87,12 +89,17 @@ final class GradlePluginPlugin extends AbstractPlugin implements PropertyChangeL
 
   private void configurePublicReleases() {
     if (project.convention.getPlugin(ProjectConvention).publicReleases) {
+      project.extensions.extraProperties[GRADLE_PUBLISH_SECRET] = project.extensions.extraProperties['gradlePluginsKey']
+      project.extensions.extraProperties[GRADLE_PUBLISH_KEY] = project.extensions.extraProperties['gradlePluginsSecret']
+
       project.pluginManager.apply 'com.gradle.plugin-publish'
+
       project.extensions.getByType(PluginBundleExtension).with {
         website = project.convention.getPlugin(ProjectConvention).websiteUrl
         vcsUrl = project.convention.getPlugin(ProjectConvention).vcsUrl
         description = project.convention.getPlugin(ProjectConvention).changeLog.toString()
       }
+
       project.tasks.getByName(/* WORKAROUND: PublishPlugin.BASE_TASK_NAME has private scope <grv87 2018-06-23> */ 'publishPlugins').onlyIf { project.convention.getPlugin(ProjectConvention).isRelease }
       project.tasks.getByName(RELEASE_TASK_NAME).finalizedBy /* WORKAROUND: PublishPlugin.BASE_TASK_NAME has private scope <grv87 2018-06-23> */ 'publishPlugins'
     }
