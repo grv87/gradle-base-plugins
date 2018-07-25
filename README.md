@@ -349,18 +349,18 @@ used in the project.
 Should be provided via `gradle.properties` file.
 
 <table>
-<thead><tr><th>Property</th><th>Usage</th><th>Notes</th></tr></thead>
+<thead><tr><th>Property</th><th>Requiring Plugin</th><th>Usage</th><th>Notes</th></tr></thead>
 <tbody>
-    <tr><td>artifactoryUser    </td><td rowspan="2">Getting build tools and dependencies from Artifactory; use Gradle cache</td><td>&nbsp;                </td>
-    <tr><td>artifactoryPassword</td>                                                                                            <td>It is actually API key</td>
-    <tr><td>gitUsername</td><td rowspan="2">Git push during release</td><td>&nbsp;</td>
-    <tr><td>gitPassword</td>                                            <td>&nbsp;</td>
-    <tr><td>ghToken</td><td>Create release on GitHub</td><td>&nbsp;</td>
-    <tr><td>gpgKeyId            </td><td rowspan="3"> Sign artifacts, git commits and git tags</td><td>&nbsp;</td>
-    <tr><td>gpgKeyPassword      </td>                                                              <td>&nbsp;</td>
-    <tr><td>gpgSecretKeyRingFile</td>                                                              <td>&nbsp;</td>
-    <tr><td>bintrayUser  </td><td rowspan="2"> Release to Bintray</td><td>&nbsp;</td>
-    <tr><td>bintrayAPIKey</td>                                        <td>&nbsp;</td>
+    <tr><td><code>artifactoryUser</code>    </td><td rowspan="8"><code>org.fidata.project</code></td><td rowspan="2">Getting build tools and dependencies from Artifactory; use Gradle cache</td><td>&nbsp;                </td>
+    <tr><td><code>artifactoryPassword</code></td>                                                                                                                                                <td>It is actually API key</td>
+    <tr><td><code>gitUsername</code></td><td rowspan="2">Git push during release</td><td>&nbsp;</td>
+    <tr><td><code>gitPassword</code></td>                                            <td>&nbsp;</td>
+    <tr><td><code>ghToken</code></td><td>Create release on GitHub</td><td>&nbsp;</td>
+    <tr><td><code>gpgKeyId</code>            </td><td rowspan="3"> Sign artifacts, git commits and git tags</td><td>&nbsp;</td>
+    <tr><td><code>gpgKeyPassword</code>      </td>                                                              <td>&nbsp;</td>
+    <tr><td><code>gpgSecretKeyRingFile</code></td>                                                              <td>&nbsp;</td>
+    <tr><td><code>bintrayUser</code>  </td><td rowspan="8"><code>org.fidata.base.jvm</code> for public releases</td><td rowspan="2"> Release to Bintray</td><td>nbsp;</td>
+    <tr><td><code>bintrayAPIKey</code></td>                                                                                                                 <td>nbsp;</td>
 </tbody>
 </table>
 
