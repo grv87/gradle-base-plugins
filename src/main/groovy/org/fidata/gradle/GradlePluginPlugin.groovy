@@ -19,7 +19,6 @@
  */
 package org.fidata.gradle
 
-import static ProjectPlugin.PREREQUISITES_UPDATE_TASK_NAME
 import static org.ajoberstar.gradle.git.release.base.BaseReleasePlugin.RELEASE_TASK_NAME
 import static ProjectPlugin.ARTIFACTORY_URL
 import static JVMBasePlugin.FUNCTIONAL_TEST_SOURCE_SET_NAME
@@ -61,8 +60,6 @@ final class GradlePluginPlugin extends AbstractPlugin implements PropertyChangeL
     project.convention.getPlugin(ProjectConvention).addPropertyChangeListener(this)
     configurePublicReleases()
 
-    configureBuildToolsLifecycle()
-
     configureDocumentation()
 
     configureTesting()
@@ -96,12 +93,6 @@ final class GradlePluginPlugin extends AbstractPlugin implements PropertyChangeL
       project.tasks.getByName(/* WORKAROUND: PublishPlugin.BASE_TASK_NAME has private scope <grv87 2018-06-23> */ 'publishPlugins').onlyIf { project.convention.getPlugin(ProjectConvention).isRelease }
       project.tasks.getByName(RELEASE_TASK_NAME).finalizedBy /* WORKAROUND: PublishPlugin.BASE_TASK_NAME has private scope <grv87 2018-06-23> */ 'publishPlugins'
     }
-  }
-
-  private void configureBuildToolsLifecycle() {
-    Task stutterWriteLocksTask = project.tasks.getByName('stutterWriteLocks')
-    stutterWriteLocksTask.group = null
-    project.tasks.getByName(PREREQUISITES_UPDATE_TASK_NAME).dependsOn stutterWriteLocksTask
   }
 
   private void configureTesting() {

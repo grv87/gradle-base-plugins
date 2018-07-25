@@ -112,7 +112,11 @@ class ProjectPluginSpecification extends Specification {
     project.tasks.getByName(task)
 
     where:
-    task << ['prerequisitesInstall', 'prerequisitesUpdate', 'prerequisitesOutdated']
+    task << [
+      'installPrerequisites', 'updatePrerequisites', 'outdatedPrerequisites',
+      'installBuildTools',    'updateBuildTools',    'outdatedBuildTools',
+      'installDependencies',  'updateDependencies',  'outdatedDependencies',
+    ]
   }
 
   void 'provides link task'() {

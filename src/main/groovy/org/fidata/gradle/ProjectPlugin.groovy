@@ -45,7 +45,6 @@ import org.gradle.api.Task
 import org.gradle.api.tasks.testing.Test
 import org.fidata.gradle.tasks.NoJekyll
 import org.fidata.gradle.tasks.ResignGitCommit
-import org.gradle.buildinit.tasks.internal.TaskConfiguration
 import org.gradle.api.plugins.quality.CodeNarc
 import org.fidata.gradle.utils.PluginDependeesUtils
 import org.gradle.api.artifacts.Configuration
@@ -177,96 +176,8 @@ final class ProjectPlugin extends AbstractPlugin {
     project.tasks.withType(UpdateGithubRelease).getByName('updateGithubRelease').repo.ghToken = project.extensions.extraProperties['ghToken'].toString()
   }
 
-  /**
-   * Name of prerequisitesInstall task
-   */
-  public static final String PREREQUISITES_INSTALL_TASK_NAME = 'prerequisitesInstall'
-  /**
-   * Name of prerequisitesUpdate task
-   */
-  public static final String PREREQUISITES_UPDATE_TASK_NAME = 'prerequisitesUpdate'
-  /**
-   * Name of prerequisitesOutdated task
-   */
-  public static final String PREREQUISITES_OUTDATED_TASK_NAME = 'prerequisitesOutdated'
-  /**
-   * Name of resolveAndLockAll task
-   */
-  public static final String RESOLVE_AND_LOCK_ALL_TASK_NAME = 'resolveAndLockAll'
-
   @SuppressWarnings(['BracesForForLoop', 'UnnecessaryObjectReferences'])
   private void configurePrerequisitesLifecycle() {
-    Task prerequisitesInstall = project.tasks.create(PREREQUISITES_INSTALL_TASK_NAME) { Task task ->
-      task.with {
-        group = TaskConfiguration.GROUP
-        description = 'Install all prerequisites for build'
-      }
-    }
-    Task prerequisitesUpdate = project.tasks.create(PREREQUISITES_UPDATE_TASK_NAME) { Task task ->
-      task.with {
-        group = TaskConfiguration.GROUP
-        description = 'Update all prerequisites that support automatic update'
-        mustRunAfter prerequisitesInstall
-      }
-    }
-    Task prerequisitesOutdated = project.tasks.create(PREREQUISITES_OUTDATED_TASK_NAME) { Task task ->
-      task.with {
-        group = TaskConfiguration.GROUP
-        description = 'Show outdated prerequisites'
-        mustRunAfter prerequisitesInstall
-      }
-    }
-    project.afterEvaluate {
-      for (Task task in
-        project.tasks
-        - prerequisitesInstall
-        - prerequisitesInstall.taskDependencies.getDependencies(prerequisitesInstall)
-        - prerequisitesInstall.mustRunAfter.getDependencies(prerequisitesInstall)
-        - prerequisitesInstall.shouldRunAfter.getDependencies(prerequisitesInstall)
-      ) {
-        task.mustRunAfter prerequisitesInstall
-      }
-      for (Task task in
-        project.tasks
-        - prerequisitesUpdate
-        - prerequisitesUpdate.taskDependencies.getDependencies(prerequisitesUpdate)
-        - prerequisitesUpdate.mustRunAfter.getDependencies(prerequisitesUpdate)
-        - prerequisitesUpdate.shouldRunAfter.getDependencies(prerequisitesUpdate)
-      ) {
-        task.mustRunAfter prerequisitesUpdate
-      }
-
-      project.dependencyLocking.lockAllConfigurations()
-
-      Task resolveAndLockAll = project.tasks.create(RESOLVE_AND_LOCK_ALL_TASK_NAME) { Task task ->
-        task.with {
-          doFirst {
-            assert project.gradle.startParameter.writeDependencyLocks
-          }
-          doLast {
-            project.configurations.each { Configuration configuration ->
-              if (
-              configuration.canBeResolved &&
-              /*
-               * WORKAROUND:
-               * CodeNarc doesn't work with its configuration locked
-               * https://github.com/gradle/gradle/issues/5894
-               * <grv87 2018-07-08>
-               */
-                (
-                  GradleVersion.current() >= GradleVersion.version('4.9-rc-2') ||
-                  configuration.name != 'codenarc'
-                )
-              ) {
-                configuration.resolve()
-              }
-            }
-          }
-        }
-      }
-      prerequisitesUpdate.dependsOn resolveAndLockAll
-    }
-
     project.tasks.withType(DependencyUpdatesTask) { DependencyUpdatesTask task ->
       task.group = null
       task.revision = 'release'
@@ -281,7 +192,6 @@ final class ProjectPlugin extends AbstractPlugin {
           }
         }
       }
-      prerequisitesOutdated.dependsOn task
     }
 
     project.tasks.withType(Wrapper) { Wrapper task ->

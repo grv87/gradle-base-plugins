@@ -34,35 +34,14 @@ plugin](https://github.com/FIDATA/gradle-semantic-release-plugin).
 
 ### Prerequisites Lifecycle
 
-*   Provides tasks for dealing with prerequisites managed by Gradle,
-    Bundler, NPM and similar tools:
+*   Applies [`org.fidata.prerequisites`
+    ](https://github.com/FIDATA/gradle-prerequisites-plugin)
+    providing tasks for dealing with prerequisites managed by Gradle,
+    Bundler, NPM and similar tools.
 
-    *	`prerequisitesInstall` - install prerequisites once
-    after project clone
-
-    *	`prerequisitesUpdate` - updates prerequisites
-        that could be updated automatically
-
-        This task should be run with `--write-locks` parameter.
-        We could set this parameter in plugin, but this
-        still wouldn't work for `buildSrc` projects.
-
-    *	`prerequisitesOutdated` - shows outdated prerequisites
-        that could not be updated automatically and/or have version
-        restrictions. Developer have to update them manually
-
-        For Gradle dependencies [`com.github.ben-manes.versions`
-        plugin](https://github.com/ben-manes/gradle-versions-plugin)
-        is uses.
-        There is a missing feature in this plugin:
-        `dependencyUpdates` task doesn't fail whenever dependencies
-        are not up-to-date.
-        See
-        https://github.com/ben-manes/gradle-versions-plugin/issues/191
-        and
-        https://github.com/ben-manes/gradle-versions-plugin/issues/192
-        for discussion.
-        This will be resolved in the future.
+    To report outdated Gradle dependencies
+    [`com.github.ben-manes.versions` plugin
+    ](https://github.com/ben-manes/gradle-versions-plugin) is used.
 
 *   Configures `wrapper` task to specific Gradle version
 

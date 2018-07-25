@@ -34,6 +34,10 @@ final class ProjectPluginDependees {
   static final Map<String, PluginDependee> PLUGIN_DEPENDEES = [
     'org.gradle.idea': new PluginDependee(),
     'org.gradle.lifecycle-base': new PluginDependee(),
+    'org.fidata.prerequisites': new PluginDependee(
+      group: 'org.fidata.gradle',
+      module: 'gradle-prerequisites-plugin',
+    ),
     'nebula.contacts': new PluginDependee(
       group: 'com.netflix.nebula',
       module: 'gradle-contacts-plugin',
