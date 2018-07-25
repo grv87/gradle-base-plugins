@@ -1,5 +1,5 @@
 /*
- * InputsOutputs task class
+ * InputsOutputs Gradle task class
  * Copyright © 2015-2018  Basil Peace
  *
  * This file is part of gradle-base-plugins.
