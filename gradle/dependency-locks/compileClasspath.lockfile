@@ -3,6 +3,7 @@
 # This file is expected to be part of source control.
 backport-util-concurrent:backport-util-concurrent:3.1
 classworlds:classworlds:1.1-alpha-2
+com.athaydes:spock-reports:1.6.0
 com.fasterxml.jackson.core:jackson-annotations:2.9.0
 com.fasterxml.jackson.core:jackson-core:2.9.5
 com.fasterxml.jackson.core:jackson-databind:2.9.5
@@ -53,6 +54,7 @@ javax.annotation:javax.annotation-api:1.2
 javax.inject:javax.inject:1
 javax.validation:validation-api:1.1.0.Final
 javax.ws.rs:javax.ws.rs-api:2.0.1
+junit:junit:4.12
 nekohtml:nekohtml:1.9.6.2
 nekohtml:xercesMinimal:1.9.6.2
 net.java.dev.jna:jna-platform:4.1.0
@@ -148,6 +150,7 @@ org.projectlombok:lombok:1.18.1
 org.slf4j:jcl-over-slf4j:1.7.21
 org.slf4j:slf4j-api:1.8.0-alpha2
 org.spdx:spdx-tools:2.1.12
+org.spockframework:spock-core:1.1-groovy-2.4
 stax:stax-api:1.0.1
 xerces:xercesImpl:2.12.0
 xml-apis:xml-apis:1.4.01

@@ -174,7 +174,7 @@ class ProjectPluginSpecification extends Specification {
     thrown(GroovyRuntimeException)
 
     where:
-    property << ['reportsDir', 'htmlReportsDir', 'xmlReportsDir', 'txtReportsDir']
+    property << ['reportsDir', 'htmlReportsDir', 'xmlReportsDir', 'jsonReportsDir', 'txtReportsDir']
   }
 
   void 'provides taskTree task'() {

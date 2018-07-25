@@ -119,7 +119,7 @@ final class GradlePluginPlugin extends AbstractPlugin implements PropertyChangeL
     Pattern compatTestPattern = ~/^compatTest(.+)/
     project.plugins.getPlugin(JVMBasePlugin).addSpockDependency(
       project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName('compatTest'),
-      project.tasks.withType(Test).matching { Test task -> task.name =~ compatTestPattern }
+      new ArrayList<Test>(project.tasks.withType(Test).matching { Test task -> task.name =~ compatTestPattern })
     ) { String name ->
       Matcher compatTestMatcher = (name =~ compatTestPattern)
       compatTestMatcher.find()

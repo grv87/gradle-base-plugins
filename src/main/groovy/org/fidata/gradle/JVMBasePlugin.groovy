@@ -26,6 +26,7 @@ import static org.gradle.api.tasks.SourceSet.MAIN_SOURCE_SET_NAME
 import static org.ajoberstar.gradle.git.release.base.BaseReleasePlugin.RELEASE_TASK_NAME
 import static ProjectPlugin.LICENSE_FILE_NAMES
 import static org.jfrog.gradle.plugin.artifactory.task.ArtifactoryTask.ARTIFACTORY_PUBLISH_TASK_NAME
+import org.gradle.api.Task
 import groovy.transform.PackageScope
 import org.gradle.plugins.signing.Sign
 import org.gradle.api.file.CopySpec
@@ -52,6 +53,7 @@ import org.ajoberstar.gradle.git.publish.GitPublishExtension
 import com.jfrog.bintray.gradle.BintrayExtension
 import com.jfrog.bintray.gradle.tasks.BintrayPublishTask
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import com.athaydes.spockframework.report.internal.ReportDataAggregator
 
 /**
  * Provides an environment for a JDK project
@@ -173,9 +175,39 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
     }
 
     tasks.each { Test task ->
+      Task moveAggregatedReportTask
+      GString reportDirName
+      File spockReportsDir
       task.with {
+        reportDirName = "spock/${ reportDirNamer.call(name) }"
+        spockReportsDir = new File(project.convention.getPlugin(ProjectConvention).htmlReportsDir, reportDirName)
         reports.html.enabled = false
-        systemProperty 'com.athaydes.spockframework.report.outputDir', new File(project.convention.getPlugin(ProjectConvention).htmlReportsDir, "spock/${ reportDirNamer.call(name) }").absolutePath
+        systemProperty 'com.athaydes.spockframework.report.outputDir', spockReportsDir.absolutePath
+        /*
+         * WORKAROUND:
+         * Spock Reports generates aggregated_report.json in the same directory as HTML files
+         * https://github.com/renatoathaydes/spock-reports/issues/155
+         * <grv87 2018-07-25>
+         */
+        moveAggregatedReportTask = project.tasks.create("${ task.name }MoveAggegatedReport")
+        finalizedBy moveAggregatedReportTask
+      }
+      moveAggregatedReportTask.with {
+        File aggregatedReportFile = new File(spockReportsDir, ReportDataAggregator.AGGREGATED_DATA_FILE.toString())
+        inputs.file aggregatedReportFile
+        /*
+         * WORKAROUND:
+         * There is no built-in way to skip task if its single file input doesn't exist
+         * https://github.com/gradle/gradle/issues/2919
+         * <grv87 2018-07-25>
+         */
+        onlyIf { aggregatedReportFile.exists() }
+        doLast {
+          project.ant.invokeMethod('move', [
+            file: aggregatedReportFile,
+            todir: new File(project.convention.getPlugin(ProjectConvention).jsonReportsDir, reportDirName)
+          ])
+        }
       }
     }
 

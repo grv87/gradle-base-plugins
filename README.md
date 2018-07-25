@@ -139,6 +139,7 @@ plugin](https://github.com/FIDATA/gradle-semantic-release-plugin).
 	*	`reportsDir`
 	*	`htmlReportsDir`
 	*	`xmlReportsDir`
+	*	`jsonReportsDir`
 	*	`txtReportsDir`
 
 *	Applies and configures `reporting-base` plugin

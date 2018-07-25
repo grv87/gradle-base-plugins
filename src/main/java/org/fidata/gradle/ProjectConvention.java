@@ -80,6 +80,12 @@ public class ProjectConvention extends AbstractExtension {
   private final File xmlReportsDir;
 
   /**
+   * @return output directory for JSON reports
+   */
+  @Getter
+  private final File jsonReportsDir;
+
+  /**
    * @return output directory for text reports
    */
   @Getter
@@ -92,8 +98,9 @@ public class ProjectConvention extends AbstractExtension {
 
     reportsDir = new File(project.getBuildDir(), "reports");
     htmlReportsDir = new File(reportsDir, "html");
-    xmlReportsDir = new File(reportsDir, "xml");
-    txtReportsDir = new File(reportsDir, "txt");
+    xmlReportsDir  = new File(reportsDir, "xml");
+    jsonReportsDir = new File(reportsDir, "json");
+    txtReportsDir  = new File(reportsDir, "txt");
 
     websiteUrl = getVcsUrl();
     issuesUrl = websiteUrl + "/issues";
