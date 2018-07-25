@@ -29,6 +29,7 @@ import static org.gradle.internal.FileUtils.toSafeFileName
 import static org.fidata.gradle.utils.VersionUtils.isPreReleaseVersion
 import static org.gradle.language.base.plugins.LifecycleBasePlugin.VERIFICATION_GROUP
 import static com.dorongold.gradle.tasktree.TaskTreePlugin.TASK_TREE_TASK_NAME
+import org.ajoberstar.grgit.auth.AuthConfig
 import groovy.transform.CompileDynamic
 import org.ajoberstar.grgit.Grgit
 import de.gliderpilot.gradle.semanticrelease.SemanticReleasePluginExtension
@@ -342,8 +343,8 @@ final class ProjectPlugin extends AbstractPlugin {
   }
 
   private void configureGit() {
-    System.setProperty 'org.ajoberstar.grgit.auth.username', project.extensions.extraProperties['gitUsername'].toString()
-    System.setProperty 'org.ajoberstar.grgit.auth.password', project.extensions.extraProperties['gitPassword'].toString()
+    System.setProperty AuthConfig.USERNAME_OPTION, project.extensions.extraProperties['gitUsername'].toString()
+    System.setProperty AuthConfig.PASSWORD_OPTION, project.extensions.extraProperties['gitPassword'].toString()
   }
 
   /*
