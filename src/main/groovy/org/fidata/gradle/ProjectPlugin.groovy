@@ -318,7 +318,7 @@ final class ProjectPlugin extends AbstractPlugin {
      * See https://bugs.eclipse.org/bugs/show_bug.cgi?id=382212
      * <grv87 2018-06-22>
      */
-    ResignGitCommit resignGitPublishCommit = project.tasks.create("${ gitPublishCommit.name }Resign", ResignGitCommit) { ResignGitCommit task ->
+    ResignGitCommit resignGitPublishCommit = project.tasks.create("resign${ gitPublishCommit.name.capitalize() }", ResignGitCommit) { ResignGitCommit task ->
       task.with {
         enabled = repoClean
         description = 'Amend git publish commit adding sign to it'
