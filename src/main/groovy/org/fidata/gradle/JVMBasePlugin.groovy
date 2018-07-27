@@ -97,6 +97,8 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
             break
         }
         break
+      default:
+        project.logger.warn('org.fidata.base.jvm: unexpected property change source: {}', e.source.toString())
     }
   }
 
