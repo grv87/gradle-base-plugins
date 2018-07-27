@@ -87,6 +87,11 @@ import com.github.zafarkhaja.semver.Version
  */
 @CompileStatic
 final class ProjectPlugin extends AbstractPlugin {
+  /**
+   * Name of fidata convention for {@link Project}
+   */
+  public static final String FIDATA_CONVENTION_NAME = 'fidata'
+
   static final Template COMMIT_MESSAGE_TEMPLATE = new StreamingTemplateEngine().createTemplate(
     '''
       $type: $subject
@@ -127,7 +132,7 @@ final class ProjectPlugin extends AbstractPlugin {
 
     PluginDependeesUtils.applyPlugins project, ProjectPluginDependees.PLUGIN_DEPENDEES
 
-    project.convention.plugins.put 'fidata', new ProjectConvention(project)
+    project.convention.plugins.put FIDATA_CONVENTION_NAME, new ProjectConvention(project)
 
     if (!project.group) { project.group = "${ -> defaultProjectGroup }" }
 
@@ -346,6 +351,11 @@ final class ProjectPlugin extends AbstractPlugin {
    */
   public static final String CODENARC_TASK_NAME = 'codenarc'
 
+  /**
+   * Name of disabledRules convention for {@link CodeNarc} tasks
+   */
+  public static final String CODENARC_DISABLED_RULES_CONVENTION_NAME = 'disabledRules'
+
   /*
    * WORKAROUND:
    * Groovy bug. Usage of `destination =` instead of setDestination leads to error:
@@ -378,7 +388,7 @@ final class ProjectPlugin extends AbstractPlugin {
     Task checkTask = project.tasks.getByName(CHECK_TASK_NAME)
 
     project.tasks.withType(CodeNarc) { CodeNarc task ->
-      new DslObject(task).convention.plugins.put 'disabledRules', new CodeNarcTaskConvention(task)
+      new DslObject(task).convention.plugins.put CODENARC_DISABLED_RULES_CONVENTION_NAME, new CodeNarcTaskConvention(task)
 
       task.with {
         String reportFileName = "codenarc/${ toSafeFileName((name - ~/^codenarc/ /* WORKAROUND: CodeNarcPlugin.getTaskBaseName has protected scope <grv87 2018-06-23> */).uncapitalize()) }"

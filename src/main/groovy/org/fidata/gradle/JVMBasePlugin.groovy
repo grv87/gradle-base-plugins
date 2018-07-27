@@ -60,6 +60,11 @@ import com.athaydes.spockframework.report.internal.ReportDataAggregator
  */
 @CompileStatic
 final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListener {
+  /**
+   * Name of jvm extension for {@link Project}
+   */
+  public static final String JVM_EXTENSION_NAME = 'jvm'
+
   @Override
   void apply(Project project) {
     super.apply(project)
@@ -67,7 +72,7 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
     project.pluginManager.apply ProjectPlugin
     PluginDependeesUtils.applyPlugins project, JVMBasePluginDependees.PLUGIN_DEPENDEES
 
-    project.extensions.add 'jvm', new JVMBaseExtension(project)
+    project.extensions.add JVM_EXTENSION_NAME, new JVMBaseExtension(project)
 
     project.convention.getPlugin(ProjectConvention).addPropertyChangeListener this
     configurePublicReleases()
