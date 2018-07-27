@@ -51,7 +51,7 @@ class NoJekyll extends DefaultTask {
    */
   void setDestinationDir(File newValue) {
     this.destinationDir = newValue
-    this.destinationFile = new File(destinationDir, FILE_NAME)
+    destinationFile = new File(destinationDir, FILE_NAME)
   }
 
   private File destinationFile
