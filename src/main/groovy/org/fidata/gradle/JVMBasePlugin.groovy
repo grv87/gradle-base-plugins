@@ -198,7 +198,7 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
          * https://github.com/renatoathaydes/spock-reports/issues/155
          * <grv87 2018-07-25>
          */
-        moveAggregatedReportTask = project.tasks.create("move${ task.name.capitalize() }AggegatedReport")
+        moveAggregatedReportTask = project.tasks.create("move${ name.capitalize() }AggegatedReport")
         finalizedBy moveAggregatedReportTask
       }
       moveAggregatedReportTask.with {
