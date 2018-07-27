@@ -54,6 +54,8 @@ import com.jfrog.bintray.gradle.BintrayExtension
 import com.jfrog.bintray.gradle.tasks.BintrayPublishTask
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import com.athaydes.spockframework.report.internal.ReportDataAggregator
+import java.nio.file.Path
+import java.nio.file.Paths
 
 /**
  * Provides an environment for a JDK project
@@ -132,7 +134,7 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
    *        If null, task with the same name as source set is used
    */
   void addSpockDependency(SourceSet sourceSet, Test task = null) {
-    addSpockDependency sourceSet, [task ?: project.tasks.withType(Test).getByName(sourceSet.name)], Closure.IDENTITY
+    addSpockDependency sourceSet, [task ?: project.tasks.withType(Test).getByName(sourceSet.name)], { String taskName -> Paths.get(taskName) }
   }
 
   /**
@@ -143,7 +145,7 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
    *        Nested directories are supported.
    *        Call <code>org.gradle.internal.FileUtils.toSafeFileName</code> manually on individual directory/file names
    */
-  void addSpockDependency(SourceSet sourceSet, Iterable<Test> tasks, Closure<GString> reportDirNamer) {
+  void addSpockDependency(SourceSet sourceSet, Iterable<Test> tasks, Closure<Path> reportDirNamer) {
     addJUnitDependency sourceSet
 
     project.pluginManager.apply GroovyBasePlugin

@@ -31,6 +31,7 @@ import org.fidata.gradle.utils.PluginDependeesUtils
 import org.gradle.api.artifacts.repositories.MavenArtifactRepository
 import org.jfrog.gradle.plugin.artifactory.dsl.ArtifactoryPluginConvention
 import java.util.regex.Pattern
+import java.nio.file.Paths
 import groovy.transform.CompileStatic
 import org.fidata.gradle.internal.AbstractPlugin
 import org.gradle.api.Project
@@ -113,10 +114,10 @@ final class GradlePluginPlugin extends AbstractPlugin implements PropertyChangeL
     project.plugins.getPlugin(JVMBasePlugin).addSpockDependency(
       project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName('compatTest'),
       new ArrayList<Test>(project.tasks.withType(Test).matching { Test task -> task.name =~ compatTestPattern })
-    ) { String name ->
-      Matcher compatTestMatcher = (name =~ compatTestPattern)
+    ) { String taskName ->
+      Matcher compatTestMatcher = (taskName =~ compatTestPattern)
       compatTestMatcher.find()
-      "compatTest/${ toSafeFileName(compatTestMatcher.group(1).uncapitalize()) }"
+      Paths.get('compatTest', toSafeFileName(compatTestMatcher.group(1).uncapitalize()))
     }
 
     project.afterEvaluate {
