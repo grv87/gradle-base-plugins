@@ -20,7 +20,7 @@ com.google.errorprone:error_prone_annotations:2.1.3
 com.google.guava:guava:25.1-jre
 com.google.j2objc:j2objc-annotations:1.1
 com.googlecode.javaewah:JavaEWAH:1.1.6
-com.gradle.publish:plugin-publish-plugin:0.9.10
+com.gradle.publish:plugin-publish-plugin:0.10.0
 com.jcabi.incubator:xembly:0.22
 com.jcabi:jcabi-aspects:0.22.5
 com.jcabi:jcabi-github:0.33.1
@@ -126,7 +126,7 @@ org.codehaus.plexus:plexus-utils:3.0.20
 org.eclipse.jgit:org.eclipse.jgit.ui:4.11.0.201803080745-r
 org.eclipse.jgit:org.eclipse.jgit:4.11.0.201803080745-r
 org.fidata.gradle.semantic-release:gradle-semantic-release-plugin:2.0.0
-org.fidata.gradle:gradle-prerequisites-plugin:1.0.1
+org.fidata.gradle:gradle-prerequisites-plugin:1.0.2
 org.glassfish.hk2.external:aopalliance-repackaged:2.4.0-b10
 org.glassfish.hk2.external:javax.inject:2.4.0-b10
 org.glassfish.hk2:hk2-api:2.4.0-b10
