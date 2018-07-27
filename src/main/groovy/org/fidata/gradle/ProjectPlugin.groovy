@@ -392,7 +392,7 @@ final class ProjectPlugin extends AbstractPlugin {
     }
 
     project.tasks.create("${ /* WORKAROUND: CodeNarcPlugin.getTaskBaseName has protected scope <grv87 2018-06-23> */ 'codenarc' }${ DEFAULT_BUILD_SRC_DIR.capitalize() }", CodeNarc) { CodeNarc task ->
-      Closure excludeBuildDir = { FileTreeElement fte ->
+      Closure buildDirMatcher = { FileTreeElement fte ->
         String[] p = fte.relativePath.segments
         int i = 0
         while (i < p.length && p[i] == DEFAULT_BUILD_SRC_DIR) { i++ }
@@ -401,13 +401,13 @@ final class ProjectPlugin extends AbstractPlugin {
       task.with {
         for (File f in project.fileTree(project.projectDir) { ConfigurableFileTree fileTree ->
           fileTree.include '**/*.gradle'
-          fileTree.exclude excludeBuildDir
+          fileTree.exclude buildDirMatcher
         }) {
           source f
         }
         for (File f in project.fileTree(DEFAULT_BUILD_SRC_DIR) { ConfigurableFileTree fileTree ->
           fileTree.include '**/*.groovy'
-          fileTree.exclude excludeBuildDir
+          fileTree.exclude buildDirMatcher
         }) {
           source f
         }
