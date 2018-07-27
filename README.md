@@ -45,9 +45,6 @@ plugin](https://github.com/FIDATA/gradle-semantic-release-plugin).
 
 *   Configures `wrapper` task to specific Gradle version
 
-    Since this task should be run twice it is not included
-    in `prerequisitesUpdate` and should be run manually.
-
 ### Dependency Resolution
 
 *	Applies and configures [`com.jfrog.artifactory` plugin
