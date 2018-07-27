@@ -24,8 +24,6 @@ import spock.lang.Specification
 import spock.lang.Unroll
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.BuildResult
-import java.nio.file.Files
-import org.apache.commons.io.FileUtils
 
 /**
  * Specification for {@link org.fidata.gradle.GradlePluginPlugin} class
@@ -34,7 +32,7 @@ class GradlePluginPluginSpecification extends Specification {
   // fields
   boolean success = false
 
-  final File testProjectDir = Files.createTempDirectory('compatTest').toFile()
+  final File testProjectDir = File.createTempDir('compatTest', '-project')
 
   File buildFile = new File(testProjectDir, 'build.gradle')
   File settingsFile = new File(testProjectDir, 'settings.gradle')
@@ -95,7 +93,7 @@ class GradlePluginPluginSpecification extends Specification {
      * <grv87 2018-06-27>
      */
     if (success || System.getenv().with { containsKey('CI') || containsKey('JENKINS_URL') }) {
-      FileUtils.deleteDirectory(testProjectDir)
+      testProjectDir.deleteDir()
     }
   }
 
