@@ -212,7 +212,7 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
     }
 
     project.plugins.withType(GroovyBasePlugin) { GroovyBasePlugin plugin ->
-      new DslObject(project.tasks.getByName("codenarc${ sourceSet.name.capitalize() }")).convention.getPlugin(CodeNarcTaskConvention).disabledRules.addAll(['MethodName', 'FactoryMethodName', 'JUnitPublicProperty', 'JUnitPublicNonTestMethod', /* WORKAROUND: https://github.com/CodeNarc/CodeNarc/issues/308 <grv87 2018-06-26> */ 'Indentation'])
+      new DslObject(project.tasks.getByName("codenarc${ sourceSet.name.capitalize() }")).convention.getPlugin(CodeNarcTaskConvention).disabledRules.addAll 'MethodName', 'FactoryMethodName', 'JUnitPublicProperty', 'JUnitPublicNonTestMethod', /* WORKAROUND: https://github.com/CodeNarc/CodeNarc/issues/308 <grv87 2018-06-26> */ 'Indentation'
     }
   }
 
