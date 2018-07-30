@@ -45,7 +45,7 @@ dependencies {
   api gradleApi()
   /*
    * CAVEAT:
-   * We provide this plugin with dynamic version to parent project from here
+   * We provide parent project with this plugin with dynamic version from here
    * to avoid writing big `buildscript` block
    */
   runtimeOnly group: 'io.franzbecker', name: 'gradle-lombok', version: 'latest.release'
