@@ -36,7 +36,6 @@ import de.gliderpilot.gradle.semanticrelease.SemanticReleasePluginExtension
 import org.gradle.api.artifacts.repositories.MavenArtifactRepository
 import org.fidata.gradle.tasks.CodeNarcTaskConvention
 import org.gradle.api.file.ConfigurableFileTree
-import org.gradle.api.internal.plugins.DslObject
 import groovy.transform.CompileStatic
 import groovy.transform.PackageScope
 import org.fidata.gradle.internal.AbstractPlugin
@@ -388,7 +387,7 @@ final class ProjectPlugin extends AbstractPlugin {
     Task checkTask = project.tasks.getByName(CHECK_TASK_NAME)
 
     project.tasks.withType(CodeNarc) { CodeNarc task ->
-      new DslObject(task).convention.plugins.put CODENARC_DISABLED_RULES_CONVENTION_NAME, new CodeNarcTaskConvention(task)
+      task.convention.plugins.put CODENARC_DISABLED_RULES_CONVENTION_NAME, new CodeNarcTaskConvention(task)
 
       task.with {
         String reportFileName = "codenarc/${ toSafeFileName((name - ~/^codenarc/ /* WORKAROUND: CodeNarcPlugin.getTaskBaseName has protected scope <grv87 2018-06-23> */).uncapitalize()) }"
@@ -430,7 +429,7 @@ final class ProjectPlugin extends AbstractPlugin {
        * https://github.com/CodeNarc/CodeNarc/issues/310
        * <grv87 2018-06-26>
        */
-      new DslObject(task).convention.getPlugin(CodeNarcTaskConvention).disabledRules.add 'Indentation'
+      task.convention.getPlugin(CodeNarcTaskConvention).disabledRules.add 'Indentation'
     }
   }
 

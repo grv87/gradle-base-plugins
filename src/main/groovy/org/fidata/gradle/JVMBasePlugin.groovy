@@ -38,7 +38,6 @@ import org.jfrog.gradle.plugin.artifactory.dsl.ArtifactoryPluginConvention
 import org.jfrog.gradle.plugin.artifactory.task.ArtifactoryTask
 import org.fidata.gradle.tasks.CodeNarcTaskConvention
 import org.gradle.api.artifacts.ModuleDependency
-import org.gradle.api.internal.plugins.DslObject
 import groovy.transform.CompileStatic
 import org.fidata.gradle.internal.AbstractPlugin
 import org.gradle.api.Project
@@ -221,7 +220,7 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
     }
 
     project.plugins.withType(GroovyBasePlugin) { GroovyBasePlugin plugin ->
-      new DslObject(project.tasks.getByName("codenarc${ sourceSet.name.capitalize() }")).convention.getPlugin(CodeNarcTaskConvention).disabledRules.addAll 'MethodName', 'FactoryMethodName', 'JUnitPublicProperty', 'JUnitPublicNonTestMethod', /* WORKAROUND: https://github.com/CodeNarc/CodeNarc/issues/308 <grv87 2018-06-26> */ 'Indentation'
+      project.tasks.getByName("codenarc${ sourceSet.name.capitalize() }").convention.getPlugin(CodeNarcTaskConvention).disabledRules.addAll 'MethodName', 'FactoryMethodName', 'JUnitPublicProperty', 'JUnitPublicNonTestMethod', /* WORKAROUND: https://github.com/CodeNarc/CodeNarc/issues/308 <grv87 2018-06-26> */ 'Indentation'
     }
   }
 
