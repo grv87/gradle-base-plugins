@@ -24,7 +24,9 @@ plugins {
 
 group = 'org.fidata.gradle'
 
-ext.rootDir = '../..'
+ext.rootDir = file('../..')
+
+apply from: new File(ext.rootDir, 'buildSrc/gradle/load-properties.gradle')
 
 dependencyLocking.lockAllConfigurations()
 
@@ -49,6 +51,6 @@ dependencies {
   runtimeOnly group: 'io.franzbecker', name: 'gradle-lombok', version: 'latest.release'
 }
 
-sourceSets.main.groovy.srcDirs = ["${ project.ext.rootDir }/src/plugin-dependencies/groovy"]
+sourceSets.main.groovy.srcDirs = [new File(ext.rootDir, 'src/plugin-dependencies/groovy')]
 
 dependencies.runtime project(path)

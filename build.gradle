@@ -36,9 +36,9 @@ contacts {
   }
 }
 
-apply from: "${ project.ext.rootDir }/gradle/dependencies-compile.gradle"
+apply from: new File(ext.rootDir, 'gradle/dependencies-compile.gradle')
 
-sourceSets.main.groovy.srcDirs += ["${ project.ext.rootDir }/src/plugin-dependencies/groovy"]
+sourceSets.main.groovy.srcDirs += [new File(ext.rootDir, 'src/plugin-dependencies/groovy')]
 
 /*
  * WORKAROUND:
@@ -50,7 +50,7 @@ afterEvaluate {
   jvm.javadocLinks['org.spdx'] = uri("https://static.javadoc.io/org.spdx/spdx-tools/${ configurations.getByName('compileClasspath').resolvedConfiguration.firstLevelModuleDependencies.find { it.moduleGroup == 'org.spdx' && it.moduleName == 'spdx-tools' }.moduleVersion }/")
 }
 
-apply from: "${ project.ext.rootDir }/gradle/gradle-plugin-markers.gradle"
+apply from: new File(ext.rootDir, 'gradle/gradle-plugin-markers.gradle')
 
 dependencies {
   testImplementation group: 'pl.pragmatists', name: 'JUnitParams', version: 'latest.release'
@@ -67,6 +67,7 @@ stutter {
 
 tasks.codenarcMain.disabledRules.add 'JavaIoPackageAccess'
 tasks.codenarcCompatTest.disabledRules.add 'JavaIoPackageAccess'
+tasks.codenarcBuildSrc.disabledRules.add 'JavaIoPackageAccess'
 
 task('codenarcMainResources', type: CodeNarc) {
   for (File srcDir in sourceSets.main.resources.srcDirs) {
