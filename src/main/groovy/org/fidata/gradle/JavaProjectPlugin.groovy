@@ -33,6 +33,7 @@ import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.tasks.javadoc.Javadoc
 import org.gradle.external.javadoc.StandardJavadocDocletOptions
+import org.gradle.api.tasks.TaskProvider
 
 /**
  * Provides an environment for a JDK project
@@ -52,39 +53,52 @@ final class JavaProjectPlugin extends AbstractPlugin {
   }
 
   private void configureLombok() {
-    project.extensions.getByType(LombokPluginExtension).with {
-      version = 'latest.release'
-      sha256 = ''
+    project.extensions.configure(LombokPluginExtension) { LombokPluginExtension extension ->
+      extension.with {
+        version = 'latest.release'
+        sha256 = ''
+      }
     }
   }
 
   public static final String DELOMBOK_TASK_NAME = 'delombok'
 
+  /*
+   * WORKAROUND:
+   * We have to use `setSource`, otherwise we got error:
+   * Caused by: org.codehaus.groovy.runtime.typehandling.GroovyCastException: Cannot cast object
+   * 'org.gradle.api.internal.tasks.DefaultTaskOutputs@198bfea7' with class
+   * 'org.gradle.api.internal.tasks.DefaultTaskOutputs' to class 'org.gradle.api.file.FileTree'
+   * <grv87 2018-08-01>
+   */
+  @SuppressWarnings(['UnnecessarySetter'])
   private void configureDelombok() {
-    DelombokTask delombokTask = project.tasks.create(DELOMBOK_TASK_NAME, DelombokTask) { DelombokTask task ->
-      task.with {
-        SourceSet mainSourceSet = project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(MAIN_SOURCE_SET_NAME)
+    project.tasks.withType(Javadoc).named(JAVADOC_TASK_NAME).configure { Javadoc javadoc ->
+      TaskProvider<DelombokTask> delombokProvider = project.tasks.register(DELOMBOK_TASK_NAME, DelombokTask) { DelombokTask delombok ->
+        delombok.with {
+          SourceSet mainSourceSet = project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(MAIN_SOURCE_SET_NAME)
 
-        dependsOn project.tasks.getByName(COMPILE_JAVA_TASK_NAME)
-        File outputDir = new File(project.buildDir, 'delombok')
-        outputs.dir outputDir
-        mainSourceSet.java.srcDirs.each { File dir ->
-          inputs.dir dir
-          args dir, '-d', outputDir
+          dependsOn project.tasks.named(COMPILE_JAVA_TASK_NAME)
+          File outputDir = new File(project.buildDir, 'delombok')
+          outputs.dir outputDir
+          mainSourceSet.java.srcDirs.each { File dir ->
+            inputs.dir dir
+            args dir, '-d', outputDir
+          }
+          classpath mainSourceSet.compileClasspath
         }
-        classpath mainSourceSet.compileClasspath
       }
-    }
-    project.tasks.withType(Javadoc).getByName(JAVADOC_TASK_NAME) { Javadoc task ->
-      task.dependsOn delombokTask
-      task.source = delombokTask.outputs
+      javadoc.with {
+        dependsOn delombokProvider
+        setSource delombokProvider.get().outputs
+      }
     }
   }
 
   private void configureDocumentation() {
     configureDelombok()
 
-    project.tasks.withType(Javadoc) { Javadoc task ->
+    project.tasks.withType(Javadoc).configureEach { Javadoc task ->
       task.doFirst {
         task.options { StandardJavadocDocletOptions options ->
           task.project.extensions.getByType(JVMBaseExtension).javadocLinks.values().each { URI link ->
@@ -94,7 +108,7 @@ final class JavaProjectPlugin extends AbstractPlugin {
       }
     }
 
-    project.extensions.getByType(GitPublishExtension).contents.from(project.tasks.getByName(JAVADOC_TASK_NAME)).into "$project.version/javadoc"
+    project.extensions.getByType(GitPublishExtension).contents.from(project.tasks.named(JAVADOC_TASK_NAME)).into "$project.version/javadoc"
   }
 
 }

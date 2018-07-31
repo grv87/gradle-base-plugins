@@ -53,7 +53,7 @@ final class GroovyProjectPlugin extends AbstractPlugin {
      * <>
      */
     project.configurations.getByName(API_ELEMENTS_CONFIGURATION_NAME).outgoing.variants.getByName('classes').artifact(
-      file: project.tasks.withType(GroovyCompile).getByName('compileGroovy').destinationDir,
+      file: project.tasks.withType(GroovyCompile).getByName('compileGroovy').destinationDir, // TODO
       type: ArtifactTypeDefinition.JVM_CLASS_DIRECTORY,
       builtBy: project.tasks.withType(GroovyCompile).getByName('compileGroovy')
     )
@@ -63,12 +63,14 @@ final class GroovyProjectPlugin extends AbstractPlugin {
 
   private void configureDocumentation() {
     URI groovydocLink = project.uri("http://docs.groovy-lang.org/${ GroovySystem.version }/html/api/")
-    project.extensions.getByType(JVMBaseExtension).javadocLinks.with {
-      putAt 'groovy', groovydocLink
-      putAt 'org.codehaus.groovy', groovydocLink
+    project.extensions.configure(JVMBaseExtension) { JVMBaseExtension extension ->
+      extension.javadocLinks.with {
+        putAt 'groovy', groovydocLink
+        putAt 'org.codehaus.groovy', groovydocLink
+      }
     }
 
-    Javadoc javadoc = project.tasks.withType(Javadoc).getByName(JAVADOC_TASK_NAME)
+    Javadoc javadoc = project.tasks.withType(Javadoc).getByName(JAVADOC_TASK_NAME) // TODO
     javadoc.enabled = false
     project.tasks.withType(Groovydoc) { Groovydoc task ->
       task.source javadoc.source
@@ -79,6 +81,6 @@ final class GroovyProjectPlugin extends AbstractPlugin {
       }
     }
 
-    project.extensions.getByType(GitPublishExtension).contents.from(project.tasks.getByName('groovydoc')).into "$project.version/groovydoc"
+    project.extensions.getByType(GitPublishExtension).contents.from(project.tasks.named('groovydoc')).into "$project.version/groovydoc"
   }
 }

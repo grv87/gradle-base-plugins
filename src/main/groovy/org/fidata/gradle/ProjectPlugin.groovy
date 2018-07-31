@@ -29,6 +29,7 @@ import static org.gradle.internal.FileUtils.toSafeFileName
 import static org.fidata.gradle.utils.VersionUtils.isPreReleaseVersion
 import static org.gradle.language.base.plugins.LifecycleBasePlugin.VERIFICATION_GROUP
 import static com.dorongold.gradle.tasktree.TaskTreePlugin.TASK_TREE_TASK_NAME
+import org.gradle.api.tasks.TaskCollection
 import org.ajoberstar.grgit.auth.AuthConfig
 import groovy.transform.CompileDynamic
 import org.ajoberstar.grgit.Grgit
@@ -80,6 +81,7 @@ import com.dorongold.gradle.tasktree.TaskTreeTask
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 import com.github.zafarkhaja.semver.Version
+import org.gradle.api.tasks.TaskProvider
 
 /**
  * Provides an environment for a general, language-agnostic project
@@ -165,24 +167,30 @@ final class ProjectPlugin extends AbstractPlugin {
   public static final String RELEASE_TASK_GROUP_NAME = 'Release'
 
   private void configureLifecycle() {
-    project.tasks.getByName(BUILD_TASK_NAME).dependsOn.remove CHECK_TASK_NAME
-    project.tasks.getByName(RELEASE_TASK_NAME).with {
-      group = RELEASE_TASK_GROUP_NAME
-      dependsOn BUILD_TASK_NAME
-      dependsOn project.tasks.getByName(CHECK_TASK_NAME)
+    project.tasks.named(BUILD_TASK_NAME).configure { Task task ->
+      task.dependsOn.remove CHECK_TASK_NAME
     }
-    project.tasks.withType(Test) { Test task ->
-      task.project.tasks.getByName(CHECK_TASK_NAME).dependsOn task
+    project.tasks.named(RELEASE_TASK_NAME).configure { Task task ->
+      task.with {
+        group = RELEASE_TASK_GROUP_NAME
+        dependsOn project.tasks.named(BUILD_TASK_NAME) // TODO
+        dependsOn project.tasks.named(CHECK_TASK_NAME)
+      }
+    }
+    project.tasks.named(CHECK_TASK_NAME).configure { Task task ->
+      task.dependsOn task.project.tasks.withType(Test)
     }
 
     project.extensions.getByType(SemanticReleasePluginExtension).branchNames.replace 'develop', ''
 
-    project.tasks.withType(UpdateGithubRelease).getByName('updateGithubRelease').repo.ghToken = project.extensions.extraProperties['ghToken'].toString()
+    project.tasks.withType(UpdateGithubRelease).named('updateGithubRelease').configure { UpdateGithubRelease task ->
+      task.repo.ghToken = project.extensions.extraProperties['ghToken'].toString()
+    }
   }
 
   @SuppressWarnings(['BracesForForLoop', 'UnnecessaryObjectReferences'])
   private void configurePrerequisitesLifecycle() {
-    project.tasks.withType(DependencyUpdatesTask) { DependencyUpdatesTask task ->
+    project.tasks.withType(DependencyUpdatesTask).configureEach { DependencyUpdatesTask task ->
       task.group = null
       task.revision = 'release'
       task.outputFormatter = 'xml'
@@ -198,7 +206,7 @@ final class ProjectPlugin extends AbstractPlugin {
       }
     }
 
-    project.tasks.withType(Wrapper) { Wrapper task ->
+    project.tasks.withType(Wrapper).configureEach { Wrapper task ->
       task.with {
         if (name == 'wrapper') {
           gradleVersion = '4.9'
@@ -275,67 +283,94 @@ final class ProjectPlugin extends AbstractPlugin {
   public static final String NO_JEKYLL_TASK_NAME = 'noJekyll'
 
   private void configureDocumentation() {
-    project.extensions.getByType(GitPublishExtension).with {
-      branch.set 'gh-pages'
-      preserve.include '**'
-      /*
-       * CAVEAT:
-       * SNAPSHOT documentation for other branches should be removed manually
-       */
-      preserve.exclude { FileTreeElement fileTreeElement ->
-        Pattern snapshotSuffix = ~/-SNAPSHOT$/
-        Matcher m = snapshotSuffix.matcher(fileTreeElement.relativePath.segments[0])
-        if (!m.find()) {
-          return false
+    project.extensions.configure(GitPublishExtension) { GitPublishExtension extension ->
+      extension.with {
+        branch.set 'gh-pages'
+        preserve.include '**'
+        /*
+         * CAVEAT:
+         * SNAPSHOT documentation for other branches should be removed manually
+         */
+        preserve.exclude { FileTreeElement fileTreeElement ->
+          Pattern snapshotSuffix = ~/-SNAPSHOT$/
+          Matcher m = snapshotSuffix.matcher(fileTreeElement.relativePath.segments[0])
+          if (!m.find()) {
+            return false
+          }
+          String dirVersion = m.replaceFirst('')
+          String projectVersion = project.version.toString().replaceFirst(snapshotSuffix, '')
+          try {
+            return Version.valueOf(dirVersion).preReleaseVersion == Version.valueOf(projectVersion).preReleaseVersion
+          } catch (ignored) {
+            return false
+          }
         }
-        String dirVersion = m.replaceFirst('')
-        String projectVersion = project.version.toString().replaceFirst(snapshotSuffix, '')
-        try {
-          return Version.valueOf(dirVersion).preReleaseVersion == Version.valueOf(projectVersion).preReleaseVersion
-        } catch (ignored) {
-          return false
-        }
+        commitMessage.set COMMIT_MESSAGE_TEMPLATE.make(
+          type: 'docs',
+          subject: "publish documentation for version ${ project.version }",
+          generatedBy: 'org.ajoberstar:gradle-git-publish'
+        ).toString()
       }
-      commitMessage.set COMMIT_MESSAGE_TEMPLATE.make(
-        type: 'docs',
-        subject: "publish documentation for version ${ project.version }",
-        generatedBy: 'org.ajoberstar:gradle-git-publish'
-      ).toString()
     }
 
     boolean repoClean = ((Grgit) project.extensions.extraProperties.get('grgit')).status().clean
 
-    NoJekyll noJekyllTask = project.tasks.create(NO_JEKYLL_TASK_NAME, NoJekyll) { NoJekyll task ->
-      task.with {
-        description = 'Generates .nojekyll file in gitPublish repository'
-        destinationDir = project.extensions.getByType(GitPublishExtension).repoDir.asFile.get()
+    TaskProvider<Task> gitPublishCommitProvider = project.tasks.named(/* WORKAROUND: GitPublishPlugin.COMMIT_TASK has package scope <grv87 2018-06-23> */ 'gitPublishCommit')
+    gitPublishCommitProvider.configure { Task gitPublishCommit ->
+      TaskProvider<NoJekyll> noJekyllProvider = project.tasks.register(NO_JEKYLL_TASK_NAME, NoJekyll) { NoJekyll task ->
+        task.with {
+          description = 'Generates .nojekyll file in gitPublish repository'
+          destinationDir = project.extensions.getByType(GitPublishExtension).repoDir.asFile.get()
+        }
+        /*
+         * WORKAROUND:
+         * Without that we get error:
+         * [Static type checking] - Cannot call <T extends org.gradle.api.Task>
+         * org.gradle.api.tasks.TaskContainer#register(java.lang.String, java.lang.Class <T>, org.gradle.api.Action
+         * <java.lang.Object extends java.lang.Object>) with arguments [java.lang.String, java.lang.Class
+         * <org.fidata.gradle.tasks.NoJekyll>, groovy.lang.Closure <java.io.File>]
+         * <grv87 2018-07-31>
+         */
+        null
       }
-    }
-
-    Task gitPublishCommit = project.tasks.getByName(/* WORKAROUND: GitPublishPlugin.COMMIT_TASK has package scope <grv87 2018-06-23> */ 'gitPublishCommit')
-
-    /*
-     * WORKAROUND:
-     * JGit doesn't support signed commits yet.
-     * See https://bugs.eclipse.org/bugs/show_bug.cgi?id=382212
-     * <grv87 2018-06-22>
-     */
-    ResignGitCommit resignGitPublishCommit = project.tasks.create("resign${ gitPublishCommit.name.capitalize() }", ResignGitCommit) { ResignGitCommit task ->
-      task.with {
+      /*
+       * WORKAROUND:
+       * JGit doesn't support signed commits yet.
+       * See https://bugs.eclipse.org/bugs/show_bug.cgi?id=382212
+       * <grv87 2018-06-22>
+       */
+      TaskProvider<ResignGitCommit> resignGitPublishCommitProvider = project.tasks.register("resign${ gitPublishCommitProvider.name.capitalize() }", ResignGitCommit) { ResignGitCommit resignGitPublishCommit ->
+        resignGitPublishCommit.with {
+          enabled = repoClean
+          description = 'Amend git publish commit adding sign to it'
+          workingDir = project.extensions.getByType(GitPublishExtension).repoDir.asFile.get()
+          onlyIf { gitPublishCommitProvider.get().didWork }
+        }
+        /*
+         * WORKAROUND:
+         * Without that we get error:
+         * [Static type checking] - Cannot call <T extends org.gradle.api.Task>
+         * org.gradle.api.tasks.TaskContainer#register(java.lang.String, java.lang.Class <T>, org.gradle.api.Action
+         * <java.lang.Object extends java.lang.Object>) with arguments [groovy.lang.GString, java.lang.Class
+         * <org.fidata.gradle.tasks.ResignGitCommit>, groovy.lang.Closure <java.lang.Void>]
+         * <grv87 2018-07-31>
+         */
+        null
+      }
+      gitPublishCommit.with {
         enabled = repoClean
-        description = 'Amend git publish commit adding sign to it'
-        workingDir = project.extensions.getByType(GitPublishExtension).repoDir.asFile.get()
-        onlyIf { gitPublishCommit.didWork }
+        dependsOn noJekyllProvider
+        finalizedBy resignGitPublishCommitProvider
       }
     }
-    gitPublishCommit.with {
-      enabled = repoClean
-      dependsOn noJekyllTask
-      finalizedBy resignGitPublishCommit
-    }
 
-    project.tasks.getByName(/* WORKAROUND: GitPublishPlugin.PUSH_TASK has package scope <grv87 2018-06-23> */'gitPublishPush').enabled = repoClean
-    project.tasks.getByName(RELEASE_TASK_NAME).dependsOn project.tasks.getByName(/* GitPublishPlugin.PUSH_TASK */ 'gitPublishPush')
+    TaskProvider<Task> gitPublishPushProvider = project.tasks.named(/* WORKAROUND: GitPublishPlugin.PUSH_TASK has package scope <grv87 2018-06-23> */'gitPublishPush')
+    gitPublishPushProvider.configure { Task task ->
+      task.enabled = repoClean
+    }
+    project.tasks.named(RELEASE_TASK_NAME).configure { Task task ->
+      task.dependsOn gitPublishPushProvider
+    }
   }
 
   /**
@@ -362,43 +397,51 @@ final class ProjectPlugin extends AbstractPlugin {
    */
   @SuppressWarnings(['UnnecessarySetter'])
   private void configureCodeQuality() {
-    Task lintTask = project.tasks.create(LINT_TASK_NAME) { Task task ->
+    TaskProvider<Task> lintProvider = project.tasks.register(LINT_TASK_NAME) { Task task ->
       task.with {
         group = VERIFICATION_GROUP
         description = 'Runs all static code analyses'
       }
     }
-    project.tasks.getByName(CHECK_TASK_NAME).dependsOn lintTask
+    TaskProvider<Task> checkProvider = project.tasks.named(CHECK_TASK_NAME)
+    checkProvider.configure { Task task ->
+      task.dependsOn lintProvider
+    }
 
-    Task codeNarcTask = project.tasks.create(CODENARC_TASK_NAME) { Task task ->
+    TaskCollection<CodeNarc> codeNarcTasks = project.tasks.withType(CodeNarc)
+
+    TaskProvider<Task> codeNarcProvider = project.tasks.register(CODENARC_TASK_NAME) { Task task ->
       task.with {
         group = 'Verification'
         description = 'Runs CodeNarc analysis for each source set'
+        dependsOn codeNarcTasks
       }
     }
-    project.tasks.getByName(LINT_TASK_NAME).dependsOn codeNarcTask
-
-    project.extensions.getByType(CodeNarcExtension).with {
-      reportFormat = 'console'
+    lintProvider.configure { Task task ->
+      task.dependsOn codeNarcProvider
     }
 
-    Task checkTask = project.tasks.getByName(CHECK_TASK_NAME)
+    project.extensions.configure(CodeNarcExtension) { CodeNarcExtension extension ->
+      extension.reportFormat = 'console'
+    }
 
-    project.tasks.withType(CodeNarc) { CodeNarc task ->
-      task.convention.plugins.put CODENARC_DISABLED_RULES_CONVENTION_NAME, new CodeNarcTaskConvention(task)
+    checkProvider.configure { Task task ->
+      task.taskDependencies.getDependencies(task).removeAll codeNarcTasks
+    }
 
+    ProjectConvention projectConvention = project.convention.getPlugin(ProjectConvention)
+    codeNarcTasks.configureEach { CodeNarc task ->
       task.with {
+        convention.plugins.put CODENARC_DISABLED_RULES_CONVENTION_NAME, new CodeNarcTaskConvention(task)
         String reportFileName = "codenarc/${ toSafeFileName((name - ~/^codenarc/ /* WORKAROUND: CodeNarcPlugin.getTaskBaseName has protected scope <grv87 2018-06-23> */).uncapitalize()) }"
         reports.xml.enabled = true
-        reports.xml.setDestination new File(project.convention.getPlugin(ProjectConvention).xmlReportsDir, "${ reportFileName }.xml")
+        reports.xml.setDestination new File(projectConvention.xmlReportsDir, "${ reportFileName }.xml")
         reports.html.enabled = true
-        reports.html.setDestination new File(project.convention.getPlugin(ProjectConvention).htmlReportsDir, "${ reportFileName }.html")
+        reports.html.setDestination new File(projectConvention.htmlReportsDir, "${ reportFileName }.html")
       }
-      codeNarcTask.dependsOn task
-      checkTask.taskDependencies.getDependencies(checkTask).remove task
     }
 
-    project.tasks.create("${ /* WORKAROUND: CodeNarcPlugin.getTaskBaseName has protected scope <grv87 2018-06-23> */ 'codenarc' }${ DEFAULT_BUILD_SRC_DIR.capitalize() }", CodeNarc) { CodeNarc task ->
+    project.tasks.register("${ /* WORKAROUND: CodeNarcPlugin.getTaskBaseName has protected scope <grv87 2018-06-23> */ 'codenarc' }${ DEFAULT_BUILD_SRC_DIR.capitalize() }", CodeNarc) { CodeNarc task ->
       Closure buildDirMatcher = { FileTreeElement fte ->
         String[] p = fte.relativePath.segments
         int i = 0
@@ -450,63 +493,70 @@ final class ProjectPlugin extends AbstractPlugin {
    */
   @SuppressWarnings(['UnnecessarySetter'])
   private void configureDiagnostics() {
-    project.convention.getPlugin(ProjectReportsPluginConvention).projectReportDirName = project.convention.getPlugin(ProjectConvention).reportsDir.toPath().relativize(new File(project.convention.getPlugin(ProjectConvention).txtReportsDir, 'project').toPath()).toString()
+    ProjectConvention projectConvention = project.convention.getPlugin(ProjectConvention)
+    project.convention.getPlugin(ProjectReportsPluginConvention).projectReportDirName = projectConvention.reportsDir.toPath().relativize(new File(projectConvention.txtReportsDir, 'project').toPath()).toString()
 
-    project.tasks.withType(BuildEnvironmentReportTask) { BuildEnvironmentReportTask task ->
+    project.tasks.withType(BuildEnvironmentReportTask).configureEach { BuildEnvironmentReportTask task ->
       task.group = DIAGNOSTICS_TASK_GROUP_NAME
     }
-    project.tasks.withType(ComponentReport) { ComponentReport task ->
+    project.tasks.withType(ComponentReport).configureEach { ComponentReport task ->
       task.group = DIAGNOSTICS_TASK_GROUP_NAME
     }
-    project.tasks.withType(DependencyReportTask) { DependencyReportTask task ->
+    project.tasks.withType(DependencyReportTask).configureEach { DependencyReportTask task ->
       task.group = DIAGNOSTICS_TASK_GROUP_NAME
     }
-    project.tasks.withType(DependencyInsightReportTask) { DependencyInsightReportTask task ->
+    project.tasks.withType(DependencyInsightReportTask).configureEach { DependencyInsightReportTask task ->
       task.group = DIAGNOSTICS_TASK_GROUP_NAME
     }
-    project.tasks.withType(DependentComponentsReport) { DependentComponentsReport task ->
+    project.tasks.withType(DependentComponentsReport).configureEach { DependentComponentsReport task ->
       task.group = DIAGNOSTICS_TASK_GROUP_NAME
     }
-    project.tasks.withType(ModelReport) { ModelReport task ->
+    project.tasks.withType(ModelReport).configureEach { ModelReport task ->
       task.group = DIAGNOSTICS_TASK_GROUP_NAME
     }
-    project.tasks.withType(ProjectReportTask) { ProjectReportTask task ->
+    project.tasks.withType(ProjectReportTask).configureEach { ProjectReportTask task ->
       task.group = DIAGNOSTICS_TASK_GROUP_NAME
     }
-    project.tasks.withType(PropertyReportTask) { PropertyReportTask task ->
+    project.tasks.withType(PropertyReportTask).configureEach { PropertyReportTask task ->
       task.group = DIAGNOSTICS_TASK_GROUP_NAME
     }
-    project.tasks.withType(HtmlDependencyReportTask) { HtmlDependencyReportTask task ->
+    project.tasks.withType(HtmlDependencyReportTask).configureEach { HtmlDependencyReportTask task ->
       task.with {
         group = DIAGNOSTICS_TASK_GROUP_NAME
-        reports.html.setDestination new File(project.convention.getPlugin(ProjectConvention).htmlReportsDir, 'dependencies')
+        reports.html.setDestination new File(projectConvention.htmlReportsDir, 'dependencies')
       }
     }
-    project.tasks.withType(TaskReportTask) { TaskReportTask task ->
+    project.tasks.withType(TaskReportTask).configureEach { TaskReportTask task ->
       task.group = DIAGNOSTICS_TASK_GROUP_NAME
     }
-    project.tasks.getByName(PROJECT_REPORT).group = DIAGNOSTICS_TASK_GROUP_NAME
+    project.tasks.named(PROJECT_REPORT).configure { Task task ->
+      task.group = DIAGNOSTICS_TASK_GROUP_NAME
+    }
 
-    project.tasks.create(INPUTS_OUTPUTS_TASK_NAME, InputsOutputs) { InputsOutputs task ->
+    project.tasks.register(INPUTS_OUTPUTS_TASK_NAME, InputsOutputs) { InputsOutputs task ->
       task.with {
         group = DIAGNOSTICS_TASK_GROUP_NAME
         description = 'Generates report about all task file inputs and outputs'
-        outputFile = new File(project.convention.getPlugin(ProjectConvention).txtReportsDir, InputsOutputs.DEFAULT_OUTPUT_FILE_NAME)
+        outputFile = new File(projectConvention.txtReportsDir, DEFAULT_OUTPUT_FILE_NAME)
       }
     }
 
-    project.tasks.withType(TaskTreeTask).getByName(TASK_TREE_TASK_NAME).group = DIAGNOSTICS_TASK_GROUP_NAME
+    project.tasks.withType(TaskTreeTask).named(TASK_TREE_TASK_NAME).configure { TaskTreeTask task ->
+      task.group = DIAGNOSTICS_TASK_GROUP_NAME
+    }
 
-    project.extensions.getByType(VisTegPluginExtension).with {
-      enabled        = (project.logging.level ?: project.gradle.startParameter.logLevel) <= LogLevel.INFO
-      colouredNodes  = true
-      colouredEdges  = true
-      destination    = new File(project.convention.getPlugin(ProjectConvention).reportsDir, 'visteg.dot').toString()
-      exporter       = 'dot'
-      colorscheme    = 'paired12'
-      nodeShape      = 'box'
-      startNodeShape = 'hexagon'
-      endNodeShape   = 'doubleoctagon'
+    project.extensions.configure(VisTegPluginExtension) { VisTegPluginExtension extension ->
+      extension.with {
+        enabled        = (project.logging.level ?: project.gradle.startParameter.logLevel) <= LogLevel.INFO
+        colouredNodes  = true
+        colouredEdges  = true
+        destination    = new File(projectConvention.reportsDir, 'visteg.dot').toString()
+        exporter       = 'dot'
+        colorscheme    = 'paired12'
+        nodeShape      = 'box'
+        startNodeShape = 'hexagon'
+        endNodeShape   = 'doubleoctagon'
+      }
     }
   }
 }

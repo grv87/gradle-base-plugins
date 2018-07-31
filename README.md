@@ -166,7 +166,7 @@ All these tasks are put into `Diagnostics` group.
 
 ### Supported Gradle and JDK versions:
 
-*	Requires Gradle >= 4.8
+*	Requires Gradle >= 4.9
 *	Built and tested with JDK 8
 
 ## `org.fidata.base.jvm` plugin

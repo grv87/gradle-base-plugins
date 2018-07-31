@@ -24,6 +24,7 @@ import static ProjectPlugin.ARTIFACTORY_URL
 import static JVMBasePlugin.FUNCTIONAL_TEST_SOURCE_SET_NAME
 import static JVMBasePlugin.FUNCTIONAL_TEST_TASK_NAME
 import static org.gradle.internal.FileUtils.toSafeFileName
+import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.Task
 import org.gradle.api.tasks.SourceSet
 import org.gradle.plugin.devel.GradlePluginDevelopmentExtension
@@ -43,6 +44,7 @@ import java.beans.PropertyChangeListener
 import java.beans.PropertyChangeEvent
 import org.gradle.api.plugins.JavaPluginConvention
 import org.ysb33r.gradle.gradletest.TestSet
+import org.gradle.api.tasks.TaskProvider
 
 /**
  * Provides an environment for a Gradle plugin project
@@ -86,34 +88,46 @@ final class GradlePluginPlugin extends AbstractPlugin implements PropertyChangeL
   }
 
   private void configurePublicReleases() {
-    if (project.convention.getPlugin(ProjectConvention).publicReleases) {
+    ProjectConvention projectConvention = project.convention.getPlugin(ProjectConvention)
+    if (projectConvention.publicReleases) {
       project.pluginManager.apply 'com.gradle.plugin-publish'
-      project.extensions.getByType(PluginBundleExtension).with {
-        website = project.convention.getPlugin(ProjectConvention).websiteUrl
-        vcsUrl = project.convention.getPlugin(ProjectConvention).vcsUrl
-        description = project.convention.getPlugin(ProjectConvention).changeLog.toString()
+      project.extensions.configure(PluginBundleExtension) { PluginBundleExtension extension ->
+        extension.with {
+          website = projectConvention.websiteUrl
+          vcsUrl = projectConvention.vcsUrl
+          description = projectConvention.changeLog.toString()
+        }
       }
-      project.tasks.getByName(/* WORKAROUND: PublishPlugin.BASE_TASK_NAME has private scope <grv87 2018-06-23> */ 'publishPlugins').onlyIf { project.convention.getPlugin(ProjectConvention).isRelease }
-      project.tasks.getByName(RELEASE_TASK_NAME).finalizedBy /* WORKAROUND: PublishPlugin.BASE_TASK_NAME has private scope <grv87 2018-06-23> */ 'publishPlugins'
+      project.tasks.named(/* WORKAROUND: PublishPlugin.BASE_TASK_NAME has private scope <grv87 2018-06-23> */ 'publishPlugins').configure { Task task ->
+        task.onlyIf { projectConvention.isRelease }
+      }
+      project.tasks.named(RELEASE_TASK_NAME).configure { Task task ->
+        task.finalizedBy /* WORKAROUND: PublishPlugin.BASE_TASK_NAME has private scope <grv87 2018-06-23> */ 'publishPlugins'
+      }
     }
   }
 
   private void configureTesting() {
-    project.tasks.withType(ValidateTaskProperties) { ValidateTaskProperties task ->
+    project.tasks.withType(ValidateTaskProperties).configureEach { ValidateTaskProperties task ->
       task.with {
         outputFile.set new File(project.convention.getPlugin(ProjectConvention).txtReportsDir, "${ toSafeFileName(name) }.txt")
         failOnWarning = true
       }
     }
 
+    SourceSetContainer sourceSets = project.convention.getPlugin(JavaPluginConvention).sourceSets
+
     project.afterEvaluate {
-      project.plugins.getPlugin(JVMBasePlugin).addSpockDependency project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(TestSet.baseName(/* WORKAROUND: org.ysb33r.gradle.gradletest.Names.DEFAULT_TASK has package scope <> */ 'gradleTest'))
+      project.plugins.getPlugin(JVMBasePlugin).addSpockDependency sourceSets.getByName(TestSet.baseName(/* WORKAROUND: org.ysb33r.gradle.gradletest.Names.DEFAULT_TASK has package scope <> */ 'gradleTest'))
     }
 
     Pattern compatTestPattern = ~/^compatTest(.+)/
     project.plugins.getPlugin(JVMBasePlugin).addSpockDependency(
-      project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName('compatTest'),
-      new ArrayList<Test>(project.tasks.withType(Test).matching { Test task -> task.name =~ compatTestPattern })
+      sourceSets.getByName('compatTest'),
+      /*
+       * Looks like there is no built-in way to get collection of TaskProvider
+       */
+      (Iterable<TaskProvider<Test>>)(project.tasks.withType(Test).matching { Test task -> task.name =~ compatTestPattern }.collect { Test task -> project.tasks.withType(Test).named(task.name) })
     ) { String taskName ->
       Matcher compatTestMatcher = (taskName =~ compatTestPattern)
       compatTestMatcher.find()
@@ -121,7 +135,7 @@ final class GradlePluginPlugin extends AbstractPlugin implements PropertyChangeL
     }
 
     project.afterEvaluate {
-      project.extensions.getByType(GradlePluginDevelopmentExtension).testSourceSets((project.extensions.getByType(GradlePluginDevelopmentExtension).testSourceSets + [project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(TestSet.baseName(/* WORKAROUND: org.ysb33r.gradle.gradletest.Names.DEFAULT_TASK has package scope <> */ 'gradleTest')), project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(FUNCTIONAL_TEST_SOURCE_SET_NAME)]).toArray(new SourceSet[0]))
+      project.extensions.getByType(GradlePluginDevelopmentExtension).testSourceSets((project.extensions.getByType(GradlePluginDevelopmentExtension).testSourceSets + [sourceSets.getByName(TestSet.baseName(/* WORKAROUND: org.ysb33r.gradle.gradletest.Names.DEFAULT_TASK has package scope <> */ 'gradleTest')), sourceSets.getByName(FUNCTIONAL_TEST_SOURCE_SET_NAME)]).toArray(new SourceSet[0]))
       // https://docs.gradle.org/current/userguide/test_kit.html#sub:test-kit-automatic-classpath-injection
       project.extensions.getByType(GradlePluginDevelopmentExtension).testSourceSets.each { SourceSet sourceSet ->
         /*SourceSet mainSourceSet = project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(MAIN_SOURCE_SET_NAME)
@@ -131,8 +145,8 @@ final class GradlePluginPlugin extends AbstractPlugin implements PropertyChangeL
       }
     }
 
-    project.tasks.matching { Task task -> task.name ==~ ~/^compatTest/ || task.name == 'gradleTest' }.each { Task task ->
-      task.shouldRunAfter project.tasks.getByName(FUNCTIONAL_TEST_TASK_NAME)
+    project.tasks.matching { Task task -> task.name ==~ ~/^compatTest/ || task.name == 'gradleTest' }.configureEach { Task task ->
+      task.shouldRunAfter project.tasks.named(FUNCTIONAL_TEST_TASK_NAME)
     }
   }
 
@@ -144,9 +158,7 @@ final class GradlePluginPlugin extends AbstractPlugin implements PropertyChangeL
     project.plugins.getPlugin(JVMBasePlugin).createMavenJavaPublication = false
 
     GString repository = "plugins-${ project.convention.getPlugin(ProjectConvention).isRelease ? 'release' : 'snapshot' }"
-    project.convention.getPlugin(ArtifactoryPluginConvention).clientConfig.with {
-      publisher.repoKey = "$repository-local"
-    }
+    project.convention.getPlugin(ArtifactoryPluginConvention).clientConfig.publisher.repoKey = "$repository-local"
     project.repositories.maven { MavenArtifactRepository mavenArtifactRepository ->
       mavenArtifactRepository.with {
         /*

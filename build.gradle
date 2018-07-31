@@ -58,18 +58,18 @@ dependencies {
 
 stutter {
   java(8) {
-    compatibleRange '4.8'
+    compatibleRange '4.9'
   }
   java(9) {
-    compatibleRange '4.8'
+    compatibleRange '4.9'
   }
 }
 
-tasks.codenarcMain.disabledRules.add 'JavaIoPackageAccess'
-tasks.codenarcCompatTest.disabledRules.add 'JavaIoPackageAccess'
-tasks.codenarcBuildSrc.disabledRules.add 'JavaIoPackageAccess'
+tasks.named('codenarcMain').configure { disabledRules.add 'JavaIoPackageAccess' }
+tasks.named('codenarcCompatTest').configure { disabledRules.add 'JavaIoPackageAccess' }
+tasks.named('codenarcBuildSrc').configure { disabledRules.add 'JavaIoPackageAccess' }
 
-task('codenarcMainResources', type: CodeNarc) {
+tasks.register('codenarcMainResources', CodeNarc) {
   for (File srcDir in sourceSets.main.resources.srcDirs) {
     source fileTree(dir: srcDir, includes: ['**/*.groovy'])
   }

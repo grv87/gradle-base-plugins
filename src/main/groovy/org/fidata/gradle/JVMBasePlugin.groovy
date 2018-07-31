@@ -55,6 +55,9 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import com.athaydes.spockframework.report.internal.ReportDataAggregator
 import java.nio.file.Path
 import java.nio.file.Paths
+import org.gradle.api.tasks.TaskProvider
+import org.gradle.api.plugins.quality.CodeNarc
+import org.gradle.api.publish.PublicationContainer
 
 /**
  * Provides an environment for a JDK project
@@ -78,7 +81,7 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
     project.convention.getPlugin(ProjectConvention).addPropertyChangeListener this
     configurePublicReleases()
 
-    project.tasks.withType(ProcessResources) { ProcessResources task ->
+    project.tasks.withType(ProcessResources).configureEach { ProcessResources task ->
       task.from(LICENSE_FILE_NAMES) { CopySpec copySpec ->
         copySpec.into 'META-INF'
       }
@@ -132,8 +135,8 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
    * @param task test task.
    *        If null, task with the same name as source set is used
    */
-  void addSpockDependency(SourceSet sourceSet, Test task = null) {
-    addSpockDependency sourceSet, [task ?: project.tasks.withType(Test).getByName(sourceSet.name)], { String taskName -> Paths.get(taskName) }
+  void addSpockDependency(SourceSet sourceSet, TaskProvider<Test> task = null) {
+    addSpockDependency sourceSet, [task ?: project.tasks.withType(Test).named(sourceSet.name)], { String taskName -> Paths.get(taskName) }
   }
 
   /**
@@ -144,7 +147,7 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
    *        Nested directories are supported.
    *        Call <code>org.gradle.internal.FileUtils.toSafeFileName</code> manually on individual directory/file names
    */
-  void addSpockDependency(SourceSet sourceSet, Iterable<Test> tasks, Closure<Path> reportDirNamer) {
+  void addSpockDependency(SourceSet sourceSet, Iterable<TaskProvider<Test>> tasks, Closure<Path> reportDirNamer) {
     addJUnitDependency sourceSet
 
     project.pluginManager.apply GroovyBasePlugin
@@ -178,49 +181,60 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
         version: 'latest.release'
       ])
     }
-    project.plugins.withType(GroovyBasePlugin) { GroovyBasePlugin plugin ->
+    project.plugins.withType(GroovyBasePlugin).configureEach { GroovyBasePlugin plugin ->
       plugin.addGroovyDependency project.configurations.getByName(sourceSet.implementationConfigurationName)
     }
 
-    tasks.each { Test task ->
-      Task moveAggregatedReportTask
-      GString reportDirName
-      File spockReportsDir
-      task.with {
-        reportDirName = "spock/${ reportDirNamer.call(name) }"
-        spockReportsDir = new File(project.convention.getPlugin(ProjectConvention).htmlReportsDir, reportDirName)
-        reports.html.enabled = false
-        systemProperty 'com.athaydes.spockframework.report.outputDir', spockReportsDir.absolutePath
-        /*
-         * WORKAROUND:
-         * Spock Reports generates aggregated_report.json in the same directory as HTML files
-         * https://github.com/renatoathaydes/spock-reports/issues/155
-         * <grv87 2018-07-25>
-         */
-        moveAggregatedReportTask = project.tasks.create("move${ name.capitalize() }AggegatedReport")
-        finalizedBy moveAggregatedReportTask
-      }
-      moveAggregatedReportTask.with {
-        File aggregatedReportFile = new File(spockReportsDir, ReportDataAggregator.AGGREGATED_DATA_FILE.toString())
-        destroyables.register aggregatedReportFile
-        /*
-         * WORKAROUND:
-         * There is no built-in way to skip task if its single file input doesn't exist
-         * https://github.com/gradle/gradle/issues/2919
-         * <grv87 2018-07-25>
-         */
-        onlyIf { aggregatedReportFile.exists() }
-        doLast {
-          project.ant.invokeMethod('move', [
-            file: aggregatedReportFile,
-            todir: new File(project.convention.getPlugin(ProjectConvention).jsonReportsDir, reportDirName)
-          ])
+    ProjectConvention projectConvention = project.convention.getPlugin(ProjectConvention)
+    tasks.each { TaskProvider<Test> taskProvider ->
+      taskProvider.configure { Test test ->
+        GString reportDirName = "spock/${ reportDirNamer.call(test.name) }"
+        File spockReportsDir = new File(projectConvention.htmlReportsDir, reportDirName)
+        TaskProvider<Task> moveAggregatedReportProvider = project.tasks.register("move${ taskProvider.name.capitalize() }AggegatedReport") { Task moveAggregatedReport ->
+          moveAggregatedReport.with {
+            File aggregatedReportFile = new File(spockReportsDir, ReportDataAggregator.AGGREGATED_DATA_FILE.toString())
+            destroyables.register aggregatedReportFile
+            /*
+             * WORKAROUND:
+             * There is no built-in way to skip task if its single file input doesn't exist
+             * https://github.com/gradle/gradle/issues/2919
+             * <grv87 2018-07-25>
+             */
+            onlyIf { aggregatedReportFile.exists() }
+            doLast {
+              project.ant.invokeMethod('move', [
+                file: aggregatedReportFile,
+                todir: new File(projectConvention.jsonReportsDir, reportDirName)
+              ])
+            }
+          }
         }
+        test.with {
+          reports.html.enabled = false
+          systemProperty 'com.athaydes.spockframework.report.outputDir', spockReportsDir.absolutePath
+          /*
+           * WORKAROUND:
+           * Spock Reports generates aggregated_report.json in the same directory as HTML files
+           * https://github.com/renatoathaydes/spock-reports/issues/155
+           * <grv87 2018-07-25>
+           */
+          finalizedBy moveAggregatedReportProvider
+        }
+        /*
+         * WORKAROUND:
+         * Without that we get error:
+         * [Static type checking] - Cannot call org.gradle.api.tasks.TaskProvider <Test>#configure(org.gradle.api.Action
+         * <java.lang.Object extends java.lang.Object>) with arguments [groovy.lang.Closure <org.gradle.api.Task>]
+         * <grv87 2018-07-31>
+         */
+        null
       }
     }
 
-    project.plugins.withType(GroovyBasePlugin) { GroovyBasePlugin plugin ->
-      project.tasks.getByName("codenarc${ sourceSet.name.capitalize() }").convention.getPlugin(CodeNarcTaskConvention).disabledRules.addAll 'MethodName', 'FactoryMethodName', 'JUnitPublicProperty', 'JUnitPublicNonTestMethod', /* WORKAROUND: https://github.com/CodeNarc/CodeNarc/issues/308 <grv87 2018-06-26> */ 'Indentation'
+    project.plugins.withType(GroovyBasePlugin).configureEach { GroovyBasePlugin plugin -> // TODO: 4.9
+      project.tasks.withType(CodeNarc).named("codenarc${ sourceSet.name.capitalize() }").configure { Task task ->
+        task.convention.getPlugin(CodeNarcTaskConvention).disabledRules.addAll 'MethodName', 'FactoryMethodName', 'JUnitPublicProperty', 'JUnitPublicNonTestMethod', /* WORKAROUND: https://github.com/CodeNarc/CodeNarc/issues/308 <grv87 2018-06-26> */ 'Indentation'
+      }
     }
   }
 
@@ -266,33 +280,32 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
    */
   @SuppressWarnings(['UnnecessarySetter'])
   private void configureFunctionalTests() {
-    SourceSet functionalTestSourceSet = project.convention.getPlugin(JavaPluginConvention).with {
-      sourceSets.create(FUNCTIONAL_TEST_SOURCE_SET_NAME) { SourceSet sourceSet ->
-        sourceSet.java.srcDir project.file("src/$FUNCTIONAL_TEST_SRC_DIR_NAME/java")
-        sourceSet.resources.srcDir project.file("src/$FUNCTIONAL_TEST_SRC_DIR_NAME/resources")
+    SourceSet functionalTestSourceSet = project.convention.getPlugin(JavaPluginConvention).sourceSets.create(FUNCTIONAL_TEST_SOURCE_SET_NAME) { SourceSet sourceSet ->
+      sourceSet.java.srcDir project.file("src/$FUNCTIONAL_TEST_SRC_DIR_NAME/java")
+      sourceSet.resources.srcDir project.file("src/$FUNCTIONAL_TEST_SRC_DIR_NAME/resources")
 
-        configureIntegrationTestSourceSetClasspath sourceSet
-      }
+      configureIntegrationTestSourceSetClasspath sourceSet
     }
 
-    Test functionalTestTask = project.tasks.create(FUNCTIONAL_TEST_TASK_NAME, Test) { Test task ->
+    ProjectConvention projectConvention = project.convention.getPlugin(ProjectConvention)
+    TaskProvider<Test> functionalTestProvider = project.tasks.register(FUNCTIONAL_TEST_TASK_NAME, Test) { Test task ->
       task.with {
         group = 'Verification'
         description = 'Runs functional tests'
-        shouldRunAfter project.tasks.getByName(TEST_TASK_NAME)
-        testClassesDirs = project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(FUNCTIONAL_TEST_SOURCE_SET_NAME).output.classesDirs
-        classpath = project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(FUNCTIONAL_TEST_SOURCE_SET_NAME).runtimeClasspath
-        reports.junitXml.setDestination new File(project.convention.getPlugin(ProjectConvention).xmlReportsDir, FUNCTIONAL_TEST_REPORTS_DIR_NAME)
-        reports.html.setDestination new File(project.convention.getPlugin(ProjectConvention).htmlReportsDir, FUNCTIONAL_TEST_REPORTS_DIR_NAME)
+        shouldRunAfter project.tasks.named(TEST_TASK_NAME)
+        testClassesDirs = functionalTestSourceSet.output.classesDirs
+        classpath = functionalTestSourceSet.runtimeClasspath
+        reports.junitXml.setDestination new File(projectConvention.xmlReportsDir, FUNCTIONAL_TEST_REPORTS_DIR_NAME)
+        reports.html.setDestination new File(projectConvention.htmlReportsDir, FUNCTIONAL_TEST_REPORTS_DIR_NAME)
       }
     }
 
-    addSpockDependency functionalTestSourceSet, functionalTestTask
+    addSpockDependency functionalTestSourceSet, functionalTestProvider
   }
 
   private void configureTesting() {
     project.convention.getPlugin(JavaPluginConvention).testReportDirName = project.extensions.getByType(ReportingExtension).baseDir.toPath().relativize(new File(project.convention.getPlugin(ProjectConvention).htmlReportsDir, 'tests').toPath()).toString() // TODO: ???
-    project.tasks.withType(Test) { Test task ->
+    project.tasks.withType(Test).configureEach { Test task ->
       task.testLogging.exceptionFormat = TestExceptionFormat.FULL
     }
 
@@ -308,21 +321,24 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
       clientConfig.publisher.password = project.extensions.extraProperties['artifactoryPassword']
       clientConfig.publisher.maven = true
     }
-    project.tasks.withType(ArtifactoryTask).getByName(ARTIFACTORY_PUBLISH_TASK_NAME).with { ArtifactoryTask task ->
-      project.extensions.getByType(PublishingExtension).publications.withType(MavenPublication) { MavenPublication mavenPublication ->
+    project.tasks.withType(ArtifactoryTask).named(ARTIFACTORY_PUBLISH_TASK_NAME).configure { ArtifactoryTask task ->
+      PublicationContainer publications = project.extensions.getByType(PublishingExtension).publications
+      publications.withType(MavenPublication) { MavenPublication mavenPublication ->
         task.mavenPublications.add mavenPublication
       }
-      project.extensions.getByType(PublishingExtension).publications.whenObjectRemoved { MavenPublication mavenPublication ->
+      publications.whenObjectRemoved { MavenPublication mavenPublication ->
         task.mavenPublications.remove mavenPublication
       }
 
-      task.dependsOn project.tasks.withType(Sign).matching { Sign sign ->
-        project.extensions.getByType(PublishingExtension).publications.withType(MavenPublication).any { MavenPublication mavenPublication ->
+      task.dependsOn project.tasks.withType(Sign).matching { Sign sign -> // TODO
+        publications.withType(MavenPublication).any { MavenPublication mavenPublication ->
           sign.name == "sign${ mavenPublication.name.capitalize() }Publication"
         }
       }
     }
-    project.tasks.getByName(RELEASE_TASK_NAME).finalizedBy project.tasks.withType(ArtifactoryTask)
+    project.tasks.named(RELEASE_TASK_NAME).configure { Task task ->
+      task.finalizedBy project.tasks.withType(ArtifactoryTask)
+    }
   }
 
   /**
@@ -348,29 +364,34 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
 
   @SuppressWarnings(['UnnecessaryObjectReferences'])
   private void configureBintray() {
+    ProjectConvention projectConvention = project.convention.getPlugin(ProjectConvention)
     project.pluginManager.apply 'com.jfrog.bintray'
 
-    project.extensions.getByType(BintrayExtension).with {
-      user = project.extensions.extraProperties['bintrayUser'].toString()
-      key = project.extensions.extraProperties['bintrayAPIKey'].toString()
-      pkg.repo = 'generic'
-      pkg.name = 'gradle-project'
-      pkg.userOrg = 'fidata'
-      pkg.licenses = [project.convention.getPlugin(ProjectConvention).license].toArray(new String[0])
-      pkg.vcsUrl = project.convention.getPlugin(ProjectConvention).vcsUrl
-      pkg.desc = project.convention.getPlugin(ProjectConvention).changeLog.toString()
-      pkg.version.name = ''
-      pkg.version.vcsTag = '' // TODO
-      pkg.version.gpg.sign = true // TODO ?
-      // pkg.version.attributes // Attributes to be attached to the version
+    project.extensions.configure(BintrayExtension) { BintrayExtension extension ->
+      extension.with {
+        user = project.extensions.extraProperties['bintrayUser'].toString()
+        key = project.extensions.extraProperties['bintrayAPIKey'].toString()
+        pkg.repo = 'generic'
+        pkg.name = 'gradle-project'
+        pkg.userOrg = 'fidata'
+        pkg.licenses = [projectConvention.license].toArray(new String[0])
+        pkg.vcsUrl = projectConvention.vcsUrl
+        pkg.desc = projectConvention.changeLog.toString()
+        pkg.version.name = ''
+        pkg.version.vcsTag = '' // TODO
+        pkg.version.gpg.sign = true // TODO ?
+        // pkg.version.attributes // Attributes to be attached to the version
+      }
     }
-    project.tasks.withType(BintrayPublishTask) { BintrayPublishTask task ->
-      task.onlyIf { project.convention.getPlugin(ProjectConvention).isRelease }
+    project.tasks.withType(BintrayPublishTask).configureEach { BintrayPublishTask task ->
+      task.onlyIf { projectConvention.isRelease }
     }
-    project.tasks.getByName(RELEASE_TASK_NAME).finalizedBy project.tasks.withType(BintrayPublishTask)
+    project.tasks.named(RELEASE_TASK_NAME).configure { Task task ->
+      task.finalizedBy project.tasks.withType(BintrayPublishTask)
+    }
   }
 
   private void configureDocumentation() {
-    project.extensions.getByType(GitPublishExtension).contents.from(project.tasks.getByName(JAVADOC_TASK_NAME)).into "$project.version/javadoc"
+    project.extensions.getByType(GitPublishExtension).contents.from(project.tasks.named(JAVADOC_TASK_NAME)).into "$project.version/javadoc"
   }
 }
