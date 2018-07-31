@@ -31,7 +31,6 @@ import static org.gradle.language.base.plugins.LifecycleBasePlugin.VERIFICATION_
 import static com.dorongold.gradle.tasktree.TaskTreePlugin.TASK_TREE_TASK_NAME
 import org.gradle.api.tasks.TaskCollection
 import org.ajoberstar.grgit.auth.AuthConfig
-import groovy.transform.CompileDynamic
 import org.ajoberstar.grgit.Grgit
 import de.gliderpilot.gradle.semanticrelease.SemanticReleasePluginExtension
 import org.gradle.api.artifacts.repositories.MavenArtifactRepository
@@ -267,14 +266,6 @@ final class ProjectPlugin extends AbstractPlugin {
   private void configureGit() {
     System.setProperty AuthConfig.USERNAME_OPTION, project.extensions.extraProperties['gitUsername'].toString()
     System.setProperty AuthConfig.PASSWORD_OPTION, project.extensions.extraProperties['gitPassword'].toString()
-  }
-
-  /*
-   * TODO
-   */
-  @CompileDynamic
-  private boolean isRepoClean() {
-    ((Grgit)project.extensions.extraProperties.get('grgit')).status().clean
   }
 
   /**
