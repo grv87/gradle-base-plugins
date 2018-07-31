@@ -41,6 +41,42 @@ public class ProjectConvention extends AbstractExtension {
   private final Project project;
 
   /**
+   * @return SPDX identifier of the project license
+   */
+  @Getter
+  private String license;
+
+  /**
+   * Sets the project license
+   * @param newValue SPDX license identifier
+   * @throws InvalidLicenseStringException when license parsing with SPDX failed
+   */
+  public final void setLicense(final String newValue) throws InvalidLicenseStringException {
+    String oldLicense = license;
+    license = newValue;
+    if (!LicenseInfoFactory.isSpdxListedLicenseID(newValue)) {
+      throw new InvalidLicenseStringException(String.format("License identifier is not in SPDX list: %s", newValue));
+    }
+    getPropertyChangeSupport().firePropertyChange("license", oldLicense, newValue);
+  }
+
+  /**
+   * @return whether releases of this project are public
+   */
+  @Getter
+  private boolean publicReleases = false;
+
+  /**
+   * Sets whether releases of this project are public
+   * @param newValue whether releases of this project are public
+   */
+  public final void setPublicReleases(final boolean newValue) {
+    boolean oldValue = publicReleases;
+    publicReleases = newValue;
+    getPropertyChangeSupport().firePropertyChange("publicReleases", new Boolean(oldValue), new Boolean(newValue));
+  }
+
+  /**
    * @return whether this run has release version (not snapshot)
    */
   @Getter
@@ -51,6 +87,23 @@ public class ProjectConvention extends AbstractExtension {
    */
   @Getter
   private final Provider<Writable> changeLog;
+
+  /**
+   * @return project website URL
+   */
+  @Getter
+  private final Property<String> websiteUrl;
+
+  /**
+   * @return issues URL
+   */
+  @Getter
+  private final Property<String> issuesUrl;
+
+  /**
+   * @return project VCS URL
+   */
+  public final Provider<String> vcsUrl;
 
   /**
    * @return parent output directory for reports
@@ -110,12 +163,6 @@ public class ProjectConvention extends AbstractExtension {
       }
     });
 
-    reportsDir = new File(project.getBuildDir(), "reports");
-    htmlReportsDir = new File(reportsDir, "html");
-    xmlReportsDir  = new File(reportsDir, "xml");
-    jsonReportsDir = new File(reportsDir, "json");
-    txtReportsDir  = new File(reportsDir, "txt");
-
     vcsUrl = project.provider(new Callable<String>() {
       @Override
       public String call() throws Exception {
@@ -126,59 +173,11 @@ public class ProjectConvention extends AbstractExtension {
     websiteUrl.set(vcsUrl);
     issuesUrl = project.getObjects().property(String.class);
     issuesUrl.set(websiteUrl + "/issues");
+
+    reportsDir = new File(project.getBuildDir(), "reports");
+    htmlReportsDir = new File(reportsDir, "html");
+    xmlReportsDir  = new File(reportsDir, "xml");
+    jsonReportsDir = new File(reportsDir, "json");
+    txtReportsDir  = new File(reportsDir, "txt");
   }
-
-  /**
-   * @return SPDX identifier of the project license
-   */
-  @Getter
-  private String license;
-
-  /**
-   * Sets the project license
-   * @param newValue SPDX license identifier
-   * @throws InvalidLicenseStringException when license parsing with SPDX failed
-   */
-  public final void setLicense(final String newValue) throws InvalidLicenseStringException {
-    String oldLicense = license;
-    license = newValue;
-    if (!LicenseInfoFactory.isSpdxListedLicenseID(newValue)) {
-      throw new InvalidLicenseStringException(String.format("License identifier is not in SPDX list: %s", newValue));
-    }
-    getPropertyChangeSupport().firePropertyChange("license", oldLicense, newValue);
-  }
-
-  /**
-   * @return whether releases of this project are public
-   */
-  @Getter
-  private boolean publicReleases = false;
-
-  /**
-   * Sets whether releases of this project are public
-   * @param newValue whether releases of this project are public
-   */
-  public final void setPublicReleases(final boolean newValue) {
-    boolean oldValue = publicReleases;
-    publicReleases = newValue;
-    getPropertyChangeSupport().firePropertyChange("publicReleases", new Boolean(oldValue), new Boolean(newValue));
-  }
-
-  /**
-   * @return project website URL
-   */
-  @Getter
-  private final Property<String> websiteUrl;
-
-  /**
-   * @return issues URL
-   */
-  @Getter
-  private final Property<String> issuesUrl;
-
-  /**
-   * @return project VCS URL
-   */
-  public final Provider<String> vcsUrl;
-
 }
