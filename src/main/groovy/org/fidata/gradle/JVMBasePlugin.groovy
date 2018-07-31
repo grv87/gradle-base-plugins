@@ -364,6 +364,9 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
       pkg.version.gpg.sign = true // TODO ?
       // pkg.version.attributes // Attributes to be attached to the version
     }
+    project.tasks.withType(BintrayPublishTask) { BintrayPublishTask task ->
+      task.onlyIf { project.convention.getPlugin(ProjectConvention).isRelease }
+    }
     project.tasks.getByName(RELEASE_TASK_NAME).finalizedBy project.tasks.withType(BintrayPublishTask)
   }
 
