@@ -187,7 +187,6 @@ final class ProjectPlugin extends AbstractPlugin {
     }
   }
 
-  @SuppressWarnings(['BracesForForLoop', 'UnnecessaryObjectReferences'])
   private void configurePrerequisitesLifecycle() {
     project.tasks.withType(DependencyUpdatesTask).configureEach { DependencyUpdatesTask task ->
       task.group = null
