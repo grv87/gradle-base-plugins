@@ -362,7 +362,7 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
     configureArtifactory()
   }
 
-  @SuppressWarnings(['UnnecessaryObjectReferences'])
+  @SuppressWarnings(['UnnecessaryObjectReferences', 'UnnecessarySetter'])
   private void configureBintray() {
     ProjectConvention projectConvention = project.convention.getPlugin(ProjectConvention)
     project.pluginManager.apply 'com.jfrog.bintray'
@@ -374,7 +374,7 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
         pkg.repo = 'generic'
         pkg.name = 'gradle-project'
         pkg.userOrg = 'fidata'
-        pkg.licenses = [projectConvention.license].toArray(new String[0])
+        pkg.setLicenses projectConvention.license
         pkg.vcsUrl = projectConvention.vcsUrl.get()
         pkg.desc = projectConvention.changeLog.get().toString()
         pkg.labels = projectConvention.tags.get().toArray(new String[0])
