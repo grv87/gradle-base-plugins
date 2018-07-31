@@ -158,6 +158,7 @@ All these tasks are put into `Diagnostics` group.
 	It should be set with [SPDX license identifier
 	](https://spdx.org/licenses/).
 
+*   Provides `tags` property used by other plugins
 
 *	Applies [`nebula.contacts` plugin
 	](https://github.com/nebula-plugins/gradle-contacts-plugin)

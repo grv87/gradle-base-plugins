@@ -26,6 +26,7 @@ plugins {
 ext.rootDir = '.'
 
 license = 'Apache-2.0'
+tags.set(['defaults', 'opinions', 'opinionated', 'internal'])
 publicReleases = false
 
 contacts {

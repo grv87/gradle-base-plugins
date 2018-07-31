@@ -377,6 +377,7 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
         pkg.licenses = [projectConvention.license].toArray(new String[0])
         pkg.vcsUrl = projectConvention.vcsUrl.get()
         pkg.desc = projectConvention.changeLog.get().toString()
+        pkg.labels = projectConvention.tags.get().toArray(new String[0])
         pkg.version.name = ''
         pkg.version.vcsTag = '' // TODO
         pkg.version.gpg.sign = true // TODO ?

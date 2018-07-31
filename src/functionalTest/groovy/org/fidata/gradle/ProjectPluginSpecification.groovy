@@ -250,6 +250,17 @@ class ProjectPluginSpecification extends Specification {
     thrown InvalidLicenseStringException
   }
 
+  void 'provides tags property'() {
+    given: 'plugin is applied'
+    project.apply plugin: 'org.fidata.project'
+
+    when: 'tags are set'
+    project.tags.set(['test', 'compatTest'])
+
+    then: 'no exception is thrown'
+    noExceptionThrown()
+  }
+
   void 'provides contacts extension'() {
     given: 'plugin is applied'
     project.apply plugin: 'org.fidata.project'

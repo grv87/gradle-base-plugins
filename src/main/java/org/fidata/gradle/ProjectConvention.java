@@ -28,6 +28,7 @@ import com.github.zafarkhaja.semver.Version;
 import de.gliderpilot.gradle.semanticrelease.SemanticReleasePluginExtension;
 import de.gliderpilot.gradle.semanticrelease.SemanticReleaseChangeLogService;
 import org.ajoberstar.gradle.git.release.base.ReleaseVersion;
+import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
 import org.spdx.spdxspreadsheet.InvalidLicenseStringException;
@@ -59,6 +60,12 @@ public class ProjectConvention extends AbstractExtension {
     }
     getPropertyChangeSupport().firePropertyChange("license", oldLicense, newValue);
   }
+
+  /**
+   * @return list of tags for the project
+   */
+  @Getter
+  private final ListProperty<String> tags;
 
   /**
    * @return whether releases of this project are public
@@ -139,6 +146,8 @@ public class ProjectConvention extends AbstractExtension {
     super();
 
     this.project = project;
+
+    tags = project.getObjects().listProperty(String.class);
 
     /*
      * WORKAROUND:
