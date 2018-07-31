@@ -20,6 +20,7 @@ package org.fidata.gradle.tasks
 
 import groovy.transform.CompileStatic
 import org.gradle.api.DefaultTask
+import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.TaskAction
 import org.gradle.process.ExecSpec
@@ -34,6 +35,7 @@ import org.gradle.process.ExecSpec
  */
 @CompileStatic
 class ResignGitCommit extends DefaultTask {
+  @Optional
   @InputDirectory
   File workingDir
 
