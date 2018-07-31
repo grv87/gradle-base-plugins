@@ -312,8 +312,6 @@ final class ProjectPlugin extends AbstractPlugin {
       }
     }
 
-    project.tasks.getByName(/* WORKAROUND: GitPublishPlugin.COPY_TASK has package scope <grv87 2018-06-23> */ 'gitPublishCopy')
-
     Task gitPublishCommit = project.tasks.getByName(/* WORKAROUND: GitPublishPlugin.COMMIT_TASK has package scope <grv87 2018-06-23> */ 'gitPublishCommit')
 
     /*
