@@ -69,7 +69,7 @@ final class GroovyProjectPlugin extends AbstractPlugin {
     }
 
     Javadoc javadoc = project.tasks.withType(Javadoc).getByName(JAVADOC_TASK_NAME)
-    javadoc.onlyIf { false }
+    javadoc.enabled = false
     project.tasks.withType(Groovydoc) { Groovydoc task ->
       task.source javadoc.source
       task.doFirst {

@@ -202,7 +202,7 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
       }
       moveAggregatedReportTask.with {
         File aggregatedReportFile = new File(spockReportsDir, ReportDataAggregator.AGGREGATED_DATA_FILE.toString())
-        inputs.file aggregatedReportFile
+        destroyables.register aggregatedReportFile
         /*
          * WORKAROUND:
          * There is no built-in way to skip task if its single file input doesn't exist
