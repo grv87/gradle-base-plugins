@@ -62,6 +62,6 @@ class NoJekyll extends DefaultTask {
    */
   @TaskAction
   void generate() {
-    destinationFile.get().asFile.text = ''
+    didWork = destinationFile.get().asFile.createNewFile()
   }
 }
