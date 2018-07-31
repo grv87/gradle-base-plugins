@@ -233,7 +233,7 @@ final class ProjectPlugin extends AbstractPlugin {
          * When GString is used, URI property setter is called anyway, and we got cast error
          * <grv87 2018-06-26>
          */
-        url = project.uri("$ARTIFACTORY_URL/libs-${ project.convention.getPlugin(ProjectConvention).isRelease ? 'release' : 'snapshot' }/")
+        url = project.uri("$ARTIFACTORY_URL/libs-${ project.convention.getPlugin(ProjectConvention).isRelease.get() ? 'release' : 'snapshot' }/")
         credentials.username = project.extensions.extraProperties['artifactoryUser']
         credentials.password = project.extensions.extraProperties['artifactoryPassword']
       }
@@ -313,14 +313,14 @@ final class ProjectPlugin extends AbstractPlugin {
       }
     }
 
-    boolean repoClean = ((Grgit) project.extensions.extraProperties.get('grgit')).status().clean
+    boolean repoClean = ((Grgit)project.extensions.extraProperties.get('grgit')).status().clean
 
     TaskProvider<Task> gitPublishCommitProvider = project.tasks.named(/* WORKAROUND: GitPublishPlugin.COMMIT_TASK has package scope <grv87 2018-06-23> */ 'gitPublishCommit')
     gitPublishCommitProvider.configure { Task gitPublishCommit ->
       TaskProvider<NoJekyll> noJekyllProvider = project.tasks.register(NO_JEKYLL_TASK_NAME, NoJekyll) { NoJekyll task ->
         task.with {
           description = 'Generates .nojekyll file in gitPublish repository'
-          destinationDir = project.extensions.getByType(GitPublishExtension).repoDir.asFile.get()
+          destinationDir.set project.extensions.getByType(GitPublishExtension).repoDir
         }
         /*
          * WORKAROUND:
@@ -343,7 +343,7 @@ final class ProjectPlugin extends AbstractPlugin {
         resignGitPublishCommit.with {
           enabled = repoClean
           description = 'Amend git publish commit adding sign to it'
-          workingDir = project.extensions.getByType(GitPublishExtension).repoDir.asFile.get()
+          workingDir.set project.extensions.getByType(GitPublishExtension).repoDir
           onlyIf { gitPublishCommitProvider.get().didWork }
         }
         /*
@@ -537,7 +537,7 @@ final class ProjectPlugin extends AbstractPlugin {
       task.with {
         group = DIAGNOSTICS_TASK_GROUP_NAME
         description = 'Generates report about all task file inputs and outputs'
-        outputFile = new File(projectConvention.txtReportsDir, DEFAULT_OUTPUT_FILE_NAME)
+        outputFile.set new File(projectConvention.txtReportsDir, DEFAULT_OUTPUT_FILE_NAME)
       }
     }
 

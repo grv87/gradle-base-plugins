@@ -316,7 +316,7 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
 
   private void configureArtifactory() {
     project.convention.getPlugin(ArtifactoryPluginConvention).with {
-      clientConfig.publisher.repoKey = "libs-${ project.convention.getPlugin(ProjectConvention).isRelease ? 'release' : 'snapshot' }-local"
+      clientConfig.publisher.repoKey = "libs-${ project.convention.getPlugin(ProjectConvention).isRelease.get() ? 'release' : 'snapshot' }-local"
       clientConfig.publisher.username = project.extensions.extraProperties['artifactoryUser']
       clientConfig.publisher.password = project.extensions.extraProperties['artifactoryPassword']
       clientConfig.publisher.maven = true
@@ -375,8 +375,8 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
         pkg.name = 'gradle-project'
         pkg.userOrg = 'fidata'
         pkg.licenses = [projectConvention.license].toArray(new String[0])
-        pkg.vcsUrl = projectConvention.vcsUrl
-        pkg.desc = projectConvention.changeLog.toString()
+        pkg.vcsUrl = projectConvention.vcsUrl.get()
+        pkg.desc = projectConvention.changeLog.get().toString()
         pkg.version.name = ''
         pkg.version.vcsTag = '' // TODO
         pkg.version.gpg.sign = true // TODO ?
@@ -384,7 +384,7 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
       }
     }
     project.tasks.withType(BintrayPublishTask).configureEach { BintrayPublishTask task ->
-      task.onlyIf { projectConvention.isRelease }
+      task.onlyIf { projectConvention.isRelease.get() }
     }
     project.tasks.named(RELEASE_TASK_NAME).configure { Task task ->
       task.finalizedBy project.tasks.withType(BintrayPublishTask)

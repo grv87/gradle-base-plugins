@@ -34,10 +34,9 @@ public class JVMBaseExtension extends AbstractExtension {
    * @return Map with package names in keys and links to javadoc in values
    */
   @Getter
-  private final Map<String, URI> javadocLinks;
+  private final Map<String, URI> javadocLinks = new HashMap<>();
 
   public JVMBaseExtension(Project project) {
-    javadocLinks = new HashMap<>();
     javadocLinks.put("java", project.uri("https://docs.oracle.com/javase/" + project.getConvention().getPlugin(JavaPluginConvention.class).getTargetCompatibility().getMajorVersion() + "/docs/api/"));
   }
 }

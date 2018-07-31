@@ -93,13 +93,13 @@ final class GradlePluginPlugin extends AbstractPlugin implements PropertyChangeL
       project.pluginManager.apply 'com.gradle.plugin-publish'
       project.extensions.configure(PluginBundleExtension) { PluginBundleExtension extension ->
         extension.with {
-          website = projectConvention.websiteUrl
-          vcsUrl = projectConvention.vcsUrl
-          description = projectConvention.changeLog.toString()
+          website = projectConvention.websiteUrl.get()
+          vcsUrl = projectConvention.vcsUrl.get()
+          description = projectConvention.changeLog.get().toString()
         }
       }
       project.tasks.named(/* WORKAROUND: PublishPlugin.BASE_TASK_NAME has private scope <grv87 2018-06-23> */ 'publishPlugins').configure { Task task ->
-        task.onlyIf { projectConvention.isRelease }
+        task.onlyIf { projectConvention.isRelease.get() }
       }
       project.tasks.named(RELEASE_TASK_NAME).configure { Task task ->
         task.finalizedBy /* WORKAROUND: PublishPlugin.BASE_TASK_NAME has private scope <grv87 2018-06-23> */ 'publishPlugins'
@@ -157,7 +157,7 @@ final class GradlePluginPlugin extends AbstractPlugin implements PropertyChangeL
   private void configureArtifactsPublishing() {
     project.plugins.getPlugin(JVMBasePlugin).createMavenJavaPublication = false
 
-    GString repository = "plugins-${ project.convention.getPlugin(ProjectConvention).isRelease ? 'release' : 'snapshot' }"
+    GString repository = "plugins-${ project.convention.getPlugin(ProjectConvention).isRelease.get() ? 'release' : 'snapshot' }"
     project.convention.getPlugin(ArtifactoryPluginConvention).clientConfig.publisher.repoKey = "$repository-local"
     project.repositories.maven { MavenArtifactRepository mavenArtifactRepository ->
       mavenArtifactRepository.with {

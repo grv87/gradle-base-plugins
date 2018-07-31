@@ -20,6 +20,9 @@ package org.fidata.gradle.tasks
 
 import groovy.transform.CompileStatic
 import org.gradle.api.DefaultTask
+import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.file.RegularFile
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.Internal
@@ -36,32 +39,22 @@ class NoJekyll extends DefaultTask {
    */
   public static final String FILE_NAME = '.nojekyll'
 
-  private File destinationDir
+  private final DirectoryProperty destinationDir = project.layout.directoryProperty()
 
   /**
    * @return a dir where to generate a file
    */
   @Internal
-  File getDestinationDir() {
+  final DirectoryProperty getDestinationDir() {
     destinationDir
   }
 
   /**
-   * Sets a dir where to generate a file
-   */
-  void setDestinationDir(File newValue) {
-    this.destinationDir = newValue
-    destinationFile = new File(destinationDir, FILE_NAME)
-  }
-
-  private File destinationFile
-
-  /**
-   * @return a file that to be generated
+   * @return a file to be generated
    */
   @OutputFile
-  File getDestinationFile() {
-    destinationFile
+  Provider<RegularFile> getDestinationFile() {
+    destinationDir.file(FILE_NAME)
   }
 
   /**
@@ -69,6 +62,6 @@ class NoJekyll extends DefaultTask {
    */
   @TaskAction
   void generate() {
-    destinationFile.text = ''
+    destinationFile.get().asFile.text = ''
   }
 }

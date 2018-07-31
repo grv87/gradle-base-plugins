@@ -22,6 +22,7 @@ import groovy.transform.CompileStatic
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.InputDirectory
+import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.tasks.TaskAction
 import org.gradle.process.ExecSpec
 
@@ -35,9 +36,13 @@ import org.gradle.process.ExecSpec
  */
 @CompileStatic
 class ResignGitCommit extends DefaultTask {
+  /**
+   * Working directory for the task
+   * If not provided then project directory is used
+   */
   @Optional
   @InputDirectory
-  File workingDir
+  final DirectoryProperty workingDir = newInputDirectory()
 
   /**
    * Resigns previous git commit
@@ -45,7 +50,7 @@ class ResignGitCommit extends DefaultTask {
   @TaskAction
   void resign() {
     project.exec { ExecSpec execSpec ->
-      if (workingDir) {
+      if (workingDir.present) {
         execSpec.workingDir workingDir
       }
       execSpec.commandLine 'git', 'commit', '--amend', '--no-edit', "--gpg-sign=${ project.extensions.extraProperties['gpgKeyId'] }"

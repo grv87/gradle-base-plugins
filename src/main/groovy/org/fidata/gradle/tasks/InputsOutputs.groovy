@@ -20,6 +20,7 @@ package org.fidata.gradle.tasks
 
 import groovy.transform.CompileStatic
 import org.gradle.api.DefaultTask
+import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.Task
@@ -35,30 +36,19 @@ class InputsOutputs extends DefaultTask {
    */
   public static final String DEFAULT_OUTPUT_FILE_NAME = 'inputsOutputs.txt'
 
-  private File outputFile
-
   /**
-   * @return output file
-   */
-  @OutputFile
-  File getOutputFile() {
-    outputFile ?: project.extensions.getByType(ReportingExtension).file(DEFAULT_OUTPUT_FILE_NAME)
-  }
-
-  /**
-   * Sets output file
+   * Output file
    * By default it is <code>${ reporting.baseDir }/inputsOutputs.txt</code>
    */
-  void setOutputFile(File outputFile) {
-    this.outputFile = outputFile
-  }
+  @OutputFile
+  final RegularFileProperty outputFile = newOutputFile()
 
   /**
    * Generates a report
    */
   @TaskAction
   void generate() {
-    outputFile.withPrintWriter('UTF-8') { PrintWriter writer ->
+    outputFile.get().asFile.withPrintWriter('UTF-8') { PrintWriter writer ->
       for (Task t in project.tasks) {
         if (t.inputs.hasInputs) {
           for (File f in t.inputs.sourceFiles) {
@@ -75,6 +65,7 @@ class InputsOutputs extends DefaultTask {
   }
 
   InputsOutputs() {
+    outputFile.set(project.extensions.getByType(ReportingExtension).file(DEFAULT_OUTPUT_FILE_NAME))
     outputs.upToDateWhen { false }
   }
 }
