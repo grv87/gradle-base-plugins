@@ -336,8 +336,8 @@ Should be provided via `gradle.properties` file.
     <tr><td><code>gpgKeyId</code>            </td><td rowspan="3"> Sign artifacts, git commits and git tags</td><td>&nbsp;</td>
     <tr><td><code>gpgKeyPassword</code>      </td>                                                              <td>&nbsp;</td>
     <tr><td><code>gpgSecretKeyRingFile</code></td>                                                              <td>&nbsp;</td>
-    <tr><td><code>bintrayUser</code>  </td><td rowspan="8"><code>org.fidata.base.jvm</code> for public releases</td><td rowspan="2"> Release to Bintray</td><td>nbsp;</td>
-    <tr><td><code>bintrayAPIKey</code></td>                                                                                                                 <td>nbsp;</td>
+    <tr><td><code>bintrayUser</code>  </td><td rowspan="8"><code>org.fidata.base.jvm</code> for public releases</td><td rowspan="2"> Release to Bintray</td><td>&nbsp;</td>
+    <tr><td><code>bintrayAPIKey</code></td>                                                                                                                 <td>&nbsp;</td>
 </tbody>
 </table>
 
