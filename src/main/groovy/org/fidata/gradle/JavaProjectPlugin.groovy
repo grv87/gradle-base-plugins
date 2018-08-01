@@ -86,6 +86,9 @@ final class JavaProjectPlugin extends AbstractPlugin {
             args dir, '-d', outputDir
           }
           classpath mainSourceSet.compileClasspath
+          doFirst {
+            outputDir.deleteDir()
+          }
         }
       }
       javadoc.with {
