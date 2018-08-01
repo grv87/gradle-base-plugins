@@ -96,6 +96,12 @@ public class ProjectConvention extends AbstractExtension {
   private final Provider<Writable> changeLog;
 
   /**
+   * @return changelog since last release in text format
+   */
+  @Getter
+  private final Provider<Writable> changeLogTxt;
+
+  /**
    * @return project website URL
    */
   @Getter
@@ -169,6 +175,16 @@ public class ProjectConvention extends AbstractExtension {
         Object version = project.getVersion();
         ReleaseVersion inferredVersion = ((ReleasePluginExtension.DelayedVersion)version).getInferredVersion();
         return changeLogService.getChangeLog().call(changeLogService.commits(Version.valueOf(inferredVersion.getPreviousVersion())), inferredVersion);
+      }
+    });
+
+    changeLogTxt = project.provider(new Callable<Writable>() {
+      @Override
+      public Writable call() throws Exception {
+        SemanticReleaseChangeLogService changeLogService = project.getExtensions().getByType(SemanticReleasePluginExtension.class).getChangeLog();
+        Object version = project.getVersion();
+        ReleaseVersion inferredVersion = ((ReleasePluginExtension.DelayedVersion)version).getInferredVersion();
+        return changeLogService.getChangeLogTxt().call(changeLogService.commits(Version.valueOf(inferredVersion.getPreviousVersion())), inferredVersion);
       }
     });
 

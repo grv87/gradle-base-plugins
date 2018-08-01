@@ -376,7 +376,7 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
         pkg.userOrg = 'fidata'
         pkg.setLicenses projectConvention.license
         pkg.vcsUrl = projectConvention.vcsUrl.get()
-        pkg.desc = projectConvention.changeLog.get().toString()
+        pkg.desc = project.version.toString() == '1.0.0' ? project.description : projectConvention.changeLogTxt.get().toString()
         pkg.labels = projectConvention.tags.get().toArray(new String[0])
         pkg.version.name = ''
         pkg.version.vcsTag = '' // TODO

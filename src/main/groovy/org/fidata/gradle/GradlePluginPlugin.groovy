@@ -95,7 +95,7 @@ final class GradlePluginPlugin extends AbstractPlugin implements PropertyChangeL
         extension.with {
           website = projectConvention.websiteUrl.get()
           vcsUrl = projectConvention.vcsUrl.get()
-          description = projectConvention.changeLog.get().toString()
+          description = project.version.toString() == '1.0.0' ? project.description : projectConvention.changeLogTxt.get().toString()
           tags = (Collection<String>)projectConvention.tags.get()
         }
       }
