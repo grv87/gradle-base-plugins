@@ -24,6 +24,7 @@ import org.gradle.api.artifacts.Configuration
 import groovy.transform.CompileStatic
 import org.fidata.gradle.internal.AbstractPlugin
 import org.gradle.api.Project
+import org.gradle.api.tasks.javadoc.Groovydoc
 
 /**
  * Provides tools for Groovy language
@@ -36,6 +37,17 @@ final class GroovyBasePlugin extends AbstractPlugin {
 
     project.pluginManager.apply JVMBasePlugin
     PluginDependeesUtils.applyPlugins project, GroovyBaseProjectPluginDependees.PLUGIN_DEPENDEES
+
+    /**
+     * WORKAROUND:
+     * https://github.com/gradle/gradle/issues/6168
+     * <grv87 2018-08-01>
+     */
+    project.tasks.withType(Groovydoc).configureEach { Groovydoc groovydoc ->
+      groovydoc.doFirst {
+        groovydoc.destinationDir.deleteDir()
+      }
+    }
   }
 
   /**
