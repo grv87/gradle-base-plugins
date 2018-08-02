@@ -278,7 +278,7 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
    * Also may be CodeNarc error
    * <grv87 2018-06-26>
    */
-  @SuppressWarnings(['UnnecessarySetter'])
+  @SuppressWarnings('UnnecessarySetter')
   private void configureFunctionalTests() {
     SourceSet functionalTestSourceSet = project.convention.getPlugin(JavaPluginConvention).sourceSets.create(FUNCTIONAL_TEST_SOURCE_SET_NAME) { SourceSet sourceSet ->
       sourceSet.java.srcDir project.file("src/$FUNCTIONAL_TEST_SRC_DIR_NAME/java")

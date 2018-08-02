@@ -71,7 +71,7 @@ final class JavaProjectPlugin extends AbstractPlugin {
    * 'org.gradle.api.internal.tasks.DefaultTaskOutputs' to class 'org.gradle.api.file.FileTree'
    * <grv87 2018-08-01>
    */
-  @SuppressWarnings(['UnnecessarySetter'])
+  @SuppressWarnings('UnnecessarySetter')
   private void configureDelombok() {
     project.tasks.withType(Javadoc).named(JAVADOC_TASK_NAME).configure { Javadoc javadoc ->
       TaskProvider<DelombokTask> delombokProvider = project.tasks.register(DELOMBOK_TASK_NAME, DelombokTask) { DelombokTask delombok ->

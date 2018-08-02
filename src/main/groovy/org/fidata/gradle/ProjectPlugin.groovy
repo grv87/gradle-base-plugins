@@ -385,7 +385,7 @@ final class ProjectPlugin extends AbstractPlugin {
    * Also may be CodeNarc error
    * <grv87 2018-06-26>
    */
-  @SuppressWarnings(['UnnecessarySetter'])
+  @SuppressWarnings('UnnecessarySetter')
   private void configureCodeQuality() {
     TaskProvider<Task> lintProvider = project.tasks.register(LINT_TASK_NAME) { Task task ->
       task.with {
@@ -481,7 +481,7 @@ final class ProjectPlugin extends AbstractPlugin {
    * Also may be CodeNarc error
    * <grv87 2018-06-26>
    */
-  @SuppressWarnings(['UnnecessarySetter'])
+  @SuppressWarnings('UnnecessarySetter')
   private void configureDiagnostics() {
     ProjectConvention projectConvention = project.convention.getPlugin(ProjectConvention)
     project.convention.getPlugin(ProjectReportsPluginConvention).projectReportDirName = projectConvention.reportsDir.toPath().relativize(new File(projectConvention.txtReportsDir, 'project').toPath()).toString()
