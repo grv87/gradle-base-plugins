@@ -23,7 +23,8 @@ plugins {
   id 'org.fidata.plugin'
 }
 
-tags.set(['defaults', 'opinions', 'opinionated', 'internal'])
+description = 'Base plugins for Gradle projects and plugins developed by FIDATA'
+tags.set(['defaults', 'opinions', 'opinionated', 'conventions', 'internal'])
 license = 'Apache-2.0'
 publicReleases = false
 contacts {
