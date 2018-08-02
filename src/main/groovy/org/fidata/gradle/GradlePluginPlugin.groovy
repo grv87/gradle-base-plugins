@@ -93,10 +93,10 @@ final class GradlePluginPlugin extends AbstractPlugin implements PropertyChangeL
       project.pluginManager.apply 'com.gradle.plugin-publish'
       project.extensions.configure(PluginBundleExtension) { PluginBundleExtension extension ->
         extension.with {
-          website = projectConvention.websiteUrl.get()
-          vcsUrl = projectConvention.vcsUrl.get()
           description = project.version.toString() == '1.0.0' ? project.description : projectConvention.changeLogTxt.get().toString()
           tags = (Collection<String>)projectConvention.tags.get()
+          website = projectConvention.websiteUrl.get()
+          vcsUrl = projectConvention.vcsUrl.get()
         }
       }
       project.tasks.named(/* WORKAROUND: PublishPlugin.BASE_TASK_NAME has private scope <grv87 2018-06-23> */ 'publishPlugins').configure { Task task ->

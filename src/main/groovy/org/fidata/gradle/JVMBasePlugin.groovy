@@ -374,13 +374,13 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
         pkg.repo = 'generic'
         pkg.name = 'gradle-project'
         pkg.userOrg = 'fidata'
-        pkg.setLicenses projectConvention.license
-        pkg.vcsUrl = projectConvention.vcsUrl.get()
-        pkg.desc = project.version.toString() == '1.0.0' ? project.description : projectConvention.changeLogTxt.get().toString()
-        pkg.labels = projectConvention.tags.get().toArray(new String[0])
         pkg.version.name = ''
         pkg.version.vcsTag = '' // TODO
         pkg.version.gpg.sign = true // TODO ?
+        pkg.desc = project.version.toString() == '1.0.0' ? project.description : projectConvention.changeLogTxt.get().toString()
+        pkg.labels = projectConvention.tags.get().toArray(new String[0])
+        pkg.setLicenses projectConvention.license
+        pkg.vcsUrl = projectConvention.vcsUrl.get()
         // pkg.version.attributes // Attributes to be attached to the version
       }
     }

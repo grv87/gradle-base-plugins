@@ -42,6 +42,12 @@ public class ProjectConvention extends AbstractExtension {
   private final Project project;
 
   /**
+   * @return list of tags for the project
+   */
+  @Getter
+  private final ListProperty<String> tags;
+
+  /**
    * @return SPDX identifier of the project license
    */
   @Getter
@@ -60,12 +66,6 @@ public class ProjectConvention extends AbstractExtension {
     }
     getPropertyChangeSupport().firePropertyChange("license", oldLicense, newValue);
   }
-
-  /**
-   * @return list of tags for the project
-   */
-  @Getter
-  private final ListProperty<String> tags;
 
   /**
    * @return whether releases of this project are public

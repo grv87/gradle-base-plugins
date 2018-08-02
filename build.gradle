@@ -23,12 +23,9 @@ plugins {
   id 'org.fidata.plugin'
 }
 
-ext.rootDir = '.'
-
-license = 'Apache-2.0'
 tags.set(['defaults', 'opinions', 'opinionated', 'internal'])
+license = 'Apache-2.0'
 publicReleases = false
-
 contacts {
   'grv87@yandex.ru' {
     moniker 'Basil Peace'
@@ -36,6 +33,8 @@ contacts {
     roles 'owner', 'developer'
   }
 }
+
+ext.rootDir = '.'
 
 apply from: new File(ext.rootDir, 'gradle/dependencies-compile.gradle')
 
