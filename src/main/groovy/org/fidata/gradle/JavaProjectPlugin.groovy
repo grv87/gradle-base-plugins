@@ -101,10 +101,10 @@ final class JavaProjectPlugin extends AbstractPlugin {
   private void configureDocumentation() {
     configureDelombok()
 
-    project.tasks.withType(Javadoc).configureEach { Javadoc task ->
-      task.doFirst {
-        task.options { StandardJavadocDocletOptions options ->
-          task.project.extensions.getByType(JVMBaseExtension).javadocLinks.values().each { URI link ->
+    project.tasks.withType(Javadoc).configureEach { Javadoc javadoc ->
+      javadoc.doFirst {
+        javadoc.options { StandardJavadocDocletOptions options ->
+          javadoc.project.extensions.getByType(JVMBaseExtension).javadocLinks.values().each { URI link ->
             options.links link.toString()
           }
         }

@@ -166,37 +166,37 @@ final class ProjectPlugin extends AbstractPlugin {
   public static final String RELEASE_TASK_GROUP_NAME = 'Release'
 
   private void configureLifecycle() {
-    project.tasks.named(BUILD_TASK_NAME).configure { Task task ->
-      task.dependsOn.remove CHECK_TASK_NAME
+    project.tasks.named(BUILD_TASK_NAME).configure { Task build ->
+      build.dependsOn.remove CHECK_TASK_NAME
     }
-    project.tasks.named(RELEASE_TASK_NAME).configure { Task task ->
-      task.with {
+    project.tasks.named(RELEASE_TASK_NAME).configure { Task release ->
+      release.with {
         group = RELEASE_TASK_GROUP_NAME
         dependsOn project.tasks.named(BUILD_TASK_NAME) // TODO
         dependsOn project.tasks.named(CHECK_TASK_NAME)
       }
     }
-    project.tasks.named(CHECK_TASK_NAME).configure { Task task ->
-      task.dependsOn task.project.tasks.withType(Test)
+    project.tasks.named(CHECK_TASK_NAME).configure { Task check ->
+      check.dependsOn check.project.tasks.withType(Test)
     }
 
     project.extensions.getByType(SemanticReleasePluginExtension).branchNames.replace 'develop', ''
 
-    project.tasks.withType(UpdateGithubRelease).named('updateGithubRelease').configure { UpdateGithubRelease task ->
-      task.repo.ghToken = project.extensions.extraProperties['ghToken'].toString()
+    project.tasks.withType(UpdateGithubRelease).named('updateGithubRelease').configure { UpdateGithubRelease updateGithubRelease ->
+      updateGithubRelease.repo.ghToken = project.extensions.extraProperties['ghToken'].toString()
     }
   }
 
   private void configurePrerequisitesLifecycle() {
-    project.tasks.withType(DependencyUpdatesTask).configureEach { DependencyUpdatesTask task ->
-      task.group = null
-      task.revision = 'release'
-      task.outputFormatter = 'xml'
-      task.outputDir = new File(project.convention.getPlugin(ProjectConvention).xmlReportsDir, 'dependencyUpdates').toString()
-      task.resolutionStrategy = { ResolutionStrategy resolutionStrategy ->
+    project.tasks.withType(DependencyUpdatesTask).configureEach { DependencyUpdatesTask dependencyUpdates ->
+      dependencyUpdates.group = null
+      dependencyUpdates.revision = 'release'
+      dependencyUpdates.outputFormatter = 'xml'
+      dependencyUpdates.outputDir = new File(project.convention.getPlugin(ProjectConvention).xmlReportsDir, 'dependencyUpdates').toString()
+      dependencyUpdates.resolutionStrategy = { ResolutionStrategy resolutionStrategy ->
         resolutionStrategy.componentSelection { ComponentSelectionRules rules ->
           rules.all { ComponentSelection selection ->
-            if (task.revision == 'release' && isPreReleaseVersion(selection.candidate.version)) {
+            if (dependencyUpdates.revision == 'release' && isPreReleaseVersion(selection.candidate.version)) {
               selection.reject 'Pre-release version'
             }
           }
@@ -204,8 +204,8 @@ final class ProjectPlugin extends AbstractPlugin {
       }
     }
 
-    project.tasks.withType(Wrapper).configureEach { Wrapper task ->
-      task.with {
+    project.tasks.withType(Wrapper).configureEach { Wrapper wrapper ->
+      wrapper.with {
         if (name == 'wrapper') {
           gradleVersion = '4.9'
         }
@@ -307,8 +307,8 @@ final class ProjectPlugin extends AbstractPlugin {
 
     TaskProvider<Task> gitPublishCommitProvider = project.tasks.named(/* WORKAROUND: GitPublishPlugin.COMMIT_TASK has package scope <grv87 2018-06-23> */ 'gitPublishCommit')
     gitPublishCommitProvider.configure { Task gitPublishCommit ->
-      TaskProvider<NoJekyll> noJekyllProvider = project.tasks.register(NO_JEKYLL_TASK_NAME, NoJekyll) { NoJekyll task ->
-        task.with {
+      TaskProvider<NoJekyll> noJekyllProvider = project.tasks.register(NO_JEKYLL_TASK_NAME, NoJekyll) { NoJekyll noJekyll ->
+        noJekyll.with {
           description = 'Generates .nojekyll file in gitPublish repository'
           destinationDir.set project.extensions.getByType(GitPublishExtension).repoDir
         }
@@ -355,11 +355,11 @@ final class ProjectPlugin extends AbstractPlugin {
     }
 
     TaskProvider<Task> gitPublishPushProvider = project.tasks.named(/* WORKAROUND: GitPublishPlugin.PUSH_TASK has package scope <grv87 2018-06-23> */'gitPublishPush')
-    gitPublishPushProvider.configure { Task task ->
-      task.enabled = repoClean
+    gitPublishPushProvider.configure { Task gitPublishPush ->
+      gitPublishPush.enabled = repoClean
     }
-    project.tasks.named(RELEASE_TASK_NAME).configure { Task task ->
-      task.dependsOn gitPublishPushProvider
+    project.tasks.named(RELEASE_TASK_NAME).configure { Task release ->
+      release.dependsOn gitPublishPushProvider
     }
   }
 
@@ -387,42 +387,42 @@ final class ProjectPlugin extends AbstractPlugin {
    */
   @SuppressWarnings('UnnecessarySetter')
   private void configureCodeQuality() {
-    TaskProvider<Task> lintProvider = project.tasks.register(LINT_TASK_NAME) { Task task ->
-      task.with {
+    TaskProvider<Task> lintProvider = project.tasks.register(LINT_TASK_NAME) { Task lint ->
+      lint.with {
         group = VERIFICATION_GROUP
         description = 'Runs all static code analyses'
       }
     }
     TaskProvider<Task> checkProvider = project.tasks.named(CHECK_TASK_NAME)
-    checkProvider.configure { Task task ->
-      task.dependsOn lintProvider
+    checkProvider.configure { Task check ->
+      check.dependsOn lintProvider
     }
 
-    TaskCollection<CodeNarc> codeNarcTasks = project.tasks.withType(CodeNarc)
+    TaskCollection<CodeNarc> codenarcTasks = project.tasks.withType(CodeNarc)
 
-    TaskProvider<Task> codeNarcProvider = project.tasks.register(CODENARC_TASK_NAME) { Task task ->
-      task.with {
+    TaskProvider<Task> codenarcProvider = project.tasks.register(CODENARC_TASK_NAME) { Task codenarc ->
+      codenarc.with {
         group = 'Verification'
         description = 'Runs CodeNarc analysis for each source set'
-        dependsOn codeNarcTasks
+        dependsOn codenarcTasks
       }
     }
-    lintProvider.configure { Task task ->
-      task.dependsOn codeNarcProvider
+    lintProvider.configure { Task lint ->
+      lint.dependsOn codenarcProvider
     }
 
     project.extensions.configure(CodeNarcExtension) { CodeNarcExtension extension ->
       extension.reportFormat = 'console'
     }
 
-    checkProvider.configure { Task task ->
-      task.taskDependencies.getDependencies(task).removeAll codeNarcTasks
+    checkProvider.configure { Task check ->
+      check.taskDependencies.getDependencies(check).removeAll codenarcTasks
     }
 
     ProjectConvention projectConvention = project.convention.getPlugin(ProjectConvention)
-    codeNarcTasks.configureEach { CodeNarc task ->
-      task.with {
-        convention.plugins.put CODENARC_DISABLED_RULES_CONVENTION_NAME, new CodeNarcTaskConvention(task)
+    codenarcTasks.configureEach { CodeNarc codenarc ->
+      codenarc.with {
+        convention.plugins.put CODENARC_DISABLED_RULES_CONVENTION_NAME, new CodeNarcTaskConvention(codenarc)
         String reportFileName = "codenarc/${ toSafeFileName((name - ~/^codenarc/ /* WORKAROUND: CodeNarcPlugin.getTaskBaseName has protected scope <grv87 2018-06-23> */).uncapitalize()) }"
         reports.xml.enabled = true
         reports.xml.setDestination new File(projectConvention.xmlReportsDir, "${ reportFileName }.xml")
@@ -431,14 +431,14 @@ final class ProjectPlugin extends AbstractPlugin {
       }
     }
 
-    project.tasks.register("${ /* WORKAROUND: CodeNarcPlugin.getTaskBaseName has protected scope <grv87 2018-06-23> */ 'codenarc' }${ DEFAULT_BUILD_SRC_DIR.capitalize() }", CodeNarc) { CodeNarc task ->
+    project.tasks.register("${ /* WORKAROUND: CodeNarcPlugin.getTaskBaseName has protected scope <grv87 2018-06-23> */ 'codenarc' }${ DEFAULT_BUILD_SRC_DIR.capitalize() }", CodeNarc) { CodeNarc codenarc ->
       Closure buildDirMatcher = { FileTreeElement fte ->
         String[] p = fte.relativePath.segments
         int i = 0
         while (i < p.length && p[i] == DEFAULT_BUILD_SRC_DIR) { i++ }
         i < p.length && p[i] == DEFAULT_BUILD_DIR_NAME
       }
-      task.with {
+      codenarc.with {
         for (File f in project.fileTree(project.projectDir) { ConfigurableFileTree fileTree ->
           fileTree.include '**/*.gradle'
           fileTree.exclude buildDirMatcher
@@ -453,14 +453,14 @@ final class ProjectPlugin extends AbstractPlugin {
         }
         source 'Jenkinsfile'
         source project.fileTree(dir: project.file('config'), includes: ['**/*.groovy'])
+        /*
+         * WORKAROUND:
+         * Indentation rule doesn't work correctly.
+         * https://github.com/CodeNarc/CodeNarc/issues/310
+         * <grv87 2018-06-26>
+         */
+        codenarc.convention.getPlugin(CodeNarcTaskConvention).disabledRules.add 'Indentation'
       }
-      /*
-       * WORKAROUND:
-       * Indentation rule doesn't work correctly.
-       * https://github.com/CodeNarc/CodeNarc/issues/310
-       * <grv87 2018-06-26>
-       */
-      task.convention.getPlugin(CodeNarcTaskConvention).disabledRules.add 'Indentation'
     }
   }
 
@@ -486,53 +486,53 @@ final class ProjectPlugin extends AbstractPlugin {
     ProjectConvention projectConvention = project.convention.getPlugin(ProjectConvention)
     project.convention.getPlugin(ProjectReportsPluginConvention).projectReportDirName = projectConvention.reportsDir.toPath().relativize(new File(projectConvention.txtReportsDir, 'project').toPath()).toString()
 
-    project.tasks.withType(BuildEnvironmentReportTask).configureEach { BuildEnvironmentReportTask task ->
-      task.group = DIAGNOSTICS_TASK_GROUP_NAME
+    project.tasks.withType(BuildEnvironmentReportTask).configureEach { BuildEnvironmentReportTask buildEnvironmentReport ->
+      buildEnvironmentReport.group = DIAGNOSTICS_TASK_GROUP_NAME
     }
-    project.tasks.withType(ComponentReport).configureEach { ComponentReport task ->
-      task.group = DIAGNOSTICS_TASK_GROUP_NAME
+    project.tasks.withType(ComponentReport).configureEach { ComponentReport componentReport ->
+      componentReport.group = DIAGNOSTICS_TASK_GROUP_NAME
     }
-    project.tasks.withType(DependencyReportTask).configureEach { DependencyReportTask task ->
-      task.group = DIAGNOSTICS_TASK_GROUP_NAME
+    project.tasks.withType(DependencyReportTask).configureEach { DependencyReportTask dependencyReport ->
+      dependencyReport.group = DIAGNOSTICS_TASK_GROUP_NAME
     }
-    project.tasks.withType(DependencyInsightReportTask).configureEach { DependencyInsightReportTask task ->
-      task.group = DIAGNOSTICS_TASK_GROUP_NAME
+    project.tasks.withType(DependencyInsightReportTask).configureEach { DependencyInsightReportTask dependencyInsightReport ->
+      dependencyInsightReport.group = DIAGNOSTICS_TASK_GROUP_NAME
     }
-    project.tasks.withType(DependentComponentsReport).configureEach { DependentComponentsReport task ->
-      task.group = DIAGNOSTICS_TASK_GROUP_NAME
+    project.tasks.withType(DependentComponentsReport).configureEach { DependentComponentsReport dependentComponentsReport ->
+      dependentComponentsReport.group = DIAGNOSTICS_TASK_GROUP_NAME
     }
-    project.tasks.withType(ModelReport).configureEach { ModelReport task ->
-      task.group = DIAGNOSTICS_TASK_GROUP_NAME
+    project.tasks.withType(ModelReport).configureEach { ModelReport modelReport ->
+      modelReport.group = DIAGNOSTICS_TASK_GROUP_NAME
     }
-    project.tasks.withType(ProjectReportTask).configureEach { ProjectReportTask task ->
-      task.group = DIAGNOSTICS_TASK_GROUP_NAME
+    project.tasks.withType(ProjectReportTask).configureEach { ProjectReportTask projectReport ->
+      projectReport.group = DIAGNOSTICS_TASK_GROUP_NAME
     }
-    project.tasks.withType(PropertyReportTask).configureEach { PropertyReportTask task ->
-      task.group = DIAGNOSTICS_TASK_GROUP_NAME
+    project.tasks.withType(PropertyReportTask).configureEach { PropertyReportTask propertyReport ->
+      propertyReport.group = DIAGNOSTICS_TASK_GROUP_NAME
     }
-    project.tasks.withType(HtmlDependencyReportTask).configureEach { HtmlDependencyReportTask task ->
-      task.with {
+    project.tasks.withType(HtmlDependencyReportTask).configureEach { HtmlDependencyReportTask htmlDependencyReport ->
+      htmlDependencyReport.with {
         group = DIAGNOSTICS_TASK_GROUP_NAME
         reports.html.setDestination new File(projectConvention.htmlReportsDir, 'dependencies')
       }
     }
-    project.tasks.withType(TaskReportTask).configureEach { TaskReportTask task ->
-      task.group = DIAGNOSTICS_TASK_GROUP_NAME
+    project.tasks.withType(TaskReportTask).configureEach { TaskReportTask taskReport ->
+      taskReport.group = DIAGNOSTICS_TASK_GROUP_NAME
     }
-    project.tasks.named(PROJECT_REPORT).configure { Task task ->
-      task.group = DIAGNOSTICS_TASK_GROUP_NAME
+    project.tasks.named(PROJECT_REPORT).configure { Task projectReport ->
+      projectReport.group = DIAGNOSTICS_TASK_GROUP_NAME
     }
 
-    project.tasks.register(INPUTS_OUTPUTS_TASK_NAME, InputsOutputs) { InputsOutputs task ->
-      task.with {
+    project.tasks.register(INPUTS_OUTPUTS_TASK_NAME, InputsOutputs) { InputsOutputs inputsOutputs ->
+      inputsOutputs.with {
         group = DIAGNOSTICS_TASK_GROUP_NAME
         description = 'Generates report about all task file inputs and outputs'
         outputFile.set new File(projectConvention.txtReportsDir, DEFAULT_OUTPUT_FILE_NAME)
       }
     }
 
-    project.tasks.withType(TaskTreeTask).named(TASK_TREE_TASK_NAME).configure { TaskTreeTask task ->
-      task.group = DIAGNOSTICS_TASK_GROUP_NAME
+    project.tasks.withType(TaskTreeTask).named(TASK_TREE_TASK_NAME).configure { TaskTreeTask taskTree ->
+      taskTree.group = DIAGNOSTICS_TASK_GROUP_NAME
     }
 
     project.extensions.configure(VisTegPluginExtension) { VisTegPluginExtension extension ->

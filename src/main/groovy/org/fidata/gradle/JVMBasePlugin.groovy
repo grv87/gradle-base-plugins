@@ -81,8 +81,8 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
     project.convention.getPlugin(ProjectConvention).addPropertyChangeListener this
     configurePublicReleases()
 
-    project.tasks.withType(ProcessResources).configureEach { ProcessResources task ->
-      task.from(LICENSE_FILE_NAMES) { CopySpec copySpec ->
+    project.tasks.withType(ProcessResources).configureEach { ProcessResources processResources ->
+      processResources.from(LICENSE_FILE_NAMES) { CopySpec copySpec ->
         copySpec.into 'META-INF'
       }
     }
@@ -232,8 +232,8 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
     }
 
     project.plugins.withType(GroovyBasePlugin).configureEach { GroovyBasePlugin plugin -> // TODO: 4.9
-      project.tasks.withType(CodeNarc).named("codenarc${ sourceSet.name.capitalize() }").configure { Task task ->
-        task.convention.getPlugin(CodeNarcTaskConvention).disabledRules.addAll 'MethodName', 'FactoryMethodName', 'JUnitPublicProperty', 'JUnitPublicNonTestMethod', /* WORKAROUND: https://github.com/CodeNarc/CodeNarc/issues/308 <grv87 2018-06-26> */ 'Indentation'
+      project.tasks.withType(CodeNarc).named("codenarc${ sourceSet.name.capitalize() }").configure { CodeNarc codenarc ->
+        codenarc.convention.getPlugin(CodeNarcTaskConvention).disabledRules.addAll 'MethodName', 'FactoryMethodName', 'JUnitPublicProperty', 'JUnitPublicNonTestMethod', /* WORKAROUND: https://github.com/CodeNarc/CodeNarc/issues/308 <grv87 2018-06-26> */ 'Indentation'
       }
     }
   }
@@ -288,8 +288,8 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
     }
 
     ProjectConvention projectConvention = project.convention.getPlugin(ProjectConvention)
-    TaskProvider<Test> functionalTestProvider = project.tasks.register(FUNCTIONAL_TEST_TASK_NAME, Test) { Test task ->
-      task.with {
+    TaskProvider<Test> functionalTestProvider = project.tasks.register(FUNCTIONAL_TEST_TASK_NAME, Test) { Test test ->
+      test.with {
         group = 'Verification'
         description = 'Runs functional tests'
         shouldRunAfter project.tasks.named(TEST_TASK_NAME)
@@ -305,8 +305,8 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
 
   private void configureTesting() {
     project.convention.getPlugin(JavaPluginConvention).testReportDirName = project.extensions.getByType(ReportingExtension).baseDir.toPath().relativize(new File(project.convention.getPlugin(ProjectConvention).htmlReportsDir, 'tests').toPath()).toString() // TODO: ???
-    project.tasks.withType(Test).configureEach { Test task ->
-      task.testLogging.exceptionFormat = TestExceptionFormat.FULL
+    project.tasks.withType(Test).configureEach { Test test ->
+      test.testLogging.exceptionFormat = TestExceptionFormat.FULL
     }
 
     addJUnitDependency project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(TEST_SOURCE_SET_NAME)
@@ -321,23 +321,23 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
       clientConfig.publisher.password = project.extensions.extraProperties['artifactoryPassword']
       clientConfig.publisher.maven = true
     }
-    project.tasks.withType(ArtifactoryTask).named(ARTIFACTORY_PUBLISH_TASK_NAME).configure { ArtifactoryTask task ->
+    project.tasks.withType(ArtifactoryTask).named(ARTIFACTORY_PUBLISH_TASK_NAME).configure { ArtifactoryTask artifactoryPublish ->
       PublicationContainer publications = project.extensions.getByType(PublishingExtension).publications
       publications.withType(MavenPublication) { MavenPublication mavenPublication ->
-        task.mavenPublications.add mavenPublication
+        artifactoryPublish.mavenPublications.add mavenPublication
       }
       publications.whenObjectRemoved { MavenPublication mavenPublication ->
-        task.mavenPublications.remove mavenPublication
+        artifactoryPublish.mavenPublications.remove mavenPublication
       }
 
-      task.dependsOn project.tasks.withType(Sign).matching { Sign sign -> // TODO
+      artifactoryPublish.dependsOn project.tasks.withType(Sign).matching { Sign sign -> // TODO
         publications.withType(MavenPublication).any { MavenPublication mavenPublication ->
           sign.name == "sign${ mavenPublication.name.capitalize() }Publication"
         }
       }
     }
-    project.tasks.named(RELEASE_TASK_NAME).configure { Task task ->
-      task.finalizedBy project.tasks.withType(ArtifactoryTask)
+    project.tasks.named(RELEASE_TASK_NAME).configure { Task release ->
+      release.finalizedBy project.tasks.withType(ArtifactoryTask)
     }
   }
 
@@ -384,11 +384,11 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
         // pkg.version.attributes // Attributes to be attached to the version
       }
     }
-    project.tasks.withType(BintrayPublishTask).configureEach { BintrayPublishTask task ->
-      task.onlyIf { projectConvention.isRelease.get() }
+    project.tasks.withType(BintrayPublishTask).configureEach { BintrayPublishTask bintrayPublish ->
+      bintrayPublish.onlyIf { projectConvention.isRelease.get() }
     }
-    project.tasks.named(RELEASE_TASK_NAME).configure { Task task ->
-      task.finalizedBy project.tasks.withType(BintrayPublishTask)
+    project.tasks.named(RELEASE_TASK_NAME).configure { Task release ->
+      release.finalizedBy project.tasks.withType(BintrayPublishTask)
     }
   }
 

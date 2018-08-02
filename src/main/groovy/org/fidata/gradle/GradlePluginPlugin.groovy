@@ -93,24 +93,23 @@ final class GradlePluginPlugin extends AbstractPlugin implements PropertyChangeL
       project.pluginManager.apply 'com.gradle.plugin-publish'
       project.extensions.configure(PluginBundleExtension) { PluginBundleExtension extension ->
         extension.with {
-          description = project.version.toString() == '1.0.0' ? project.description : projectConvention.changeLogTxt.get().toString()
-          tags = (Collection<String>)projectConvention.tags.get()
           website = projectConvention.websiteUrl.get()
           vcsUrl = projectConvention.vcsUrl.get()
+          description = projectConvention.changeLog.get().toString()
         }
       }
-      project.tasks.named(/* WORKAROUND: PublishPlugin.BASE_TASK_NAME has private scope <grv87 2018-06-23> */ 'publishPlugins').configure { Task task ->
-        task.onlyIf { projectConvention.isRelease.get() }
+      project.tasks.named(/* WORKAROUND: PublishPlugin.BASE_TASK_NAME has private scope <grv87 2018-06-23> */ 'publishPlugins').configure { Task publishPlugins ->
+        publishPlugins.onlyIf { projectConvention.isRelease.get() }
       }
-      project.tasks.named(RELEASE_TASK_NAME).configure { Task task ->
-        task.finalizedBy /* WORKAROUND: PublishPlugin.BASE_TASK_NAME has private scope <grv87 2018-06-23> */ 'publishPlugins'
+      project.tasks.named(RELEASE_TASK_NAME).configure { Task release ->
+        release.finalizedBy /* WORKAROUND: PublishPlugin.BASE_TASK_NAME has private scope <grv87 2018-06-23> */ 'publishPlugins'
       }
     }
   }
 
   private void configureTesting() {
-    project.tasks.withType(ValidateTaskProperties).configureEach { ValidateTaskProperties task ->
-      task.with {
+    project.tasks.withType(ValidateTaskProperties).configureEach { ValidateTaskProperties validateTaskProperties ->
+      validateTaskProperties.with {
         outputFile.set new File(project.convention.getPlugin(ProjectConvention).txtReportsDir, "${ toSafeFileName(name) }.txt")
         failOnWarning = true
       }
@@ -128,7 +127,7 @@ final class GradlePluginPlugin extends AbstractPlugin implements PropertyChangeL
       /*
        * Looks like there is no built-in way to get collection of TaskProvider
        */
-      (Iterable<TaskProvider<Test>>)(project.tasks.withType(Test).matching { Test task -> task.name =~ compatTestPattern }.collect { Test task -> project.tasks.withType(Test).named(task.name) })
+      (Iterable<TaskProvider<Test>>)(project.tasks.withType(Test).matching { Test test -> test.name =~ compatTestPattern }.collect { Test test -> project.tasks.withType(Test).named(test.name) })
     ) { String taskName ->
       Matcher compatTestMatcher = (taskName =~ compatTestPattern)
       compatTestMatcher.find()

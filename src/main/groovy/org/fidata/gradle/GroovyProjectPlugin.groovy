@@ -72,11 +72,11 @@ final class GroovyProjectPlugin extends AbstractPlugin {
 
     Javadoc javadoc = project.tasks.withType(Javadoc).getByName(JAVADOC_TASK_NAME) // TODO
     javadoc.enabled = false
-    project.tasks.withType(Groovydoc) { Groovydoc task ->
-      task.source javadoc.source
-      task.doFirst {
-        task.project.extensions.getByType(JVMBaseExtension).javadocLinks.each { String key, URI value ->
-          task.link value.toString(), "$key."
+    project.tasks.withType(Groovydoc) { Groovydoc groovydoc ->
+      groovydoc.source javadoc.source
+      groovydoc.doFirst {
+        groovydoc.project.extensions.getByType(JVMBaseExtension).javadocLinks.each { String key, URI value ->
+          groovydoc.link value.toString(), "$key."
         }
       }
     }
