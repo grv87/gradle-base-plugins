@@ -28,6 +28,7 @@ import static ProjectPlugin.LICENSE_FILE_NAMES
 import static org.jfrog.gradle.plugin.artifactory.task.ArtifactoryTask.ARTIFACTORY_PUBLISH_TASK_NAME
 import org.gradle.api.Task
 import groovy.transform.PackageScope
+import org.gradle.api.tasks.javadoc.Javadoc
 import org.gradle.plugins.signing.Sign
 import org.gradle.api.file.CopySpec
 import org.gradle.api.publish.maven.MavenPublication
@@ -393,6 +394,17 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
   }
 
   private void configureDocumentation() {
+    /*
+     * WORKAROUND:
+     * https://github.com/gradle/gradle/issues/6168
+     * <grv87 2018-08-01>
+     */
+    project.tasks.withType(Javadoc).configureEach { Javadoc javadoc ->
+      javadoc.doFirst {
+        javadoc.destinationDir.deleteDir()
+      }
+    }
+
     project.extensions.getByType(GitPublishExtension).contents.from(project.tasks.named(JAVADOC_TASK_NAME)).into "$project.version/javadoc"
   }
 }
