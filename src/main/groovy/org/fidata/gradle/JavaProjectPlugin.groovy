@@ -28,7 +28,7 @@ import org.gradle.api.tasks.SourceSet
 import groovy.transform.CompileStatic
 import io.franzbecker.gradle.lombok.task.DelombokTask
 import org.ajoberstar.gradle.git.publish.GitPublishExtension
-import org.fidata.gradle.internal.AbstractPlugin
+import org.fidata.gradle.internal.AbstractProjectPlugin
 import org.fidata.gradle.utils.PluginDependeesUtils
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPluginConvention
@@ -40,7 +40,7 @@ import org.gradle.api.tasks.TaskProvider
  * Provides an environment for a JDK project
  */
 @CompileStatic
-final class JavaProjectPlugin extends AbstractPlugin {
+final class JavaProjectPlugin extends AbstractProjectPlugin {
   @Override
   void apply(Project project) {
     super.apply(project)

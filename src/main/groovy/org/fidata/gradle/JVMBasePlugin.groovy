@@ -46,7 +46,7 @@ import org.jfrog.gradle.plugin.artifactory.task.ArtifactoryTask
 import org.fidata.gradle.tasks.CodeNarcTaskConvention
 import org.gradle.api.artifacts.ModuleDependency
 import groovy.transform.CompileStatic
-import org.fidata.gradle.internal.AbstractPlugin
+import org.fidata.gradle.internal.AbstractProjectPlugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.testing.Test
 import org.gradle.language.jvm.tasks.ProcessResources
@@ -70,7 +70,7 @@ import org.gradle.api.publish.PublicationContainer
  * Provides an environment for a JDK project
  */
 @CompileStatic
-final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListener {
+final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChangeListener {
   /**
    * Name of jvm extension for {@link Project}
    */

@@ -23,7 +23,7 @@ import static java.nio.charset.StandardCharsets.UTF_8
 import org.fidata.gradle.utils.PluginDependeesUtils
 import org.gradle.api.artifacts.Configuration
 import groovy.transform.CompileStatic
-import org.fidata.gradle.internal.AbstractPlugin
+import org.fidata.gradle.internal.AbstractProjectPlugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.compile.GroovyCompile
 import org.gradle.api.tasks.javadoc.Groovydoc
@@ -32,7 +32,7 @@ import org.gradle.api.tasks.javadoc.Groovydoc
  * Provides tools for Groovy language
  */
 @CompileStatic
-final class GroovyBasePlugin extends AbstractPlugin {
+final class GroovyBasePlugin extends AbstractProjectPlugin {
   @Override
   void apply(Project project) {
     super.apply(project)

@@ -43,7 +43,7 @@ import org.fidata.gradle.tasks.CodeNarcTaskConvention
 import org.gradle.api.file.ConfigurableFileTree
 import groovy.transform.CompileStatic
 import groovy.transform.PackageScope
-import org.fidata.gradle.internal.AbstractPlugin
+import org.fidata.gradle.internal.AbstractProjectPlugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.tasks.testing.Test
@@ -91,7 +91,7 @@ import org.gradle.api.tasks.TaskProvider
  * Provides an environment for a general, language-agnostic project
  */
 @CompileStatic
-final class ProjectPlugin extends AbstractPlugin {
+final class ProjectPlugin extends AbstractProjectPlugin {
   /**
    * Name of fidata convention for {@link Project}
    */

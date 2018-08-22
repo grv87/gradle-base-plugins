@@ -37,7 +37,7 @@ import org.jfrog.gradle.plugin.artifactory.dsl.ArtifactoryPluginConvention
 import java.util.regex.Pattern
 import java.nio.file.Paths
 import groovy.transform.CompileStatic
-import org.fidata.gradle.internal.AbstractPlugin
+import org.fidata.gradle.internal.AbstractProjectPlugin
 import org.gradle.api.Project
 import com.gradle.publish.PluginBundleExtension
 import org.gradle.api.tasks.testing.Test
@@ -53,7 +53,7 @@ import org.gradle.api.tasks.TaskProvider
  * Provides an environment for a Gradle plugin project
  */
 @CompileStatic
-final class GradlePluginPlugin extends AbstractPlugin implements PropertyChangeListener {
+final class GradlePluginPlugin extends AbstractProjectPlugin implements PropertyChangeListener {
   @Override
   void apply(Project project) {
     super.apply(project)
