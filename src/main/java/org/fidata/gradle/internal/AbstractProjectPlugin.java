@@ -40,5 +40,4 @@ public abstract class AbstractProjectPlugin implements Plugin<Project> {
   public void apply(Project project) {
     this.project = project;
   }
-
 }

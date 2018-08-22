@@ -156,7 +156,10 @@ final class GradlePluginPlugin extends AbstractProjectPlugin implements Property
     project.plugins.getPlugin(JVMBasePlugin).addSpockDependency(
       sourceSets.getByName('compatTest'),
       /*
-       * Looks like there is no built-in way to get collection of TaskProvider
+       * TOTEST:
+       * Looks like there is no built-in way to get collection of TaskProvider.
+       * This is workaround, but it could trigger creation of tasks
+       * <grv87 2018-08-23>
        */
       (Iterable<TaskProvider<Test>>)(project.tasks.withType(Test).matching { Test test -> test.name =~ COMPAT_TEST_TASK_NAME_PATTERN }.collect { Test test -> project.tasks.withType(Test).named(test.name) }), COMPAT_TEST_REPORT_DIRECTOR
     )

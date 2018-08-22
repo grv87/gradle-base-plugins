@@ -58,7 +58,7 @@ final class GroovyBasePlugin extends AbstractProjectPlugin {
   }
 
   void configureDocumentation() {
-    /**
+    /*
      * WORKAROUND:
      * https://github.com/gradle/gradle/issues/6168
      * <grv87 2018-08-01>
