@@ -42,6 +42,6 @@ final class GradleRunnerUtils {
 
   // Suppress default constructor for noninstantiability
   GradleRunnerUtils() {
-    throw new AssertionError()
+    throw new UnsupportedOperationException()
   }
 }

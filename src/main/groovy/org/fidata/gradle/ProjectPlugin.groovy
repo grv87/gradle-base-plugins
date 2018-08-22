@@ -29,6 +29,7 @@ import static org.gradle.internal.FileUtils.toSafeFileName
 import static org.fidata.gradle.utils.VersionUtils.isPreReleaseVersion
 import static org.gradle.language.base.plugins.LifecycleBasePlugin.VERIFICATION_GROUP
 import static com.dorongold.gradle.tasktree.TaskTreePlugin.TASK_TREE_TASK_NAME
+import org.gradle.tooling.UnsupportedVersionException
 import org.gradle.api.tasks.TaskCollection
 import org.ajoberstar.grgit.auth.AuthConfig
 import org.ajoberstar.grgit.Grgit
@@ -126,7 +127,9 @@ final class ProjectPlugin extends AbstractPlugin {
   @Override
   @SuppressWarnings('CouldBeElvis')
   void apply(Project project) {
-    assert GradleVersion.current() >= GradleVersion.version(GRADLE_MINIMUM_SUPPORTED_VERSION) : "Gradle versions before $GRADLE_MINIMUM_SUPPORTED_VERSION are not supported"
+    if (GradleVersion.current() < GradleVersion.version(GRADLE_MINIMUM_SUPPORTED_VERSION)) {
+      throw new UnsupportedVersionException("Gradle versions before $GRADLE_MINIMUM_SUPPORTED_VERSION are not supported")
+    }
 
     super.apply(project)
 

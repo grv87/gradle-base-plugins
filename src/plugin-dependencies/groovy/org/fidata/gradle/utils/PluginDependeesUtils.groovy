@@ -40,6 +40,6 @@ final class PluginDependeesUtils {
 
   // Suppress default constructor for noninstantiability
   private PluginDependeesUtils() {
-    throw new AssertionError()
+    throw new UnsupportedOperationException()
   }
 }

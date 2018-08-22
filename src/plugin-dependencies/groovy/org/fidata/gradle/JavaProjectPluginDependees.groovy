@@ -41,6 +41,6 @@ final class JavaProjectPluginDependees {
 
   // Suppress default constructor for noninstantiability
   private JavaProjectPluginDependees() {
-    throw new AssertionError()
+    throw new UnsupportedOperationException()
   }
 }
