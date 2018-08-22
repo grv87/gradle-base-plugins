@@ -62,7 +62,7 @@ final class GroovyProjectPlugin extends AbstractProjectPlugin {
   }
 
   private void configureDocumentation() {
-    URI groovydocLink = project.uri("http://docs.groovy-lang.org/${ GroovySystem.version }/html/api/")
+    URI groovydocLink = project.uri("http://docs.groovy-lang.org/${ GroovySystem.version }/html/api/index.html?")
     project.extensions.configure(JVMBaseExtension) { JVMBaseExtension extension ->
       extension.javadocLinks.with {
         putAt 'groovy', groovydocLink

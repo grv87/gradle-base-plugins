@@ -48,7 +48,7 @@ sourceSets.main.groovy.srcDirs += [new File(ext.rootDir, 'src/plugin-dependencie
  * <grv87 2018-06-23>
  */
 afterEvaluate {
-  jvm.javadocLinks['org.spdx'] = uri("https://static.javadoc.io/org.spdx/spdx-tools/${ configurations.getByName('compileClasspath').resolvedConfiguration.firstLevelModuleDependencies.find { it.moduleGroup == 'org.spdx' && it.moduleName == 'spdx-tools' }.moduleVersion }/")
+  jvm.javadocLinks['org.spdx'] = uri("https://static.javadoc.io/org.spdx/spdx-tools/${ configurations.getByName('compileClasspath').resolvedConfiguration.firstLevelModuleDependencies.find { it.moduleGroup == 'org.spdx' && it.moduleName == 'spdx-tools' }.moduleVersion }/index.html?")
 }
 
 apply from: new File(ext.rootDir, 'gradle/gradle-plugin-markers.gradle')

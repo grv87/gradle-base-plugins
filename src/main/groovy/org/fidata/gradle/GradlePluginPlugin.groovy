@@ -181,7 +181,7 @@ final class GradlePluginPlugin extends AbstractProjectPlugin implements Property
   }
 
   private void configureDocumentation() {
-    project.extensions.getByType(JVMBaseExtension).javadocLinks['org.gradle'] = project.uri("https://docs.gradle.org/${ project.gradle.gradleVersion }/javadoc/")
+    project.extensions.getByType(JVMBaseExtension).javadocLinks['org.gradle'] = project.uri("https://docs.gradle.org/${ project.gradle.gradleVersion }/javadoc/index.html?")
   }
 
   private void configureArtifactsPublishing() {
