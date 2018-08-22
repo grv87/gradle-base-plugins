@@ -39,7 +39,7 @@ class VersionUtilsTest {
   @Parameters
   @TestCaseName('{index}: isPreReleaseVersion({0}) == {1}')
   void testIsPreReleaseVersion(final String version, final Boolean expectedResult) {
-    assert expectedResult == VersionUtils.isPreReleaseVersion(version)
+    expectedResult == VersionUtils.isPreReleaseVersion(version)
   }
 
   static Object[] parametersForTestIsPreReleaseVersion() {
