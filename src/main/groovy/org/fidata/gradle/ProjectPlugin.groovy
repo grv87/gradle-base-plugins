@@ -460,20 +460,25 @@ final class ProjectPlugin extends AbstractPlugin {
         i < p.length && p[i] == DEFAULT_BUILD_DIR_NAME
       }
       codenarc.with {
-        for (File f in project.fileTree(project.projectDir) { ConfigurableFileTree fileTree ->
+        source project.fileTree(dir: project.projectDir, includes: ['*.gradle'])
+        source project.fileTree(dir: project.projectDir, includes: ['*.groovy'])
+        /*
+         * WORKAROUND:
+         * We have to pass to CodeNarc resolved fileTree, otherwise we get the following error:
+         * Cannot add include/exclude specs to Ant node. Only include/exclude patterns are currently supported.
+         * This is not a problem since build sources can't change at build time,
+         * and also this code is executed only when codenarcBuildSrc task is actually created (i.e. run)
+         * <grv87 2018-08-22>
+         */
+        source project.fileTree(DEFAULT_BUILD_SRC_DIR) { ConfigurableFileTree fileTree ->
           fileTree.include '**/*.gradle'
-          fileTree.exclude buildDirMatcher
-        }) {
-          source f
-        }
-        for (File f in project.fileTree(DEFAULT_BUILD_SRC_DIR) { ConfigurableFileTree fileTree ->
           fileTree.include '**/*.groovy'
           fileTree.exclude buildDirMatcher
-        }) {
-          source f
-        }
-        source 'Jenkinsfile'
+        }.files
+        source project.fileTree(dir: project.file('gradle'), includes: ['**/*.gradle'])
+        source project.fileTree(dir: project.file('gradle'), includes: ['**/*.groovy'])
         source project.fileTree(dir: project.file('config'), includes: ['**/*.groovy'])
+        source 'Jenkinsfile'
         /*
          * WORKAROUND:
          * Indentation rule doesn't work correctly.

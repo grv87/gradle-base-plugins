@@ -27,6 +27,7 @@ import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
 import org.gradle.api.Task
 import org.gradle.api.plugins.quality.CodeNarc
+import spock.lang.Unroll
 
 /**
  * Specification for {@link org.fidata.gradle.ProjectPlugin} class
@@ -160,6 +161,48 @@ class ProjectPluginSpecification extends Specification {
     and: 'check task does not depend on codenarcBuildSrc task'
     Task check = project.tasks['check']
     !check.taskDependencies.getDependencies(check).contains(codenarcBuildSrc)
+  }
+
+  @Unroll
+  void '#testDescription #filename to codenarcBuildSrc task source'() {
+    given: 'file exists'
+    File file = new File(testProjectDir.root, filename)
+    file.parentFile.mkdirs()
+    file.createNewFile()
+
+    when: 'plugin is applied'
+    project.apply plugin: 'org.fidata.project'
+
+    then:
+    project.tasks['codenarcBuildSrc'].source.files.contains(file) == include
+
+    where:
+    filename                                   | include
+    'build.gradle'                             | true
+    'settings.gradle'                          | true
+    'some-script.gradle'                       | true
+    'gradle.properties'                        | false
+    'gradle/file1.gradle'                      | true
+    'gradle/file2.txt'                         | false
+    'gradle/file3.groovy'                      | true
+    'build/file1.gradle'                       | false
+    'build/file1.groovy'                       | false
+    'buildSrc/build.gradle'                    | true
+    'buildSrc/settings.gradle'                 | true
+    'buildSrc/gradle/file4.gradle'             | true
+    'buildSrc/build/file5.gradle'              | false
+    'buildSrc/src/file6.groovy'                | true
+    'buildSrc/buildSrc/build.gradle'           | true
+    'buildSrc/buildSrc/settings.gradle'        | true
+    'buildSrc/buildSrc/src/file7.groovy'       | true
+    'buildSrc/buildSrc/build/file8.gradle'     | false
+    'buildSrc/buildSrc/src/build/file9.groovy' | true
+    'config/dir1/file10.groovy'                | true
+    'src/test.groovy'                          | false
+    'src/resources/test.groovy'                | false
+    'src/resources/test.gradle'                | false
+    'Jenkinsfile'                              | true
+    testDescription = include ? 'Adds' : 'Doesn\'t add'
   }
 
   void 'provides reportsDir read-only properties'() {
