@@ -86,7 +86,7 @@ final class JavaProjectPlugin extends AbstractPlugin {
           outputs.dir outputDir
           mainSourceSet.java.srcDirs.each { File dir ->
             inputs.dir dir
-            args dir, '-d', outputDir
+            args dir, '--target', outputDir
           }
           classpath mainSourceSet.compileClasspath
           doFirst {
