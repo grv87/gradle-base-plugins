@@ -43,17 +43,8 @@ final class GroovyBasePlugin extends AbstractPlugin {
     project.tasks.withType(GroovyCompile).configureEach { GroovyCompile groovyCompile ->
       groovyCompile.options.encoding = UTF_8.name()
     }
-    
-    /**
-     * WORKAROUND:
-     * https://github.com/gradle/gradle/issues/6168
-     * <grv87 2018-08-01>
-     */
-    project.tasks.withType(Groovydoc).configureEach { Groovydoc groovydoc ->
-      groovydoc.doFirst {
-        groovydoc.destinationDir.deleteDir()
-      }
-    }
+
+    configureDocumentation()
   }
 
   /**
@@ -63,6 +54,19 @@ final class GroovyBasePlugin extends AbstractPlugin {
   void addGroovyDependency(Configuration configuration) {
     project.dependencies.with {
       add configuration.name, localGroovy()
+    }
+  }
+
+  void configureDocumentation() {
+    /**
+     * WORKAROUND:
+     * https://github.com/gradle/gradle/issues/6168
+     * <grv87 2018-08-01>
+     */
+    project.tasks.withType(Groovydoc).configureEach { Groovydoc groovydoc ->
+      groovydoc.doFirst {
+        groovydoc.destinationDir.deleteDir()
+      }
     }
   }
 }
