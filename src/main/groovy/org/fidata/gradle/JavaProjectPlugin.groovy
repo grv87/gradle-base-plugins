@@ -19,6 +19,7 @@
  */
 package org.fidata.gradle
 
+import static java.nio.charset.StandardCharsets.UTF_8
 import static org.gradle.api.plugins.JavaPlugin.COMPILE_JAVA_TASK_NAME
 import static org.gradle.api.plugins.JavaPlugin.JAVADOC_TASK_NAME
 import static org.gradle.api.tasks.SourceSet.MAIN_SOURCE_SET_NAME
@@ -76,6 +77,8 @@ final class JavaProjectPlugin extends AbstractPlugin {
     project.tasks.withType(Javadoc).named(JAVADOC_TASK_NAME).configure { Javadoc javadoc ->
       TaskProvider<DelombokTask> delombokProvider = project.tasks.register(DELOMBOK_TASK_NAME, DelombokTask) { DelombokTask delombok ->
         delombok.with {
+          args '--encoding', UTF_8
+
           SourceSet mainSourceSet = project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(MAIN_SOURCE_SET_NAME)
 
           dependsOn project.tasks.named(COMPILE_JAVA_TASK_NAME)

@@ -19,11 +19,13 @@
  */
 package org.fidata.gradle
 
+import static java.nio.charset.StandardCharsets.UTF_8
 import org.fidata.gradle.utils.PluginDependeesUtils
 import org.gradle.api.artifacts.Configuration
 import groovy.transform.CompileStatic
 import org.fidata.gradle.internal.AbstractPlugin
 import org.gradle.api.Project
+import org.gradle.api.tasks.compile.GroovyCompile
 import org.gradle.api.tasks.javadoc.Groovydoc
 
 /**
@@ -38,6 +40,10 @@ final class GroovyBasePlugin extends AbstractPlugin {
     project.pluginManager.apply JVMBasePlugin
     PluginDependeesUtils.applyPlugins project, GroovyBaseProjectPluginDependees.PLUGIN_DEPENDEES
 
+    project.tasks.withType(GroovyCompile).configureEach { GroovyCompile groovyCompile ->
+      groovyCompile.options.encoding = UTF_8.name()
+    }
+    
     /**
      * WORKAROUND:
      * https://github.com/gradle/gradle/issues/6168

@@ -18,6 +18,7 @@
  */
 package org.fidata.gradle.tasks
 
+import static java.nio.charset.StandardCharsets.UTF_8
 import groovy.transform.CompileStatic
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.RegularFileProperty
@@ -48,7 +49,7 @@ class InputsOutputs extends DefaultTask {
    */
   @TaskAction
   void generate() {
-    outputFile.get().asFile.withPrintWriter('UTF-8') { PrintWriter writer ->
+    outputFile.get().asFile.withPrintWriter(UTF_8.name()) { PrintWriter writer ->
       for (Task t in project.tasks) {
         if (t.inputs.hasInputs) {
           for (File f in t.inputs.sourceFiles) {

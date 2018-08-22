@@ -19,6 +19,7 @@
  */
 package org.fidata.gradle
 
+import static java.nio.charset.StandardCharsets.UTF_8
 import static org.gradle.api.plugins.JavaPlugin.TEST_TASK_NAME
 import static org.gradle.api.tasks.SourceSet.TEST_SOURCE_SET_NAME
 import static org.gradle.api.plugins.JavaPlugin.JAVADOC_TASK_NAME
@@ -28,6 +29,7 @@ import static ProjectPlugin.LICENSE_FILE_NAMES
 import static org.jfrog.gradle.plugin.artifactory.task.ArtifactoryTask.ARTIFACTORY_PUBLISH_TASK_NAME
 import org.gradle.api.Task
 import groovy.transform.PackageScope
+import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.api.tasks.javadoc.Javadoc
 import org.gradle.plugins.signing.Sign
 import org.gradle.api.file.CopySpec
@@ -81,6 +83,10 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
 
     project.convention.getPlugin(ProjectConvention).addPropertyChangeListener this
     configurePublicReleases()
+
+    project.tasks.withType(JavaCompile).configureEach { JavaCompile javaCompile ->
+      javaCompile.options.encoding = UTF_8.name()
+    }
 
     project.tasks.withType(ProcessResources).configureEach { ProcessResources processResources ->
       processResources.from(LICENSE_FILE_NAMES) { CopySpec copySpec ->
@@ -394,14 +400,17 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
   }
 
   private void configureDocumentation() {
-    /*
-     * WORKAROUND:
-     * https://github.com/gradle/gradle/issues/6168
-     * <grv87 2018-08-01>
-     */
     project.tasks.withType(Javadoc).configureEach { Javadoc javadoc ->
-      javadoc.doFirst {
-        javadoc.destinationDir.deleteDir()
+      javadoc.with {
+        options.encoding = UTF_8.name()
+        /*
+         * WORKAROUND:
+         * https://github.com/gradle/gradle/issues/6168
+         * <grv87 2018-08-01>
+         */
+        doFirst {
+          destinationDir.deleteDir()
+        }
       }
     }
 

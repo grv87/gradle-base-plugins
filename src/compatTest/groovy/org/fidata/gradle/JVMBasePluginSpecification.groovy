@@ -94,6 +94,43 @@ class JVMBasePluginSpecification extends Specification {
 
   // feature methods
 
+  void 'sets Java encoding to UTF-8'() {
+    given:
+    buildFile << '''\
+      sourceSets.main.java.srcDirs = ['src']
+      apply plugin: 'java'
+    '''
+    and:
+    File srcDir = new File(testProjectDir, 'src')
+    srcDir.mkdir()
+    new File(srcDir, 'EncodingTest.java').bytes = """\
+      public final class EncodingTest {
+        public static final String utf8String() {
+          return "${ Character.toChars(codepoint) }";
+        }
+      }
+    """.stripIndent().getBytes('UTF-8')
+
+    when:
+    GradleRunner.create()
+      .withGradleVersion(System.getProperty('compat.gradle.version'))
+      .withProjectDir(testProjectDir)
+      .withArguments('compileJava')
+      .withPluginClasspath()
+      .build()
+
+    then:
+    ClassLoader cl = new URLClassLoader(new File(testProjectDir, 'build/classes/java/main').toURL())
+    Class c = cl.loadClass('EncodingTest')
+    String result = c.getMethod('utf8String').invoke(null)
+    result.length() == 2
+    and:
+    result.codePointAt(0) == codepoint
+
+    where:
+    codepoint = 0x1D54B // U+1D54B Double-Struck Capital T
+  }
+
   void 'copies license file into resources META-INF directory'() {
     given: 'license file'
     new File(testProjectDir, 'LICENSE').text = 'Dummy license file'
