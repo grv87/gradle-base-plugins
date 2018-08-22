@@ -66,7 +66,7 @@ class InputsOutputs extends DefaultTask {
   }
 
   InputsOutputs() {
-    outputFile.set(project.extensions.getByType(ReportingExtension).file(DEFAULT_OUTPUT_FILE_NAME))
+    outputFile.set(project.extensions.getByType(ReportingExtension).baseDirectory.file(DEFAULT_OUTPUT_FILE_NAME))
     outputs.upToDateWhen { false }
   }
 }
