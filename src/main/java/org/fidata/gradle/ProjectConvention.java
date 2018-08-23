@@ -20,8 +20,10 @@ package org.fidata.gradle;
 
 import lombok.Getter;
 import org.fidata.gradle.internal.AbstractExtension;
+import org.fidata.gradle.utils.PathDirector;
 import org.gradle.api.Project;
 import java.io.File;
+import java.nio.file.Path;
 import java.util.concurrent.Callable;
 import org.ajoberstar.gradle.git.release.base.ReleasePluginExtension;
 import com.github.zafarkhaja.semver.Version;
@@ -204,5 +206,318 @@ public class ProjectConvention extends AbstractExtension {
     xmlReportsDir  = new File(reportsDir, "xml");
     jsonReportsDir = new File(reportsDir, "json");
     txtReportsDir  = new File(reportsDir, "txt");
+  }
+
+  /**
+   * Returns directory
+   * inside standard directory for HTML reports
+   *
+   * @param subpath Path relatively to the root of standard directory
+   * @return Directory resolved to the root of standard directory
+   */
+  public File getHtmlReportDir(Path subpath) {
+    return htmlReportsDir.toPath().resolve(subpath).toFile();
+  }
+
+  /**
+   * Returns directory
+   * inside standard directory for XML reports
+   *
+   * @param subpath Path relatively to the root of standard directory
+   * @return Directory resolved to the root of standard directory
+   */
+  public File getXmlReportDir(Path subpath) {
+    return xmlReportsDir.toPath().resolve(subpath).toFile();
+  }
+
+  /**
+   * Returns directory
+   * inside standard directory for JSON reports
+   *
+   * @param subpath Path relatively to the root of standard directory
+   * @return Directory resolved to the root of standard directory
+   */
+  public File getJsonReportDir(Path subpath) {
+    return jsonReportsDir.toPath().resolve(subpath).toFile();
+  }
+
+  /**
+   * Returns directory
+   * inside standard directory for text reports
+   *
+   * @param subpath Path relatively to the root of standard directory
+   * @return Directory resolved to the root of standard directory
+   */
+  public File getTxtReportDir(Path subpath) {
+    return txtReportsDir.toPath().resolve(subpath).toFile();
+  }
+
+  /**
+   * Returns directory
+   * inside standard directory for HTML reports
+   *
+   * @param subpath Path relatively to the root of standard directory
+   * @param pathDirector Path director. Path provided by {@code pathDirector}
+   *                     is resolved relatively to {@code subpath}
+   * @param object The object to determine path for. It is passed to {@code pathDirector}
+   * @param <T> Type of {@object}
+   * @return Directory resolved to the root of standard directory
+   * @throws RuntimeException If {@code pathDirector} could not determine path
+   */
+  public <T> File getHtmlReportDir(Path subpath, PathDirector<T> pathDirector, T object) throws RuntimeException {
+    return htmlReportsDir.toPath().resolve(subpath).resolve(pathDirector.determinePath(object)).toFile();
+  }
+
+  /**
+   * Returns directory
+   * inside standard directory for XML reports
+   *
+   * @param subpath Path relatively to the root of standard directory
+   * @param pathDirector Path director. Path provided by {@code pathDirector}
+   *                     is resolved relatively to {@code subpath}
+   * @param object The object to determine path for. It is passed to {@code pathDirector}
+   * @param <T> Type of {@object}
+   * @return Directory resolved to the root of standard directory
+   * @throws RuntimeException If {@code pathDirector} could not determine path
+   */
+  public <T> File getXmlReportDir(Path subpath, PathDirector<T> pathDirector, T object) throws RuntimeException {
+    return xmlReportsDir.toPath().resolve(subpath).resolve(pathDirector.determinePath(object)).toFile();
+  }
+
+  /**
+   * Returns directory
+   * inside standard directory for JSON reports
+   *
+   * @param subpath Path relatively to the root of standard directory
+   * @param pathDirector Path director. Path provided by {@code pathDirector}
+   *                     is resolved relatively to {@code subpath}
+   * @param object The object to determine path for. It is passed to {@code pathDirector}
+   * @param <T> Type of {@object}
+   * @return Directory resolved to the root of standard directory
+   * @throws RuntimeException If {@code pathDirector} could not determine path
+   */
+  public <T> File getJsonReportDir(Path subpath, PathDirector<T> pathDirector, T object) throws RuntimeException {
+    return jsonReportsDir.toPath().resolve(subpath).resolve(pathDirector.determinePath(object)).toFile();
+  }
+
+  /**
+   * Returns directory
+   * inside standard directory for text reports
+   *
+   * @param subpath Path relatively to the root of standard directory
+   * @param pathDirector Path director. Path provided by {@code pathDirector}
+   *                     is resolved relatively to {@code subpath}
+   * @param object The object to determine path for. It is passed to {@code pathDirector}
+   * @param <T> Type of {@object}
+   * @return Directory resolved to the root of standard directory
+   * @throws RuntimeException If {@code pathDirector} could not determine path
+   */
+  public <T> File getTxtReportDir(Path subpath, PathDirector<T> pathDirector, T object) throws RuntimeException {
+    return txtReportsDir.toPath().resolve(subpath).resolve(pathDirector.determinePath(object)).toFile();
+  }
+
+  /**
+   * Returns directory
+   * inside standard directory for HTML reports
+   *
+   * @param pathDirector Path director. Path provided by {@code pathDirector}
+   *                     is resolved relatively to the root of standard directory
+   * @param object The object to determine path for. It is passed to {@code pathDirector}
+   * @param <T> Type of {@object}
+   * @return Directory resolved to the root of standard directory
+   * @throws RuntimeException If {@code pathDirector} could not determine path
+   */
+  public <T> File getHtmlReportDir(PathDirector<T> pathDirector, T object) throws RuntimeException {
+    return htmlReportsDir.toPath().resolve(pathDirector.determinePath(object)).toFile();
+  }
+
+  /**
+   * Returns directory
+   * inside standard directory for XML reports
+   *
+   * @param pathDirector Path director. Path provided by {@code pathDirector}
+   *                     is resolved relatively to the root of standard directory
+   * @param object The object to determine path for. It is passed to {@code pathDirector}
+   * @param <T> Type of {@object}
+   * @return Directory resolved to the root of standard directory
+   * @throws RuntimeException If {@code pathDirector} could not determine path
+   */
+  public <T> File getXmlReportDir(PathDirector<T> pathDirector, T object) throws RuntimeException {
+    return xmlReportsDir.toPath().resolve(pathDirector.determinePath(object)).toFile();
+  }
+
+  /**
+   * Returns directory
+   * inside standard directory for JSON reports
+   *
+   * @param pathDirector Path director. Path provided by {@code pathDirector}
+   *                     is resolved relatively to the root of standard directory
+   * @param object The object to determine path for. It is passed to {@code pathDirector}
+   * @param <T> Type of {@object}
+   * @return Directory resolved to the root of standard directory
+   * @throws RuntimeException If {@code pathDirector} could not determine path
+   */
+  public <T> File getJsonReportDir(PathDirector<T> pathDirector, T object) throws RuntimeException {
+    return jsonReportsDir.toPath().resolve(pathDirector.determinePath(object)).toFile();
+  }
+
+  /**
+   * Returns directory
+   * inside standard directory for text reports
+   *
+   * @param pathDirector Path director. Path provided by {@code pathDirector}
+   *                     is resolved relatively to the root of standard directory
+   * @param object The object to determine path for. It is passed to {@code pathDirector}
+   * @param <T> Type of {@object}
+   * @return Directory resolved to the root of standard directory
+   * @throws RuntimeException If {@code pathDirector} could not determine path
+   */
+  public <T> File getTxtReportDir(PathDirector<T> pathDirector, T object) throws RuntimeException {
+    return txtReportsDir.toPath().resolve(pathDirector.determinePath(object)).toFile();
+  }
+
+  /**
+   * Returns file
+   * inside standard directory for HTML reports
+   *
+   * @param subpath Path relatively to the root of standard directory
+   * @param pathDirector Path director. Path provided by {@code pathDirector}
+   *                     is resolved relatively to {@code subpath}.
+   *                     Should return filename without extension.
+   *                     Extension is added automatically
+   * @param object The object to determine path for. It is passed to {@code pathDirector}
+   * @param <T> Type of {@object}
+   * @return File resolved to the root of standard directory
+   * @throws RuntimeException If {@code pathDirector} could not determine path
+   */
+  public <T> File getHtmlReportFile(Path subpath, PathDirector<T> pathDirector, T object) throws RuntimeException {
+    return htmlReportsDir.toPath().resolve(subpath).resolve(getFileNameWithExtension(pathDirector, object, "html")).toFile();
+  }
+
+  /**
+   * Returns file
+   * inside standard directory for XML reports
+   *
+   * @param subpath Path relatively to the root of standard directory
+   * @param pathDirector Path director. Path provided by {@code pathDirector}
+   *                     is resolved relatively to {@code subpath}.
+   *                     Should return filename without extension.
+   *                     Extension is added automatically
+   * @param object The object to determine path for. It is passed to {@code pathDirector}
+   * @param <T> Type of {@object}
+   * @return File resolved to the root of standard directory
+   * @throws RuntimeException If {@code pathDirector} could not determine path
+   */
+  public <T> File getXmlReportFile(Path subpath, PathDirector<T> pathDirector, T object) throws RuntimeException {
+    return xmlReportsDir.toPath().resolve(subpath).resolve(getFileNameWithExtension(pathDirector, object, "xml")).toFile();
+  }
+
+  /**
+   * Returns file
+   * inside standard directory for JSON reports
+   *
+   * @param subpath Path relatively to the root of standard directory
+   * @param pathDirector Path director. Path provided by {@code pathDirector}
+   *                     is resolved relatively to {@code subpath}.
+   *                     Should return filename without extension.
+   *                     Extension is added automatically
+   * @param object The object to determine path for. It is passed to {@code pathDirector}
+   * @param <T> Type of {@object}
+   * @return File resolved to the root of standard directory
+   * @throws RuntimeException If {@code pathDirector} could not determine path
+   */
+  public <T> File getJsonReportFile(Path subpath, PathDirector<T> pathDirector, T object) throws RuntimeException {
+    return jsonReportsDir.toPath().resolve(subpath).resolve(getFileNameWithExtension(pathDirector, object, "json")).toFile();
+  }
+
+  /**
+   * Returns file
+   * inside standard directory for text reports
+   *
+   * @param subpath Path relatively to the root of standard directory
+   * @param pathDirector Path director. Path provided by {@code pathDirector}
+   *                     is resolved relatively to {@code subpath}.
+   *                     Should return filename without extension.
+   *                     Extension is added automatically
+   * @param object The object to determine path for. It is passed to {@code pathDirector}
+   * @param <T> Type of {@object}
+   * @return File resolved to the root of standard directory
+   * @throws RuntimeException If {@code pathDirector} could not determine path
+   */
+  public <T> File getTxtReportFile(Path subpath, PathDirector<T> pathDirector, T object) throws RuntimeException {
+    return txtReportsDir.toPath().resolve(subpath).resolve(getFileNameWithExtension(pathDirector, object, "txt")).toFile();
+  }
+
+  /**
+   * Returns file
+   * inside standard directory for HTML reports
+   *
+   * @param pathDirector Path director. Path provided by {@code pathDirector}
+   *                     is resolved relatively to the root of standard directory.
+   *                     Should return filename without extension.
+   *                     Extension is added automatically
+   * @param object The object to determine path for. It is passed to {@code pathDirector}
+   * @param <T> Type of {@object}
+   * @return File resolved to the root of standard directory
+   * @throws RuntimeException If {@code pathDirector} could not determine path
+   */
+  public <T> File getHtmlReportFile(PathDirector<T> pathDirector, T object) throws RuntimeException {
+    return htmlReportsDir.toPath().resolve(getFileNameWithExtension(pathDirector, object, "html")).toFile();
+  }
+
+  /**
+   * Returns file
+   * inside standard directory for TXT reports
+   *
+   * @param pathDirector Path director. Path provided by {@code pathDirector}
+   *                     is resolved relatively to the root of standard directory.
+   *                     Should return filename without extension.
+   *                     Extension is added automatically
+   * @param object The object to determine path for. It is passed to {@code pathDirector}
+   * @param <T> Type of {@object}
+   * @return File resolved to the root of standard directory
+   * @throws RuntimeException If {@code pathDirector} could not determine path
+   */
+  public <T> File getXmlReportFile(PathDirector<T> pathDirector, T object) throws RuntimeException {
+    return xmlReportsDir.toPath().resolve(getFileNameWithExtension(pathDirector, object, "xml")).toFile();
+  }
+
+  /**
+   * Returns file
+   * inside standard directory for JSON reports
+   *
+   * @param pathDirector Path director. Path provided by {@code pathDirector}
+   *                     is resolved relatively to the root of standard directory.
+   *                     Should return filename without extension.
+   *                     Extension is added automatically
+   * @param object The object to determine path for. It is passed to {@code pathDirector}
+   * @param <T> Type of {@object}
+   * @return File resolved to the root of standard directory
+   * @throws RuntimeException If {@code pathDirector} could not determine path
+   */
+  public <T> File getJsonReportFile(PathDirector<T> pathDirector, T object) throws RuntimeException {
+    return jsonReportsDir.toPath().resolve(getFileNameWithExtension(pathDirector, object, "json")).toFile();
+  }
+
+  /**
+   * Returns file
+   * inside standard directory for text reports
+   *
+   * @param pathDirector Path director. Path provided by {@code pathDirector}
+   *                     is resolved relatively to the root of standard directory.
+   *                     Should return filename without extension.
+   *                     Extension is added automatically
+   * @param object The object to determine path for. It is passed to {@code pathDirector}
+   * @param <T> Type of {@object}
+   * @return File resolved to the root of standard directory
+   * @throws RuntimeException If {@code pathDirector} could not determine path
+   */
+  public <T> File getTxtReportFile(PathDirector<T> pathDirector, T object) throws RuntimeException {
+    return txtReportsDir.toPath().resolve(getFileNameWithExtension(pathDirector, object, "txt")).toFile();
+  }
+
+  private <T> Path getFileNameWithExtension(PathDirector<T> pathDirector, T object, String extension) throws RuntimeException {
+    Path filenameWithoutExtension = pathDirector.determinePath(object);
+    return filenameWithoutExtension.resolveSibling(filenameWithoutExtension.getFileName().toString() + "." + extension);
   }
 }

@@ -30,6 +30,10 @@ import static org.fidata.gradle.utils.VersionUtils.isPreReleaseVersion
 import static org.gradle.language.base.plugins.LifecycleBasePlugin.VERIFICATION_GROUP
 import static com.dorongold.gradle.tasktree.TaskTreePlugin.TASK_TREE_TASK_NAME
 import org.gradle.tooling.UnsupportedVersionException
+import org.fidata.gradle.utils.PathDirector
+import org.fidata.gradle.utils.ReportPathDirectorException
+import java.nio.file.Path
+import java.nio.file.Paths
 import org.gradle.api.tasks.TaskCollection
 import org.ajoberstar.grgit.auth.AuthConfig
 import org.ajoberstar.grgit.Grgit
@@ -195,7 +199,7 @@ final class ProjectPlugin extends AbstractPlugin {
       dependencyUpdates.group = null
       dependencyUpdates.revision = 'release'
       dependencyUpdates.outputFormatter = 'xml'
-      dependencyUpdates.outputDir = new File(project.convention.getPlugin(ProjectConvention).xmlReportsDir, 'dependencyUpdates').toString()
+      dependencyUpdates.outputDir = project.convention.getPlugin(ProjectConvention).getXmlReportDir(Paths.get('dependencyUpdates')).toString()
       dependencyUpdates.resolutionStrategy = { ResolutionStrategy resolutionStrategy ->
         resolutionStrategy.componentSelection { ComponentSelectionRules rules ->
           rules.all { ComponentSelection selection ->
@@ -381,6 +385,21 @@ final class ProjectPlugin extends AbstractPlugin {
    */
   public static final String CODENARC_DISABLED_RULES_CONVENTION_NAME = 'disabledRules'
 
+  /**
+   * Path director for codenarc reports
+   */
+  static final PathDirector<CodeNarc> CODENARC_REPORT_DIRECTOR = new PathDirector<CodeNarc>() {
+    @Override
+    @SuppressWarnings('CatchException')
+    Path determinePath(CodeNarc object) throws ReportPathDirectorException {
+      try {
+        Paths.get(toSafeFileName((object.name - ~/^codenarc/ /* WORKAROUND: CodeNarcPlugin.getTaskBaseName has protected scope <grv87 2018-06-23> */).uncapitalize()))
+      } catch (Exception e) {
+        throw new ReportPathDirectorException(object, e)
+      }
+    }
+  }
+
   /*
    * WORKAROUND:
    * Groovy bug. Usage of `destination =` instead of setDestination leads to error:
@@ -426,11 +445,11 @@ final class ProjectPlugin extends AbstractPlugin {
     codenarcTasks.configureEach { CodeNarc codenarc ->
       codenarc.with {
         convention.plugins.put CODENARC_DISABLED_RULES_CONVENTION_NAME, new CodeNarcTaskConvention(codenarc)
-        String reportFileName = "codenarc/${ toSafeFileName((name - ~/^codenarc/ /* WORKAROUND: CodeNarcPlugin.getTaskBaseName has protected scope <grv87 2018-06-23> */).uncapitalize()) }"
+        Path reportSubpath = Paths.get('codenarc')
         reports.xml.enabled = true
-        reports.xml.setDestination new File(projectConvention.xmlReportsDir, "${ reportFileName }.xml")
+        reports.xml.setDestination projectConvention.getXmlReportFile(reportSubpath, CODENARC_REPORT_DIRECTOR, codenarc)
         reports.html.enabled = true
-        reports.html.setDestination new File(projectConvention.htmlReportsDir, "${ reportFileName }.html")
+        reports.html.setDestination projectConvention.getHtmlReportFile(reportSubpath, CODENARC_REPORT_DIRECTOR, codenarc)
       }
     }
 
@@ -487,7 +506,7 @@ final class ProjectPlugin extends AbstractPlugin {
   @SuppressWarnings('UnnecessarySetter')
   private void configureDiagnostics() {
     ProjectConvention projectConvention = project.convention.getPlugin(ProjectConvention)
-    project.convention.getPlugin(ProjectReportsPluginConvention).projectReportDirName = projectConvention.reportsDir.toPath().relativize(new File(projectConvention.txtReportsDir, 'project').toPath()).toString()
+    project.convention.getPlugin(ProjectReportsPluginConvention).projectReportDirName = projectConvention.getTxtReportDir(Paths.get('project')).toString()
 
     project.tasks.withType(BuildEnvironmentReportTask).configureEach { BuildEnvironmentReportTask buildEnvironmentReport ->
       buildEnvironmentReport.group = DIAGNOSTICS_TASK_GROUP_NAME
@@ -516,7 +535,7 @@ final class ProjectPlugin extends AbstractPlugin {
     project.tasks.withType(HtmlDependencyReportTask).configureEach { HtmlDependencyReportTask htmlDependencyReport ->
       htmlDependencyReport.with {
         group = DIAGNOSTICS_TASK_GROUP_NAME
-        reports.html.setDestination new File(projectConvention.htmlReportsDir, 'dependencies')
+        reports.html.setDestination projectConvention.getHtmlReportDir(Paths.get('dependencies'))
       }
     }
     project.tasks.withType(TaskReportTask).configureEach { TaskReportTask taskReport ->

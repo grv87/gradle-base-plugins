@@ -27,6 +27,10 @@ import static org.gradle.api.tasks.SourceSet.MAIN_SOURCE_SET_NAME
 import static org.ajoberstar.gradle.git.release.base.BaseReleasePlugin.RELEASE_TASK_NAME
 import static ProjectPlugin.LICENSE_FILE_NAMES
 import static org.jfrog.gradle.plugin.artifactory.task.ArtifactoryTask.ARTIFACTORY_PUBLISH_TASK_NAME
+import org.gradle.api.Namer
+import org.fidata.gradle.utils.TaskNamerException
+import org.fidata.gradle.utils.PathDirector
+import org.fidata.gradle.utils.ReportPathDirectorException
 import org.gradle.api.Task
 import groovy.transform.PackageScope
 import org.gradle.api.tasks.compile.JavaCompile
@@ -143,18 +147,56 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
    *        If null, task with the same name as source set is used
    */
   void addSpockDependency(SourceSet sourceSet, TaskProvider<Test> task = null) {
-    addSpockDependency sourceSet, [task ?: project.tasks.withType(Test).named(sourceSet.name)], { String taskName -> Paths.get(taskName) }
+    addSpockDependency sourceSet, [task ?: project.tasks.withType(Test).named(sourceSet.name)], new PathDirector<TaskProvider<Test>>() {
+      @Override
+      @SuppressWarnings('CatchException')
+      Path determinePath(TaskProvider<Test> object) throws ReportPathDirectorException {
+        try {
+          Paths.get(object.name)
+        } catch (Exception e) {
+          throw new ReportPathDirectorException(object, e)
+        }
+      }
+    }
+  }
+
+  /**
+   * Namer of moveAggegatedReport task for test tasks
+   */
+  static final Namer<TaskProvider<Test>> MOVE_AGGREGATED_REPORT_NAMER = new Namer<TaskProvider<Test>>() {
+    @Override
+    @SuppressWarnings('CatchException')
+    String determineName(TaskProvider<Test> testProvider) throws TaskNamerException {
+      try {
+        "move${ testProvider.name.capitalize() }AggegatedReport"
+      } catch (Exception e) {
+        throw new TaskNamerException('moveAggregatedReport', 'task', testProvider, e)
+      }
+    }
+  }
+
+  /**
+   * Namer of codenarc task for source sets
+   */
+  static final Namer<SourceSet> CODENARC_NAMER = new Namer<SourceSet>() {
+    @Override
+    @SuppressWarnings('CatchException')
+    String determineName(SourceSet sourceSet) throws TaskNamerException {
+      try {
+        "codenarc${ sourceSet.name.capitalize() }"
+      } catch (Exception e) {
+        throw new TaskNamerException('codenarc', 'source set', sourceSet, e)
+      }
+    }
   }
 
   /**
    * Adds Spock to specified source set and tasks
    * @param sourceSet source set
    * @param tasks list of test tasks.
-   * @param reportDirNamer closure to set report directory name from task name
-   *        Nested directories are supported.
-   *        Call <code>org.gradle.internal.FileUtils.toSafeFileName</code> manually on individual directory/file names
+   * @param reportDirector path director for task reports
    */
-  void addSpockDependency(SourceSet sourceSet, Iterable<TaskProvider<Test>> tasks, Closure<Path> reportDirNamer) {
+  void addSpockDependency(SourceSet sourceSet, Iterable<TaskProvider<Test>> tasks, PathDirector<TaskProvider<Test>> reportDirector) {
     addJUnitDependency sourceSet
 
     project.pluginManager.apply GroovyBasePlugin
@@ -195,11 +237,10 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
     ProjectConvention projectConvention = project.convention.getPlugin(ProjectConvention)
     tasks.each { TaskProvider<Test> taskProvider ->
       taskProvider.configure { Test test ->
-        String reportDirName = reportDirNamer.call(test.name).toString()
-        File spockReportsDir = new File(projectConvention.htmlReportsDir, reportDirName)
-        TaskProvider<Task> moveAggregatedReportProvider = project.tasks.register("move${ taskProvider.name.capitalize() }AggegatedReport") { Task moveAggregatedReport ->
+        File spockReportDir = projectConvention.getHtmlReportDir(reportDirector, taskProvider)
+        TaskProvider<Task> moveAggregatedReportProvider = project.tasks.register(MOVE_AGGREGATED_REPORT_NAMER.determineName(taskProvider)) { Task moveAggregatedReport ->
           moveAggregatedReport.with {
-            File aggregatedReportFile = new File(spockReportsDir, ReportDataAggregator.AGGREGATED_DATA_FILE.toString())
+            File aggregatedReportFile = spockReportDir.toPath().resolve(ReportDataAggregator.AGGREGATED_DATA_FILE.toString()).toFile()
             destroyables.register aggregatedReportFile
             /*
              * WORKAROUND:
@@ -211,14 +252,14 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
             doLast {
               project.ant.invokeMethod('move', [
                 file: aggregatedReportFile,
-                todir: new File(projectConvention.jsonReportsDir, reportDirName)
+                todir: projectConvention.jsonReportsDir
               ])
             }
           }
         }
         test.with {
           reports.html.enabled = false
-          systemProperty 'com.athaydes.spockframework.report.outputDir', spockReportsDir.absolutePath
+          systemProperty 'com.athaydes.spockframework.report.outputDir', spockReportDir.absolutePath
           /*
            * WORKAROUND:
            * Spock Reports generates aggregated_report.json in the same directory as HTML files
@@ -239,7 +280,7 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
     }
 
     project.plugins.withType(GroovyBasePlugin).configureEach { GroovyBasePlugin plugin -> // TODO: 4.9
-      project.tasks.withType(CodeNarc).named("codenarc${ sourceSet.name.capitalize() }").configure { CodeNarc codenarc ->
+      project.tasks.withType(CodeNarc).named(CODENARC_NAMER.determineName(sourceSet)).configure { CodeNarc codenarc ->
         codenarc.convention.getPlugin(CodeNarcTaskConvention).disabledRules.addAll 'MethodName', 'FactoryMethodName', 'JUnitPublicProperty', 'JUnitPublicNonTestMethod', /* WORKAROUND: https://github.com/CodeNarc/CodeNarc/issues/308 <grv87 2018-06-26> */ 'Indentation'
       }
     }
@@ -276,7 +317,12 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
   /**
    * Name of functional test reports directory
    */
+  @Deprecated
   public static final String FUNCTIONAL_TEST_REPORTS_DIR_NAME = 'functionalTest'
+  /**
+   * Path of functional test reports directory
+   */
+  public static final Path FUNCTIONAL_TEST_REPORTS_PATH = Paths.get('functionalTest')
 
   /*
    * WORKAROUND:
@@ -302,8 +348,8 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
         shouldRunAfter project.tasks.named(TEST_TASK_NAME)
         testClassesDirs = functionalTestSourceSet.output.classesDirs
         classpath = functionalTestSourceSet.runtimeClasspath
-        reports.junitXml.setDestination new File(projectConvention.xmlReportsDir, FUNCTIONAL_TEST_REPORTS_DIR_NAME)
-        reports.html.setDestination new File(projectConvention.htmlReportsDir, FUNCTIONAL_TEST_REPORTS_DIR_NAME)
+        reports.junitXml.setDestination projectConvention.getXmlReportDir(FUNCTIONAL_TEST_REPORTS_PATH)
+        reports.html.setDestination projectConvention.getHtmlReportDir(FUNCTIONAL_TEST_REPORTS_PATH)
       }
     }
 
@@ -319,6 +365,21 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
     addJUnitDependency project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(TEST_SOURCE_SET_NAME)
 
     configureFunctionalTests()
+  }
+
+  /**
+   * Namer of sign task for maven publications
+   */
+  static final Namer<MavenPublication> SIGN_MAVEN_PUBLICATION_NAMER = new Namer<MavenPublication>() {
+    @Override
+    @SuppressWarnings('CatchException')
+    String determineName(MavenPublication mavenPublication) throws TaskNamerException {
+      try {
+        "sign${ mavenPublication.name.capitalize() }Publication"
+      } catch (Exception e) {
+        throw new TaskNamerException('sign', 'maven publication', mavenPublication, e)
+      }
+    }
   }
 
   private void configureArtifactory() {
@@ -339,7 +400,7 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
 
       artifactoryPublish.dependsOn project.tasks.withType(Sign).matching { Sign sign -> // TODO
         publications.withType(MavenPublication).any { MavenPublication mavenPublication ->
-          sign.name == "sign${ mavenPublication.name.capitalize() }Publication"
+          sign.name == SIGN_MAVEN_PUBLICATION_NAMER.determineName(mavenPublication)
         }
       }
     }
