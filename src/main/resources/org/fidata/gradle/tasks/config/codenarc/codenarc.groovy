@@ -23,6 +23,9 @@ ruleset {
   ruleset('rulesets/braces.xml')
   ruleset('rulesets/concurrency.xml')
   ruleset('rulesets/convention.xml') {
+    PublicMethodsBeforeNonPublicMethods(enabled: false)
+    StaticFieldsBeforeInstanceFields(enabled: false)
+    StaticMethodsBeforeInstanceMethods(enabled: false)
     TrailingComma(enabled: false)
   }
   ruleset('rulesets/design.xml') {

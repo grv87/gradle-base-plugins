@@ -436,6 +436,12 @@ final class ProjectPlugin extends AbstractProjectPlugin {
       extension.reportFormat = 'console'
     }
 
+    project.dependencies.add(/* WORKAROUND: CodeNarcPlugin.getConfigurationName has protected scope <grv87 2018-08-23> */ 'codenarc', [
+      group: 'org.codenarc',
+      name: 'CodeNarc',
+      version: '[1, 2['
+    ])
+
     checkProvider.configure { Task check ->
       check.taskDependencies.getDependencies(check).removeAll codenarcTasks
     }
@@ -479,13 +485,6 @@ final class ProjectPlugin extends AbstractProjectPlugin {
         source project.fileTree(dir: project.file('gradle'), includes: ['**/*.groovy'])
         source project.fileTree(dir: project.file('config'), includes: ['**/*.groovy'])
         source 'Jenkinsfile'
-        /*
-         * WORKAROUND:
-         * Indentation rule doesn't work correctly.
-         * https://github.com/CodeNarc/CodeNarc/issues/310
-         * <grv87 2018-06-26>
-         */
-        codenarc.convention.getPlugin(CodeNarcTaskConvention).disabledRules.add 'Indentation'
       }
     }
   }

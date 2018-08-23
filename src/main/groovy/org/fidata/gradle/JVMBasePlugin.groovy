@@ -281,7 +281,7 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
 
     project.plugins.withType(GroovyBasePlugin).configureEach { GroovyBasePlugin plugin -> // TODO: 4.9
       project.tasks.withType(CodeNarc).named(CODENARC_NAMER.determineName(sourceSet)).configure { CodeNarc codenarc ->
-        codenarc.convention.getPlugin(CodeNarcTaskConvention).disabledRules.addAll 'MethodName', 'FactoryMethodName', 'JUnitPublicProperty', 'JUnitPublicNonTestMethod', /* WORKAROUND: https://github.com/CodeNarc/CodeNarc/issues/308 <grv87 2018-06-26> */ 'Indentation'
+        codenarc.convention.getPlugin(CodeNarcTaskConvention).disabledRules.addAll 'MethodName', 'FactoryMethodName', 'JUnitPublicProperty', 'JUnitPublicNonTestMethod'
       }
     }
   }

@@ -70,11 +70,4 @@ tasks.register('codenarcMainResources', CodeNarc) {
   for (File srcDir in sourceSets.main.resources.srcDirs) {
     source fileTree(dir: srcDir, includes: ['**/*.groovy'])
   }
-  /*
-   * WORKAROUND:
-   * Indentation rule doesn't work correctly.
-   * https://github.com/CodeNarc/CodeNarc/issues/310
-   * <grv87 2018-06-26>
-   */
-  disabledRules.add 'Indentation'
 }
