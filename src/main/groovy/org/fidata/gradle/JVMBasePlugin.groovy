@@ -195,7 +195,7 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
     ProjectConvention projectConvention = project.convention.getPlugin(ProjectConvention)
     tasks.each { TaskProvider<Test> taskProvider ->
       taskProvider.configure { Test test ->
-        GString reportDirName = "spock/${ reportDirNamer.call(test.name) }"
+        String reportDirName = reportDirNamer.call(test.name).toString()
         File spockReportsDir = new File(projectConvention.htmlReportsDir, reportDirName)
         TaskProvider<Task> moveAggregatedReportProvider = project.tasks.register("move${ taskProvider.name.capitalize() }AggegatedReport") { Task moveAggregatedReport ->
           moveAggregatedReport.with {
@@ -311,7 +311,7 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
   }
 
   private void configureTesting() {
-    project.convention.getPlugin(JavaPluginConvention).testReportDirName = project.extensions.getByType(ReportingExtension).baseDir.toPath().relativize(new File(project.convention.getPlugin(ProjectConvention).htmlReportsDir, 'tests').toPath()).toString() // TODO: ???
+    project.convention.getPlugin(JavaPluginConvention).testReportDirName = project.extensions.getByType(ReportingExtension).baseDir.toPath().relativize(project.convention.getPlugin(ProjectConvention).htmlReportsDir.toPath()).toString()
     project.tasks.withType(Test).configureEach { Test test ->
       test.testLogging.exceptionFormat = TestExceptionFormat.FULL
     }
