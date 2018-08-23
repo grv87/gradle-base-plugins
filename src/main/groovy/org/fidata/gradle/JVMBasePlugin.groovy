@@ -118,7 +118,7 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
         }
         break
       default:
-        project.logger.warn('org.fidata.base.jvm: unexpected property change source: {}', e.source.toString())
+        project.logger.warn('org.fidata.base.jvm: unexpected property change source: {}', e.source)
     }
   }
 

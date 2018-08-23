@@ -86,7 +86,7 @@ final class GradlePluginPlugin extends AbstractProjectPlugin implements Property
         }
         break
       default:
-        project.logger.warn('org.fidata.plugin: unexpected property change source: {}', e.source.toString())
+        project.logger.warn('org.fidata.plugin: unexpected property change source: {}', e.source)
     }
   }
 
