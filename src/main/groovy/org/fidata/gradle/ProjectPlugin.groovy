@@ -336,7 +336,7 @@ final class ProjectPlugin extends AbstractPlugin {
        * See https://bugs.eclipse.org/bugs/show_bug.cgi?id=382212
        * <grv87 2018-06-22>
        */
-      TaskProvider<ResignGitCommit> resignGitPublishCommitProvider = project.tasks.register("resign${ gitPublishCommitProvider.name.capitalize() }", ResignGitCommit) { ResignGitCommit resignGitPublishCommit ->
+      ResignGitCommit.registerTask(project, gitPublishCommitProvider) { ResignGitCommit resignGitPublishCommit ->
         resignGitPublishCommit.with {
           enabled = repoClean
           description = 'Amend git publish commit adding sign to it'
@@ -357,7 +357,6 @@ final class ProjectPlugin extends AbstractPlugin {
       gitPublishCommit.with {
         enabled = repoClean
         dependsOn noJekyllProvider
-        finalizedBy resignGitPublishCommitProvider
       }
     }
 
