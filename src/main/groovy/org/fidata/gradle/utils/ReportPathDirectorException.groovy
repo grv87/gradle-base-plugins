@@ -27,7 +27,7 @@ import org.gradle.api.tasks.TaskProvider
  */
 class ReportPathDirectorException extends RuntimeException {
   private ReportPathDirectorException(Object task, Throwable throwable) {
-    super(sprintf('Unable to determine path for reports for task %s', [task]), throwable)
+    super(sprintf('Unable to determine path for reports for task %s', task), throwable)
   }
 
   /**

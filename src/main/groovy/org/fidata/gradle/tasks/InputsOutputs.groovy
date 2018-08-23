@@ -53,12 +53,12 @@ class InputsOutputs extends DefaultTask {
       for (Task t in project.tasks) {
         if (t.inputs.hasInputs) {
           for (File f in t.inputs.sourceFiles) {
-            writer.println sprintf('%s input:\t%s', [t.path, f.path])
+            writer.printf('%s input:\t%s\n', t.path, f.path)
           }
         }
         if (t.outputs.hasOutput) {
           for (File f in t.outputs.files) {
-            writer.println sprintf('%s output:\t%s', [t.path, f.path])
+            writer.printf('%s output:\t%s\n', t.path, f.path)
           }
         }
       }
