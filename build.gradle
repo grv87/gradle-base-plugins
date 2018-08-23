@@ -57,6 +57,19 @@ dependencies {
   testImplementation group: 'pl.pragmatists', name: 'JUnitParams', version: 'latest.release'
 }
 
+sourceSets {
+  testFixtures {
+    groovy.srcDirs = ['src/testFixtures/groovy']
+  }
+}
+
+dependencies {
+  testFixturesImplementation localGroovy()
+  testFixturesImplementation gradleApi()
+  functionalTestImplementation sourceSets.testFixtures.output
+  compatTestImplementation sourceSets.testFixtures.output
+}
+
 stutter {
   java(8) {
     compatibleRange '4.9'

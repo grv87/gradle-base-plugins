@@ -19,6 +19,7 @@
  */
 package org.fidata.gradle
 
+import static org.fidata.testfixtures.TestFixtures.initEmptyGitRepository
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Rule
@@ -53,16 +54,7 @@ class GroovyProjectPluginSpecification extends Specification {
 
   // run before every feature method
   void setup() {
-    /*
-     * WORKAROUND:
-     * https://github.com/tschulte/gradle-semantic-release-plugin/issues/24
-     * https://github.com/tschulte/gradle-semantic-release-plugin/issues/25
-     * <grv87 2018-06-24>
-     */
-    [
-      'git init',
-      'git commit --message "Initial commit" --allow-empty',
-    ].each { it.execute(null, testProjectDir.root).waitFor() }
+    initEmptyGitRepository(testProjectDir.root)
     testProjectDir.newFile('settings.gradle') << '''\
       enableFeaturePreview('STABLE_PUBLISHING')
     '''.stripIndent()

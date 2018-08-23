@@ -19,7 +19,8 @@
  */
 package org.fidata.gradle
 
-import static org.fidata.gradle.utils.GradleRunnerUtils.skippedTaskPathsGradleBugWorkaround
+import static org.fidata.testfixtures.gradle.GradleRunnerUtils.skippedTaskPathsGradleBugWorkaround
+import static org.fidata.testfixtures.TestFixtures.initEmptyGitRepository
 import spock.lang.Specification
 import spock.lang.Unroll
 import org.gradle.testkit.runner.GradleRunner
@@ -56,16 +57,7 @@ class GradlePluginPluginSpecification extends Specification {
 
   // run before every feature method
   void setup() {
-    /*
-     * WORKAROUND:
-     * https://github.com/tschulte/gradle-semantic-release-plugin/issues/24
-     * https://github.com/tschulte/gradle-semantic-release-plugin/issues/25
-     * <grv87 2018-06-24>
-     */
-    [
-      'git init',
-      'git commit --message "Initial commit" --allow-empty',
-    ].each { it.execute(null, testProjectDir).waitFor() }
+    initEmptyGitRepository(testProjectDir)
 
     buildFile << '''\
       plugins {
