@@ -66,10 +66,6 @@ stutter {
   }
 }
 
-tasks.named('codenarcMain').configure { disabledRules.add 'JavaIoPackageAccess' }
-tasks.named('codenarcCompatTest').configure { disabledRules.add 'JavaIoPackageAccess' }
-tasks.named('codenarcBuildSrc').configure { disabledRules.add 'JavaIoPackageAccess' }
-
 tasks.register('codenarcMainResources', CodeNarc) {
   for (File srcDir in sourceSets.main.resources.srcDirs) {
     source fileTree(dir: srcDir, includes: ['**/*.groovy'])

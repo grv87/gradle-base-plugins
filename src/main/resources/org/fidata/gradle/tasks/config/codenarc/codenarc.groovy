@@ -48,7 +48,9 @@ ruleset {
   ruleset('rulesets/junit.xml')
   ruleset('rulesets/logging.xml')
   ruleset('rulesets/naming.xml')
-  ruleset('rulesets/security.xml')
+  ruleset('rulesets/security.xml') {
+    JavaIoPackageAccess(enabled: false)
+  }
   ruleset('rulesets/serialization.xml')
   ruleset('rulesets/unnecessary.xml')
   ruleset('rulesets/unused.xml')
