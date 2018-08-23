@@ -38,7 +38,6 @@ ruleset {
     Indentation(spacesPerIndentLevel: 2)
     LineLength(enabled: false)
     SpaceAroundMapEntryColon(enabled: false)
-    SpaceAfterClosingBrace(enabled: false)
   }
   ruleset('rulesets/generic.xml')
   ruleset('rulesets/grails.xml')
