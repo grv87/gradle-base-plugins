@@ -34,9 +34,9 @@ final class TestFixtures {
    */
   static void initEmptyGitRepository(File dir) {
     [
-      'git init',
-      'git commit --message "Initial commit" --allow-empty',
-    ].each { String it -> it.execute((List)null, dir).waitFor() }
+      ['git', 'init'],
+      ['git', 'commit', '--message', 'Initial commit', '--allow-empty'],
+    ].each { List<String> it -> it.execute((List)null, dir).waitFor() }
   }
 
   // Suppress default constructor for noninstantiability
