@@ -22,11 +22,17 @@ pluginManagement {
     maven {
       url 'https://fidata.jfrog.io/fidata/plugins-release/'
       credentials {
-        new File(file('../..'), Project.GRADLE_PROPERTIES).withReader { Reader reader ->
-          Properties properties = new Properties()
-          properties.load(reader)
-          username = properties.getProperty('artifactoryUser')
-          password = properties.getProperty('artifactoryPassword')
+        File gradlePropertiesFile = new File(file('../..'), Project.GRADLE_PROPERTIES)
+        if (gradlePropertiesFile.exists()) {
+          gradlePropertiesFile.withReader { Reader reader ->
+            Properties properties = new Properties()
+            properties.load(reader)
+            username = properties.getProperty('artifactoryUser')
+            password = properties.getProperty('artifactoryPassword')
+          }
+        } else {
+          username = settings.ext.artifactoryUser
+          password = settings.ext.artifactoryPassword
         }
       }
     }
