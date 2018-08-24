@@ -36,9 +36,6 @@ node {
     string(credentialsId: 'Github', variable: 'ORG_GRADLE_PROJECT_ghToken'),
     usernamePassword(credentialsId: 'Artifactory', usernameVariable: 'ORG_GRADLE_PROJECT_artifactoryUser', passwordVariable: 'ORG_GRADLE_PROJECT_artifactoryPassword'),
   ]) {
-    env.ORG_GRADLE_PROJECT_gpgKeyId = 'dummyDummy'
-    env.ORG_GRADLE_PROJECT_gpgKeyPassword = 'dummyDummy'
-    env.ORG_GRADLE_PROJECT_gpgSecretKeyRingFile = 'dummyDummy'
     stage ('Clean') {
       rtGradle.run tasks: 'clean', switches: '--full-stacktrace'
     }

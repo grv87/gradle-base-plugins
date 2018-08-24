@@ -257,16 +257,22 @@ final class ProjectPlugin extends AbstractProjectPlugin {
     }
   }
 
+  @PackageScope
+  boolean hasGpg
+
   private void configureArtifactPublishing() {
-    /*
-     * WORKAROUND:
-     * https://github.com/gradle/gradle/issues/1918
-     * Signing plugin doesn't support GPG 2 key IDs
-     * <grv87 2018-07-01>
-     */
-    project.extensions.extraProperties['signing.keyId'] = project.extensions.extraProperties['gpgKeyId'].toString()[-8..-1]
-    project.extensions.extraProperties['signing.password'] = project.extensions.extraProperties['gpgKeyPassword'].toString()
-    project.extensions.extraProperties['signing.secretKeyRingFile'] = project.extensions.extraProperties['gpgSecretKeyRingFile'].toString()
+    hasGpgKey = project.extensions.extraProperties.has('gpgKeyId')
+    if (hasGpg) {
+      /*
+       * WORKAROUND:
+       * https://github.com/gradle/gradle/issues/1918
+       * Signing plugin doesn't support GPG 2 key IDs
+       * <grv87 2018-07-01>
+       */
+      project.extensions.extraProperties['signing.keyId'] = project.extensions.extraProperties['gpgKeyId'].toString()[-8..-1]
+      project.extensions.extraProperties['signing.password'] = project.extensions.extraProperties['gpgKeyPassword'].toString()
+      project.extensions.extraProperties['signing.secretKeyRingFile'] = project.extensions.extraProperties['gpgSecretKeyRingFile'].toString()
+    }
   }
 
   private void configureGit() {
@@ -336,23 +342,25 @@ final class ProjectPlugin extends AbstractProjectPlugin {
        * See https://bugs.eclipse.org/bugs/show_bug.cgi?id=382212
        * <grv87 2018-06-22>
        */
-      ResignGitCommit.registerTask(project, gitPublishCommitProvider) { ResignGitCommit resignGitPublishCommit ->
-        resignGitPublishCommit.with {
-          enabled = repoClean
-          description = 'Amend git publish commit adding sign to it'
-          workingDir.set project.extensions.getByType(GitPublishExtension).repoDir
-          onlyIf { gitPublishCommitProvider.get().didWork }
+      if (hasGpg) {
+        ResignGitCommit.registerTask(project, gitPublishCommitProvider) { ResignGitCommit resignGitPublishCommit ->
+          resignGitPublishCommit.with {
+            enabled = repoClean
+            description = 'Amend git publish commit adding sign to it'
+            workingDir.set project.extensions.getByType(GitPublishExtension).repoDir
+            onlyIf { gitPublishCommitProvider.get().didWork }
+          }
+          /*
+           * WORKAROUND:
+           * Without that we get error:
+           * [Static type checking] - Cannot call <T extends org.gradle.api.Task>
+           * org.gradle.api.tasks.TaskContainer#register(java.lang.String, java.lang.Class <T>, org.gradle.api.Action
+           * <java.lang.Object extends java.lang.Object>) with arguments [groovy.lang.GString, java.lang.Class
+           * <org.fidata.gradle.tasks.ResignGitCommit>, groovy.lang.Closure <java.lang.Void>]
+           * <grv87 2018-07-31>
+           */
+          null
         }
-        /*
-         * WORKAROUND:
-         * Without that we get error:
-         * [Static type checking] - Cannot call <T extends org.gradle.api.Task>
-         * org.gradle.api.tasks.TaskContainer#register(java.lang.String, java.lang.Class <T>, org.gradle.api.Action
-         * <java.lang.Object extends java.lang.Object>) with arguments [groovy.lang.GString, java.lang.Class
-         * <org.fidata.gradle.tasks.ResignGitCommit>, groovy.lang.Closure <java.lang.Void>]
-         * <grv87 2018-07-31>
-         */
-        null
       }
       gitPublishCommit.with {
         enabled = repoClean

@@ -401,9 +401,11 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
         artifactoryPublish.mavenPublications.remove mavenPublication
       }
 
-      artifactoryPublish.dependsOn project.tasks.withType(Sign).matching { Sign sign -> // TODO
-        publications.withType(MavenPublication).any { MavenPublication mavenPublication ->
-          sign.name == SIGN_MAVEN_PUBLICATION_NAMER.determineName(mavenPublication)
+      if (project.plugins.withType(ProjectPlugin).hasGpg) {
+        artifactoryPublish.dependsOn project.tasks.withType(Sign).matching { Sign sign -> // TODO
+          publications.withType(MavenPublication).any { MavenPublication mavenPublication ->
+            sign.name == SIGN_MAVEN_PUBLICATION_NAMER.determineName(mavenPublication)
+          }
         }
       }
     }
@@ -428,7 +430,9 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
         }
       }
     }
-    project.extensions.getByType(SigningExtension).sign project.extensions.getByType(PublishingExtension).publications
+    if (project.plugins.withType(ProjectPlugin).hasGpg) {
+      project.extensions.getByType(SigningExtension).sign project.extensions.getByType(PublishingExtension).publications
+    }
 
     configureArtifactory()
   }
@@ -447,7 +451,7 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
         pkg.userOrg = 'fidata'
         pkg.version.name = ''
         pkg.version.vcsTag = '' // TODO
-        pkg.version.gpg.sign = true // TODO ?
+        pkg.version.gpg.sign = project.plugins.withType(ProjectPlugin).hasGpg // TODO ?
         pkg.desc = project.version.toString() == '1.0.0' ? project.description : projectConvention.changeLogTxt.get().toString()
         pkg.labels = projectConvention.tags.get().toArray(new String[0])
         pkg.setLicenses projectConvention.license
