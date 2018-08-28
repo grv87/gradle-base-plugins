@@ -58,6 +58,7 @@ class ResignGitCommit extends DefaultTask {
         execSpec.workingDir workingDir
       }
       execSpec.commandLine 'git', 'commit', '--amend', '--no-edit', "--gpg-sign=${ project.extensions.extraProperties['gpgKeyId'] }"
+      execSpec.standardInput = new ByteArrayInputStream(project.extensions.extraProperties['gpgKeyPassword'].toString().bytes)
     }
   }
 
