@@ -339,7 +339,8 @@ used in the project.
 
 # Properties
 
-Should be provided via `gradle.properties` file.
+Should be provided in [standard Gradle ways
+](https://docs.gradle.org/current/userguide/build_environment.html#sec:project_properties).
 
 <table>
 <thead><tr><th>Property</th><th>Requiring Plugin</th><th>Usage</th><th>Notes</th></tr></thead>
