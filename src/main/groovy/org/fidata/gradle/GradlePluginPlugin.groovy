@@ -42,7 +42,6 @@ import org.gradle.api.Project
 import com.gradle.publish.PluginBundleExtension
 import org.gradle.api.tasks.testing.Test
 import org.gradle.plugin.devel.tasks.ValidateTaskProperties
-import java.util.regex.Matcher
 import java.beans.PropertyChangeListener
 import java.beans.PropertyChangeEvent
 import org.gradle.api.plugins.JavaPluginConvention
@@ -130,9 +129,7 @@ final class GradlePluginPlugin extends AbstractProjectPlugin implements Property
     @SuppressWarnings('CatchException')
     Path determinePath(TaskProvider<Test> object) throws ReportPathDirectorException {
       try {
-        Matcher compatTestMatcher = (object.name =~ COMPAT_TEST_TASK_NAME_PATTERN)
-        compatTestMatcher.find()
-        Paths.get('compatTest', toSafeFileName(compatTestMatcher.group(1).uncapitalize()))
+        Paths.get('compatTest', toSafeFileName(((List<String>)(object.name =~ COMPAT_TEST_TASK_NAME_PATTERN)[0])[1].uncapitalize()))
       } catch (Exception e) {
         throw new ReportPathDirectorException(object, e)
       }
@@ -175,7 +172,7 @@ final class GradlePluginPlugin extends AbstractProjectPlugin implements Property
       }
     }
 
-    project.tasks.matching { Task task -> task.name ==~ ~/^compatTest/ || task.name == 'gradleTest' }.configureEach { Task task ->
+    project.tasks.matching { Task task -> task.name.startsWith('compatTest') || task.name == 'gradleTest' }.configureEach { Task task ->
       task.shouldRunAfter project.tasks.named(FUNCTIONAL_TEST_TASK_NAME)
     }
   }
