@@ -32,7 +32,20 @@ node {
   GradleBuild rtGradle
 
   stage ('Checkout') {
-    checkout scm
+    List<Map<String, ? extends Serializable>> extensions = [
+      [$class: 'WipeWorkspace'],
+      [$class: 'CloneOption', noTags: false, shallow: false],
+    ]
+    if (!env.CHANGE_ID) {
+      extensions.add([$class: 'LocalBranch', localBranch: env.BRANCH_NAME])
+    }
+    checkout([
+      $class: 'GitSCM',
+      branches: scm.branches,
+      doGenerateSubmoduleConfigurations: scm.doGenerateSubmoduleConfigurations,
+      extensions: extensions,
+      userRemoteConfigs: scm.userRemoteConfigs,
+    ])
     gitAuthor()
   }
 
