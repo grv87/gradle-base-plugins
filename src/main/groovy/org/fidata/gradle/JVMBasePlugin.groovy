@@ -250,6 +250,7 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
         test.with {
           reports.html.enabled = false
           systemProperty 'com.athaydes.spockframework.report.outputDir', spockReportDir.absolutePath
+          outputs.dir spockReportDir
           /*
            * WORKAROUND:
            * Spock Reports generates aggregated_report.json in the same directory as HTML files
