@@ -329,11 +329,11 @@ final class ProjectPlugin extends AbstractProjectPlugin {
         preserve.exclude { FileTreeElement fileTreeElement ->
           Pattern snapshotSuffix = ~/-SNAPSHOT$/
           Matcher m = snapshotSuffix.matcher(fileTreeElement.relativePath.segments[0])
-          if (!m.find()) {
+          if (!m) {
             return false
           }
           String dirVersion = m.replaceFirst('')
-          String projectVersion = project.version.toString().replaceFirst(snapshotSuffix, '')
+          String projectVersion = project.version.toString() - snapshotSuffix
           try {
             return Version.valueOf(dirVersion).preReleaseVersion == Version.valueOf(projectVersion).preReleaseVersion
           } catch (ignored) {
