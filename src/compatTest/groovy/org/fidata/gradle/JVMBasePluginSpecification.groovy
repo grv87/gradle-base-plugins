@@ -110,7 +110,7 @@ class JVMBasePluginSpecification extends Specification {
       .build()
 
     then:
-    ClassLoader cl = new URLClassLoader(new File(testProjectDir, 'build/classes/java/main').toURL())
+    ClassLoader cl = new URLClassLoader(new File(testProjectDir, 'build/classes/java/main').toURI().toURL())
     Class c = cl.loadClass('EncodingTest')
     String result = c.getMethod('utf8String').invoke(null)
     result.length() == 2

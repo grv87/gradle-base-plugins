@@ -29,7 +29,7 @@ import org.gradle.api.internal.tasks.TaskExecutionOutcome
 final class GradleRunnerUtils {
   /**
    * WORKAROUND:
-   * No tasks are returned in {@link BuildResult#taskPaths} dry-run mode.
+   * No tasks are returned in {@link org.gradle.testkit.runner.BuildResult#taskPaths} dry-run mode.
    * https://github.com/gradle/gradle/issues/2732
    * When this issue is fixed, <code>.taskPaths(TaskExecutionOutcome.SKIPPED)</code> should be used directly
    * @param output Gradle dry-run output

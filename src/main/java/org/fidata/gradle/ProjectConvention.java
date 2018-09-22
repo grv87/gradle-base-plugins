@@ -41,8 +41,6 @@ import groovy.lang.Writable;
  * Provides additional properties to the project
  */
 public class ProjectConvention extends AbstractExtension {
-  private final Project project;
-
   /**
    * @return list of tags for the project
    */
@@ -82,7 +80,7 @@ public class ProjectConvention extends AbstractExtension {
   public final void setPublicReleases(final boolean newValue) {
     boolean oldValue = publicReleases;
     publicReleases = newValue;
-    getPropertyChangeSupport().firePropertyChange("publicReleases", new Boolean(oldValue), new Boolean(newValue));
+    getPropertyChangeSupport().firePropertyChange("publicReleases", oldValue, newValue);
   }
 
   /**
@@ -153,8 +151,6 @@ public class ProjectConvention extends AbstractExtension {
   public ProjectConvention(final Project project) {
     super();
 
-    this.project = project;
-
     tags = project.getObjects().listProperty(String.class);
 
     /*
@@ -165,14 +161,14 @@ public class ProjectConvention extends AbstractExtension {
      */
     isRelease = project.provider(new Callable<Boolean>() {
       @Override
-      public Boolean call() throws Exception {
+      public Boolean call() {
         return !project.getVersion().toString().endsWith("-SNAPSHOT");
       }
     });
 
     changeLog = project.provider(new Callable<Writable>() {
       @Override
-      public Writable call() throws Exception {
+      public Writable call() {
         SemanticReleaseChangeLogService changeLogService = project.getExtensions().getByType(SemanticReleasePluginExtension.class).getChangeLog();
         Object version = project.getVersion();
         ReleaseVersion inferredVersion = ((ReleasePluginExtension.DelayedVersion)version).getInferredVersion();
@@ -182,7 +178,7 @@ public class ProjectConvention extends AbstractExtension {
 
     changeLogTxt = project.provider(new Callable<Writable>() {
       @Override
-      public Writable call() throws Exception {
+      public Writable call() {
         SemanticReleaseChangeLogService changeLogService = project.getExtensions().getByType(SemanticReleasePluginExtension.class).getChangeLog();
         Object version = project.getVersion();
         ReleaseVersion inferredVersion = ((ReleasePluginExtension.DelayedVersion)version).getInferredVersion();
@@ -192,7 +188,7 @@ public class ProjectConvention extends AbstractExtension {
 
     vcsUrl = project.provider(new Callable<String>() {
       @Override
-      public String call() throws Exception {
+      public String call() {
         return "https://github.com/FIDATA/" + project.getName();
       }
     });
@@ -260,7 +256,7 @@ public class ProjectConvention extends AbstractExtension {
    * @param pathDirector Path director. Path provided by {@code pathDirector}
    *                     is resolved relatively to {@code subpath}
    * @param object The object to determine path for. It is passed to {@code pathDirector}
-   * @param <T> Type of {@object}
+   * @param <T> Type of object
    * @return Directory resolved to the root of standard directory
    * @throws RuntimeException If {@code pathDirector} could not determine path
    */
@@ -276,7 +272,7 @@ public class ProjectConvention extends AbstractExtension {
    * @param pathDirector Path director. Path provided by {@code pathDirector}
    *                     is resolved relatively to {@code subpath}
    * @param object The object to determine path for. It is passed to {@code pathDirector}
-   * @param <T> Type of {@object}
+   * @param <T> Type of object
    * @return Directory resolved to the root of standard directory
    * @throws RuntimeException If {@code pathDirector} could not determine path
    */
@@ -292,7 +288,7 @@ public class ProjectConvention extends AbstractExtension {
    * @param pathDirector Path director. Path provided by {@code pathDirector}
    *                     is resolved relatively to {@code subpath}
    * @param object The object to determine path for. It is passed to {@code pathDirector}
-   * @param <T> Type of {@object}
+   * @param <T> Type of object
    * @return Directory resolved to the root of standard directory
    * @throws RuntimeException If {@code pathDirector} could not determine path
    */
@@ -308,7 +304,7 @@ public class ProjectConvention extends AbstractExtension {
    * @param pathDirector Path director. Path provided by {@code pathDirector}
    *                     is resolved relatively to {@code subpath}
    * @param object The object to determine path for. It is passed to {@code pathDirector}
-   * @param <T> Type of {@object}
+   * @param <T> Type of object
    * @return Directory resolved to the root of standard directory
    * @throws RuntimeException If {@code pathDirector} could not determine path
    */
@@ -323,7 +319,7 @@ public class ProjectConvention extends AbstractExtension {
    * @param pathDirector Path director. Path provided by {@code pathDirector}
    *                     is resolved relatively to the root of standard directory
    * @param object The object to determine path for. It is passed to {@code pathDirector}
-   * @param <T> Type of {@object}
+   * @param <T> Type of object
    * @return Directory resolved to the root of standard directory
    * @throws RuntimeException If {@code pathDirector} could not determine path
    */
@@ -338,7 +334,7 @@ public class ProjectConvention extends AbstractExtension {
    * @param pathDirector Path director. Path provided by {@code pathDirector}
    *                     is resolved relatively to the root of standard directory
    * @param object The object to determine path for. It is passed to {@code pathDirector}
-   * @param <T> Type of {@object}
+   * @param <T> Type of object
    * @return Directory resolved to the root of standard directory
    * @throws RuntimeException If {@code pathDirector} could not determine path
    */
@@ -353,7 +349,7 @@ public class ProjectConvention extends AbstractExtension {
    * @param pathDirector Path director. Path provided by {@code pathDirector}
    *                     is resolved relatively to the root of standard directory
    * @param object The object to determine path for. It is passed to {@code pathDirector}
-   * @param <T> Type of {@object}
+   * @param <T> Type of object
    * @return Directory resolved to the root of standard directory
    * @throws RuntimeException If {@code pathDirector} could not determine path
    */
@@ -368,7 +364,7 @@ public class ProjectConvention extends AbstractExtension {
    * @param pathDirector Path director. Path provided by {@code pathDirector}
    *                     is resolved relatively to the root of standard directory
    * @param object The object to determine path for. It is passed to {@code pathDirector}
-   * @param <T> Type of {@object}
+   * @param <T> Type of object
    * @return Directory resolved to the root of standard directory
    * @throws RuntimeException If {@code pathDirector} could not determine path
    */
@@ -386,7 +382,7 @@ public class ProjectConvention extends AbstractExtension {
    *                     Should return filename without extension.
    *                     Extension is added automatically
    * @param object The object to determine path for. It is passed to {@code pathDirector}
-   * @param <T> Type of {@object}
+   * @param <T> Type of object
    * @return File resolved to the root of standard directory
    * @throws RuntimeException If {@code pathDirector} could not determine path
    */
@@ -404,7 +400,7 @@ public class ProjectConvention extends AbstractExtension {
    *                     Should return filename without extension.
    *                     Extension is added automatically
    * @param object The object to determine path for. It is passed to {@code pathDirector}
-   * @param <T> Type of {@object}
+   * @param <T> Type of object
    * @return File resolved to the root of standard directory
    * @throws RuntimeException If {@code pathDirector} could not determine path
    */
@@ -422,7 +418,7 @@ public class ProjectConvention extends AbstractExtension {
    *                     Should return filename without extension.
    *                     Extension is added automatically
    * @param object The object to determine path for. It is passed to {@code pathDirector}
-   * @param <T> Type of {@object}
+   * @param <T> Type of object
    * @return File resolved to the root of standard directory
    * @throws RuntimeException If {@code pathDirector} could not determine path
    */
@@ -440,7 +436,7 @@ public class ProjectConvention extends AbstractExtension {
    *                     Should return filename without extension.
    *                     Extension is added automatically
    * @param object The object to determine path for. It is passed to {@code pathDirector}
-   * @param <T> Type of {@object}
+   * @param <T> Type of object
    * @return File resolved to the root of standard directory
    * @throws RuntimeException If {@code pathDirector} could not determine path
    */
@@ -457,7 +453,7 @@ public class ProjectConvention extends AbstractExtension {
    *                     Should return filename without extension.
    *                     Extension is added automatically
    * @param object The object to determine path for. It is passed to {@code pathDirector}
-   * @param <T> Type of {@object}
+   * @param <T> Type of object
    * @return File resolved to the root of standard directory
    * @throws RuntimeException If {@code pathDirector} could not determine path
    */
@@ -474,7 +470,7 @@ public class ProjectConvention extends AbstractExtension {
    *                     Should return filename without extension.
    *                     Extension is added automatically
    * @param object The object to determine path for. It is passed to {@code pathDirector}
-   * @param <T> Type of {@object}
+   * @param <T> Type of object
    * @return File resolved to the root of standard directory
    * @throws RuntimeException If {@code pathDirector} could not determine path
    */
@@ -491,7 +487,7 @@ public class ProjectConvention extends AbstractExtension {
    *                     Should return filename without extension.
    *                     Extension is added automatically
    * @param object The object to determine path for. It is passed to {@code pathDirector}
-   * @param <T> Type of {@object}
+   * @param <T> Type of object
    * @return File resolved to the root of standard directory
    * @throws RuntimeException If {@code pathDirector} could not determine path
    */
@@ -508,7 +504,7 @@ public class ProjectConvention extends AbstractExtension {
    *                     Should return filename without extension.
    *                     Extension is added automatically
    * @param object The object to determine path for. It is passed to {@code pathDirector}
-   * @param <T> Type of {@object}
+   * @param <T> Type of object
    * @return File resolved to the root of standard directory
    * @throws RuntimeException If {@code pathDirector} could not determine path
    */

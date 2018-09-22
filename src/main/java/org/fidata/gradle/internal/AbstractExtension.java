@@ -32,7 +32,7 @@ public abstract class AbstractExtension {
    * @return list of property change listeners
    */
   @Getter(value = AccessLevel.PROTECTED, lazy = true)
-  private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);;
+  private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
   /**
    * Adds a property change listener.
