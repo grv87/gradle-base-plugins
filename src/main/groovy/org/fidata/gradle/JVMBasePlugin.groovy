@@ -219,16 +219,6 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
       ]) { ModuleDependency dependency ->
         dependency.transitive = false
       }
-      add(sourceSet.implementationConfigurationName, [
-        group  : 'org.slf4j',
-        name   : 'slf4j-api',
-        version: 'latest.release'
-      ])
-      add(sourceSet.implementationConfigurationName, [
-        group  : 'org.slf4j',
-        name   : 'slf4j-simple',
-        version: 'latest.release'
-      ])
     }
     project.plugins.withType(GroovyBasePlugin).configureEach { GroovyBasePlugin plugin ->
       plugin.addGroovyDependency project.configurations.getByName(sourceSet.implementationConfigurationName)

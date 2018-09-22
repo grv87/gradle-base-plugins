@@ -56,6 +56,7 @@ dependencies {
      * <grv87 2018-06-24>
      */
     exclude(group: 'com.googlecode.json-simple', module: 'json-simple')
+    exclude(group: 'org.apache.logging.log4j', module: 'log4j-slf4j-impl')
   }
   implementation(group: 'com.github.cliftonlabs', name: 'json-simple', version: '[2, 3)')
 
@@ -97,3 +98,4 @@ dependencies {
     exclude group: 'com.google.collections', module: 'google-collections'
   }
 }
+configurations.implementation.exclude(group: 'org.slf4j', module: 'slf4j-api')

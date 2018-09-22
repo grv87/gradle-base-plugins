@@ -92,7 +92,6 @@ org.apache.jena:jena-shaded-guava:3.1.1
 org.apache.jena:jena-tdb:3.1.1
 org.apache.logging.log4j:log4j-api:2.10.0
 org.apache.logging.log4j:log4j-core:2.10.0
-org.apache.logging.log4j:log4j-slf4j-impl:2.10.0
 org.apache.maven.wagon:wagon-file:1.0-beta-6
 org.apache.maven.wagon:wagon-http-lightweight:1.0-beta-6
 org.apache.maven.wagon:wagon-http-shared:1.0-beta-6
@@ -150,7 +149,6 @@ org.jsoup:jsoup:1.7.2
 org.multiverse:multiverse-core:0.7.0
 org.objenesis:objenesis:2.6
 org.slf4j:jcl-over-slf4j:1.7.21
-org.slf4j:slf4j-api:1.8.0-alpha2
 org.spdx:spdx-tools:2.1.12
 org.spockframework:spock-core:1.1-groovy-2.4
 org.tukaani:xz:1.6
