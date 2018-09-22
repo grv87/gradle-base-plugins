@@ -105,7 +105,7 @@ class JVMBasePluginSpecification extends Specification {
     GradleRunner.create()
       .withGradleVersion(System.getProperty('compat.gradle.version'))
       .withProjectDir(testProjectDir)
-      .withArguments('compileJava')
+      .withArguments('compileJava', '-Dfile.encoding=Windows-1251')
       .withPluginClasspath()
       .build()
 
