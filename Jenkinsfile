@@ -22,7 +22,7 @@ import org.jfrog.hudson.pipeline.types.GradleBuild
 import org.jfrog.hudson.pipeline.types.buildInfo.BuildInfo
 
 @SuppressWarnings(['UnusedVariable', 'NoDef', 'VariableTypeRequired'])
-@Library('jenkins-pipeline-shared-library@develop') dummy
+@Library('jenkins-pipeline-shared-library@v1.1.0') dummy
 
 properties([
   disableConcurrentBuilds()
