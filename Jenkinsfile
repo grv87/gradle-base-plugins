@@ -144,12 +144,6 @@ node {
                   allowEmptyResults: true,
                   keepLongStdio: true,
                 )
-                // TODO
-                junit(
-                  testResults: 'build/test-results/**/*.xml',
-                  allowEmptyResults: true,
-                  keepLongStdio: true,
-                )
                 publishHTML(target: [
                   reportName: 'CodeNarc',
                   reportDir: 'build/reports/html/codenarc',

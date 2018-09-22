@@ -348,6 +348,7 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
 
   private void configureTesting() {
     project.convention.getPlugin(JavaPluginConvention).testReportDirName = project.extensions.getByType(ReportingExtension).baseDir.toPath().relativize(project.convention.getPlugin(ProjectConvention).htmlReportsDir.toPath()).toString()
+    project.convention.getPlugin(JavaPluginConvention).testResultsDirName = project.buildDir.toPath().relativize(project.convention.getPlugin(ProjectConvention).xmlReportsDir.toPath()).toString()
     project.tasks.withType(Test).configureEach { Test test ->
       test.with {
         maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
