@@ -35,7 +35,7 @@ final class TestFixtures {
   static void initEmptyGitRepository(File dir) {
     [
       ['git', 'init'],
-      ['git', 'commit', '--message', 'Initial commit', '--allow-empty'],
+      ['git', 'commit', '--message', 'Initial commit', '--allow-empty', '--no-gpg-sign'],
     ].each { List<String> it -> it.execute((List)null, dir).waitFor() }
   }
 
