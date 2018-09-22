@@ -57,6 +57,7 @@ dependencies {
      */
     exclude(group: 'com.googlecode.json-simple', module: 'json-simple')
     exclude(group: 'org.apache.logging.log4j', module: 'log4j-slf4j-impl')
+    exclude(group: 'org.apache.logging.log4j', module: 'log4j-core')
   }
   implementation(group: 'com.github.cliftonlabs', name: 'json-simple', version: '[2, 3)')
 
