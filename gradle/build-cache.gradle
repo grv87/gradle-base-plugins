@@ -23,7 +23,7 @@
  * https://issues.jenkins-ci.org/browse/JENKINS-36707
  * <grv87 2018-06-27>
  */
-ext.pushToRemoteCache = System.getenv().with { containsKey('CI') || containsKey('JENKINS_URL') } || hasProperty('gradle.cache.push') && getProperty('gradle.cache.push')
+ext.pushToRemoteCache = System.getenv().with { containsKey('CI') || containsKey('JENKINS_URL') }
 buildCache {
   local {
     enabled = !pushToRemoteCache

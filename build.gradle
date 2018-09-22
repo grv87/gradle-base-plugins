@@ -79,6 +79,10 @@ stutter {
   }
 }
 
+tasks.named('codenarcBuildSrc').configure {
+  disabledRules.add 'DuplicateNumberLiteral'
+}
+
 tasks.register('codenarcMainResources', CodeNarc) {
   for (File srcDir in sourceSets.main.resources.srcDirs) {
     source fileTree(dir: srcDir, includes: ['**/*.groovy'])
