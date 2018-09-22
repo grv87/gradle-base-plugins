@@ -38,10 +38,11 @@ public final class VersionUtils {
    *         null on empty or null version
    */
 
+  @SuppressWarnings("UnusedReturnValue")
   public static Boolean isPreReleaseVersion(String version) {
     if (Strings.isNullOrEmpty(version)) {
       return null;
-    };
+    }
     try {
       return !Version.valueOf(version).getPreReleaseVersion().isEmpty();
     }

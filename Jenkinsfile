@@ -21,6 +21,7 @@ import org.jfrog.hudson.pipeline.types.ArtifactoryServer
 import org.jfrog.hudson.pipeline.types.GradleBuild
 import org.jfrog.hudson.pipeline.types.buildInfo.BuildInfo
 
+//noinspection GroovyUnusedAssignment
 @SuppressWarnings(['UnusedVariable', 'NoDef', 'VariableTypeRequired'])
 @Library('jenkins-pipeline-shared-library@v1.1.0') dummy
 
@@ -88,11 +89,11 @@ node {
           usernamePassword(credentialsId: 'Artifactory', usernameVariable: 'ORG_GRADLE_PROJECT_artifactoryUser', passwordVariable: 'ORG_GRADLE_PROJECT_artifactoryPassword'),
           string(credentialsId: 'GPG_KEY_PASSWORD', variable: 'ORG_GRADLE_PROJECT_gpgKeyPassphrase'),
         ]) {
-          BuildInfo buildInfo
+          BuildInfo buildInfo = null
           try {
             stage('Clean') {
               timeout(time: 5, unit: 'MINUTES') {
-                buildInfo = rtGradle.run tasks: 'clean', switches: gradleSwitches
+                buildInfo = rtGradle.run tasks: 'clean', switches: gradleSwitches, buildInfo: buildInfo
                 /*
                  * TODO:
                  * Move these filters into separate library
@@ -115,7 +116,7 @@ node {
             stage('Assemble') {
               try {
                 timeout(time: 5, unit: 'MINUTES') {
-                  rtGradle.run tasks: 'assemble', switches: gradleSwitches, buildInfo: buildInfo
+                  buildInfo = rtGradle.run tasks: 'assemble', switches: gradleSwitches, buildInfo: buildInfo
                 }
               } finally {
                 warnings(
@@ -129,7 +130,7 @@ node {
             stage('Check') {
               try {
                 timeout(time: 10, unit: 'MINUTES') {
-                  rtGradle.run tasks: 'check', switches: gradleSwitches, buildInfo: buildInfo
+                  buildInfo = rtGradle.run tasks: 'check', switches: gradleSwitches, buildInfo: buildInfo
                 }
               } finally {
                 warnings(
@@ -198,7 +199,7 @@ node {
             stage('Release') {
               try {
                 timeout(time: 5, unit: 'MINUTES') {
-                  rtGradle.run tasks: 'release', switches: gradleSwitches, buildInfo: buildInfo
+                  buildInfo = rtGradle.run tasks: 'release', switches: gradleSwitches, buildInfo: buildInfo
                 }
               } finally {
                 warnings(
