@@ -29,6 +29,7 @@ import static org.gradle.internal.FileUtils.toSafeFileName
 import static org.fidata.gradle.utils.VersionUtils.isPreReleaseVersion
 import static org.gradle.language.base.plugins.LifecycleBasePlugin.VERIFICATION_GROUP
 import static com.dorongold.gradle.tasktree.TaskTreePlugin.TASK_TREE_TASK_NAME
+import static org.fidata.gpg.GpgUtils.getGpgHome
 import org.gradle.tooling.UnsupportedVersionException
 import org.fidata.gradle.utils.PathDirector
 import org.fidata.gradle.utils.ReportPathDirectorException
@@ -257,6 +258,8 @@ final class ProjectPlugin extends AbstractProjectPlugin {
     }
   }
 
+  // TODO: CodeNarc bug
+  @SuppressWarnings('UnnecessaryGetter')
   private void configureArtifactPublishing() {
     /*
      * WORKAROUND:
@@ -265,8 +268,15 @@ final class ProjectPlugin extends AbstractProjectPlugin {
      * <grv87 2018-07-01>
      */
     project.extensions.extraProperties['signing.keyId'] = project.extensions.extraProperties['gpgKeyId'].toString()[-8..-1]
-    project.extensions.extraProperties['signing.password'] = project.extensions.extraProperties['gpgKeyPassword'].toString()
-    project.extensions.extraProperties['signing.secretKeyRingFile'] = project.extensions.extraProperties['gpgSecretKeyRingFile'].toString()
+    project.extensions.extraProperties['signing.password'] = project.extensions.extraProperties.has('gpgKeyPassphrase') ? project.extensions.extraProperties['gpgKeyPassphrase'].toString() : null
+    project.extensions.extraProperties['signing.secretKeyRingFile'] = getGpgHome().resolve('secring.gpg')
+
+    project.extensions.extraProperties['signing.gnupg.executable'] = 'gpg'
+    project.extensions.extraProperties['signing.gnupg.keyName'] = project.extensions.extraProperties['gpgKeyId'].toString()
+    project.extensions.extraProperties['signing.gnupg.passphrase'] = project.extensions.extraProperties.has('gpgKeyPassphrase') ? project.extensions.extraProperties['gpgKeyPassphrase'].toString() : null
+    if (System.getenv().containsKey('GNUPGHOME')) {
+      project.extensions.extraProperties['signing.gnupg.homeDir'] = System.getenv()['GNUPGHOME']
+    }
   }
 
   private void configureGit() {

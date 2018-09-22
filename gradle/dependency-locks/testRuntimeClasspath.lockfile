@@ -59,7 +59,7 @@ junit:junit:4.12
 nekohtml:nekohtml:1.9.6.2
 nekohtml:xercesMinimal:1.9.6.2
 net.java.dev.jna:jna-platform:4.1.0
-net.java.dev.jna:jna:4.1.0
+net.java.dev.jna:jna:4.5.2
 net.sf.ezmorph:ezmorph:1.0.6
 net.sf.json-lib:json-lib:2.3
 net.sf.opencsv:opencsv:2.3

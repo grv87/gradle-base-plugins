@@ -99,6 +99,13 @@ plugin](https://github.com/FIDATA/gradle-semantic-release-plugin).
 *	Applies [`signing` plugin
 	](https://docs.gradle.org/current/userguide/signing_plugin.html)
 
+	By default, Java-based implementation of PGP is used. Secret keyring
+	should be placed at GnuPG home in `secring.gpg` file.
+
+	If you want to use GnuPG for signing, properties for this are already set.
+	Switch can be made with [`signing.useGpgCmd()`
+	](https://docs.gradle.org/current/userguide/signing_plugin.html#example_sign_with_gnupg).
+
 *	Provides read-only `isRelease` and `changeLog` project properties
 	for working with semantic release
 
@@ -165,10 +172,18 @@ All these tasks are put into `Diagnostics` group.
 
 	Provides `contacts` extension.
 
-### Supported Gradle and JDK versions:
+### Supported tools versions:
 
 *	Requires Gradle >= 4.9
+
 *	Built and tested with JDK 8
+
+*   Requires GnuPG >= 2.1
+
+    `gpg-agent` should have `allow-preset-passphrase` option turned on
+    if GPG key with passphrase is used.
+    It is usually achieved by adding this string
+    into `gpg-agent.conf` file in GPG home directory.
 
 ## `org.fidata.base.jvm` plugin
 
@@ -334,13 +349,15 @@ Should be provided via `gradle.properties` file.
     <tr><td><code>gitUsername</code></td><td rowspan="2">Git push during release</td><td>&nbsp;</td>
     <tr><td><code>gitPassword</code></td>                                            <td>&nbsp;</td>
     <tr><td><code>ghToken</code></td><td>Create release on GitHub</td><td>&nbsp;</td>
-    <tr><td><code>gpgKeyId</code>            </td><td rowspan="3">Sign artifacts, git commits and git tags</td><td>&nbsp;</td>
-    <tr><td><code>gpgKeyPassword</code>      </td>                                                             <td>&nbsp;</td>
-    <tr><td><code>gpgSecretKeyRingFile</code></td>                                                             <td>&nbsp;</td>
+    <tr><td><code>gpgKeyId</code>        </td><td rowspan="3">Sign artifacts, git commits and git tags</td><td>&nbsp;                                             </td>
+    <tr><td><code>gpgKeyPassphrase</code></td>                                                             <td>Not required. Assumes no passphrase if not provided</td>
     <tr><td><code>bintrayUser</code>  </td><td rowspan="8"><code>org.fidata.base.jvm</code> for public releases</td><td rowspan="2">Release to Bintray</td><td>&nbsp;</td>
     <tr><td><code>bintrayAPIKey</code></td>                                                                                                                <td>&nbsp;</td>
 </tbody>
 </table>
+
+All properties except `gpgKeyPassphrase` are required. The plugin
+won't work if they are not set.
 
 # Development
 

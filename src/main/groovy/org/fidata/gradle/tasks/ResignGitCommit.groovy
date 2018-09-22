@@ -19,6 +19,7 @@
 package org.fidata.gradle.tasks
 
 import groovy.transform.CompileStatic
+import org.fidata.gpg.GpgUtils
 import org.fidata.gradle.utils.TaskNamerException
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
@@ -28,7 +29,9 @@ import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.TaskProvider
+import org.gradle.internal.os.OperatingSystem
 import org.gradle.process.ExecSpec
+import java.nio.file.Paths
 
 /**
  * Amends previous git commit adding sign to it ("resigns" commit)
@@ -54,11 +57,32 @@ class ResignGitCommit extends DefaultTask {
   @TaskAction
   void resign() {
     project.exec { ExecSpec execSpec ->
-      if (workingDir.present) {
-        execSpec.workingDir workingDir
+      execSpec.commandLine 'gpg-agent', '--daemon'
+      execSpec.ignoreExitValue = true /* TODO: if it was started then we need not to kill it after
+      We better pass password through commandLine than preset - so we need not start agent manually at all */
+    }
+    try {
+      String gpgKeyId = project.extensions.extraProperties['gpgKeyId']
+      if (project.extensions.extraProperties.has('gpgKeyPassphrase')) {
+        project.logger.info('ResignGitCommit: presetting gpgKeyPassphrase')
+        project.exec { ExecSpec execSpec ->
+          execSpec.executable 'gpg-preset-passphrase'
+          if (!OperatingSystem.current().windows) {
+            execSpec.executable Paths.get('/usr/local/libexec', execSpec.executable).toString()
+          }
+          execSpec.args '--preset', '--passphrase', project.extensions.extraProperties['gpgKeyPassphrase'], GpgUtils.getKeyGrip(project, gpgKeyId)
+        }
       }
-      execSpec.commandLine 'git', 'commit', '--amend', '--no-edit', "--gpg-sign=${ project.extensions.extraProperties['gpgKeyId'] }"
-      execSpec.standardInput = new ByteArrayInputStream(project.extensions.extraProperties['gpgKeyPassword'].toString().bytes)
+      project.exec { ExecSpec execSpec ->
+        if (workingDir.present) {
+          execSpec.workingDir workingDir
+        }
+        execSpec.commandLine 'git', 'commit', '--amend', '--no-edit', "--gpg-sign=$gpgKeyId"
+      }
+    } finally {
+      project.exec { ExecSpec execSpec ->
+        execSpec.commandLine 'gpgconf', '--kill', 'gpg-agent'
+      }
     }
   }
 

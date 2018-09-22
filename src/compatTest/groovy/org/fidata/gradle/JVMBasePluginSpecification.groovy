@@ -42,8 +42,6 @@ class JVMBasePluginSpecification extends Specification {
     'gitPassword': 'dummyGitPassword',
     'ghToken': 'dummyGhToken',
     'gpgKeyId'            : 'ABCD1234',
-    'gpgKeyPassword'      : '',
-    'gpgSecretKeyRingFile': 'dummyGPGSecretKeyRingFile',
   ]
 
   // fixture methods
