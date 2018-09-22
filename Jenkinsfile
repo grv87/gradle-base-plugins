@@ -80,7 +80,22 @@ node {
             stage('Clean') {
               timeout(time: 5, unit: 'MINUTES') {
                 buildInfo = rtGradle.run tasks: 'clean', switches: gradleSwitches
-                buildInfo.env.filter.addExclude('*PASSPHRASE*')
+                /*
+                 * TODO:
+                 * Move these filters into separate library
+                 * <grv87 2018-09-22>
+                 */
+                buildInfo.env.filter.clear()
+                buildInfo.env.filter.addExclude('*Password')
+                buildInfo.env.filter.addExclude('*Passphrase')
+                buildInfo.env.filter.addExclude('*SecretKey')
+                buildInfo.env.filter.addExclude('*SECRET_KEY')
+                buildInfo.env.filter.addExclude('*APIKey')
+                buildInfo.env.filter.addExclude('*_API_KEY')
+                buildInfo.env.filter.addExclude('*gradlePluginsKey')
+                buildInfo.env.filter.addExclude('*gradlePluginsSecret')
+                buildInfo.env.filter.addExclude('*OAuthClientSecret')
+                buildInfo.env.filter.addExclude('*Token')
                 buildInfo.env.collect()
               }
             }

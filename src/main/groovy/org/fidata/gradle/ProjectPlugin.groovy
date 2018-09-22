@@ -226,8 +226,36 @@ final class ProjectPlugin extends AbstractProjectPlugin {
    */
   public static final String ARTIFACTORY_URL = 'https://fidata.jfrog.io/fidata'
 
+  /**
+   * List of patters of environment variables
+   * excluded from build info
+   */
+  /*
+   * TODO:
+   * Move these filters into separate library
+   * <grv87 2018-09-22>
+   */
+  public static final List<String> BUILD_INFO_ENV_VARS_EXCLUDE_PATTERS = [
+    '*Password',
+    '*Passphrase',
+    '*SecretKey',
+    '*SECRET_KEY',
+    '*APIKey',
+    '*_API_KEY',
+    '*gradlePluginsKey',
+    '*gradlePluginsSecret',
+    '*OAuthClientSecret',
+    '*Token',
+  ]
+
   private void configureArtifactory() {
-    project.convention.getPlugin(ArtifactoryPluginConvention).contextUrl = ARTIFACTORY_URL
+    project.convention.getPlugin(ArtifactoryPluginConvention).with {
+      contextUrl = ARTIFACTORY_URL
+      clientConfig.with {
+        includeEnvVars = true
+        envVarsExcludePatterns = BUILD_INFO_ENV_VARS_EXCLUDE_PATTERS.join(',')
+      }
+    }
   }
 
   private void configureDependencyResolution() {
