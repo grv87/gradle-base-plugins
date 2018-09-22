@@ -20,8 +20,10 @@ package org.fidata.gradle;
 
 import org.fidata.gradle.internal.AbstractExtension;
 import lombok.Getter;
+import org.gradle.api.JavaVersion;
 import org.gradle.api.Project;
 import org.gradle.api.plugins.JavaPluginConvention;
+import org.gradle.internal.jvm.UnsupportedJavaRuntimeException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,6 +39,15 @@ public class JVMBaseExtension extends AbstractExtension {
   private final Map<String, URI> javadocLinks = new HashMap<>();
 
   public JVMBaseExtension(Project project) {
-    javadocLinks.put("java", project.uri("https://docs.oracle.com/javase/" + project.getConvention().getPlugin(JavaPluginConvention.class).getTargetCompatibility().getMajorVersion() + "/docs/api/"));
+    JavaVersion javaVersion = project.getConvention().getPlugin(JavaPluginConvention.class).getTargetCompatibility();
+    URI javaseJavadoc;
+    if (javaVersion.compareTo(JavaVersion.VERSION_1_5) >= 0 && javaVersion.compareTo(JavaVersion.VERSION_11) < 0) {
+      javaseJavadoc = project.uri("https://docs.oracle.com/javase/" + javaVersion.getMajorVersion() + "/docs/api/index.html?");
+    } else if (javaVersion.isJava11()) {
+      javaseJavadoc = project.uri("https://download.java.net/java/early_access/jdk11/docs/api/");
+    } else {
+      throw new UnsupportedJavaRuntimeException(String.format("Unable to get javadoc URI for unsupported java version: %s", javaVersion));
+    }
+    javadocLinks.put("java", javaseJavadoc);
   }
 }

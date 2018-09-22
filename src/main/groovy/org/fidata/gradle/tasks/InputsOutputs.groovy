@@ -18,6 +18,7 @@
  */
 package org.fidata.gradle.tasks
 
+import static java.nio.charset.StandardCharsets.UTF_8
 import groovy.transform.CompileStatic
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.RegularFileProperty
@@ -48,16 +49,16 @@ class InputsOutputs extends DefaultTask {
    */
   @TaskAction
   void generate() {
-    outputFile.get().asFile.withPrintWriter('UTF-8') { PrintWriter writer ->
+    outputFile.get().asFile.withPrintWriter(UTF_8.name()) { PrintWriter writer ->
       for (Task t in project.tasks) {
         if (t.inputs.hasInputs) {
           for (File f in t.inputs.sourceFiles) {
-            writer.println sprintf('%s input:\t%s', [t.path, f.path])
+            writer.printf('%s input:\t%s\n', t.path, f.path)
           }
         }
         if (t.outputs.hasOutput) {
           for (File f in t.outputs.files) {
-            writer.println sprintf('%s output:\t%s', [t.path, f.path])
+            writer.printf('%s output:\t%s\n', t.path, f.path)
           }
         }
       }
@@ -65,7 +66,7 @@ class InputsOutputs extends DefaultTask {
   }
 
   InputsOutputs() {
-    outputFile.set(project.extensions.getByType(ReportingExtension).file(DEFAULT_OUTPUT_FILE_NAME))
+    outputFile.set(project.extensions.getByType(ReportingExtension).baseDirectory.file(DEFAULT_OUTPUT_FILE_NAME))
     outputs.upToDateWhen { false }
   }
 }

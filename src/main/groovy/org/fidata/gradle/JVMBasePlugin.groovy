@@ -19,6 +19,7 @@
  */
 package org.fidata.gradle
 
+import static java.nio.charset.StandardCharsets.UTF_8
 import static org.gradle.api.plugins.JavaPlugin.TEST_TASK_NAME
 import static org.gradle.api.tasks.SourceSet.TEST_SOURCE_SET_NAME
 import static org.gradle.api.plugins.JavaPlugin.JAVADOC_TASK_NAME
@@ -26,8 +27,14 @@ import static org.gradle.api.tasks.SourceSet.MAIN_SOURCE_SET_NAME
 import static org.ajoberstar.gradle.git.release.base.BaseReleasePlugin.RELEASE_TASK_NAME
 import static ProjectPlugin.LICENSE_FILE_NAMES
 import static org.jfrog.gradle.plugin.artifactory.task.ArtifactoryTask.ARTIFACTORY_PUBLISH_TASK_NAME
+import org.gradle.api.Namer
+import org.fidata.gradle.utils.TaskNamerException
+import org.fidata.gradle.utils.PathDirector
+import org.fidata.gradle.utils.ReportPathDirectorException
 import org.gradle.api.Task
 import groovy.transform.PackageScope
+import org.gradle.api.tasks.compile.JavaCompile
+import org.gradle.api.tasks.javadoc.Javadoc
 import org.gradle.plugins.signing.Sign
 import org.gradle.api.file.CopySpec
 import org.gradle.api.publish.maven.MavenPublication
@@ -39,7 +46,7 @@ import org.jfrog.gradle.plugin.artifactory.task.ArtifactoryTask
 import org.fidata.gradle.tasks.CodeNarcTaskConvention
 import org.gradle.api.artifacts.ModuleDependency
 import groovy.transform.CompileStatic
-import org.fidata.gradle.internal.AbstractPlugin
+import org.fidata.gradle.internal.AbstractProjectPlugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.testing.Test
 import org.gradle.language.jvm.tasks.ProcessResources
@@ -63,7 +70,7 @@ import org.gradle.api.publish.PublicationContainer
  * Provides an environment for a JDK project
  */
 @CompileStatic
-final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListener {
+final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChangeListener {
   /**
    * Name of jvm extension for {@link Project}
    */
@@ -80,6 +87,10 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
 
     project.convention.getPlugin(ProjectConvention).addPropertyChangeListener this
     configurePublicReleases()
+
+    project.tasks.withType(JavaCompile).configureEach { JavaCompile javaCompile ->
+      javaCompile.options.encoding = UTF_8.name()
+    }
 
     project.tasks.withType(ProcessResources).configureEach { ProcessResources processResources ->
       processResources.from(LICENSE_FILE_NAMES) { CopySpec copySpec ->
@@ -107,7 +118,7 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
         }
         break
       default:
-        project.logger.warn('org.fidata.base.jvm: unexpected property change source: {}', e.source.toString())
+        project.logger.warn('org.fidata.base.jvm: unexpected property change source: {}', e.source)
     }
   }
 
@@ -136,18 +147,56 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
    *        If null, task with the same name as source set is used
    */
   void addSpockDependency(SourceSet sourceSet, TaskProvider<Test> task = null) {
-    addSpockDependency sourceSet, [task ?: project.tasks.withType(Test).named(sourceSet.name)], { String taskName -> Paths.get(taskName) }
+    addSpockDependency sourceSet, [task ?: project.tasks.withType(Test).named(sourceSet.name)], new PathDirector<TaskProvider<Test>>() {
+      @Override
+      @SuppressWarnings('CatchException')
+      Path determinePath(TaskProvider<Test> object) throws ReportPathDirectorException {
+        try {
+          Paths.get(object.name)
+        } catch (Exception e) {
+          throw new ReportPathDirectorException(object, e)
+        }
+      }
+    }
+  }
+
+  /**
+   * Namer of moveAggegatedReport task for test tasks
+   */
+  static final Namer<TaskProvider<Test>> MOVE_AGGREGATED_REPORT_NAMER = new Namer<TaskProvider<Test>>() {
+    @Override
+    @SuppressWarnings('CatchException')
+    String determineName(TaskProvider<Test> testProvider) throws TaskNamerException {
+      try {
+        "move${ testProvider.name.capitalize() }AggegatedReport"
+      } catch (Exception e) {
+        throw new TaskNamerException('moveAggregatedReport', 'task', testProvider, e)
+      }
+    }
+  }
+
+  /**
+   * Namer of codenarc task for source sets
+   */
+  static final Namer<SourceSet> CODENARC_NAMER = new Namer<SourceSet>() {
+    @Override
+    @SuppressWarnings('CatchException')
+    String determineName(SourceSet sourceSet) throws TaskNamerException {
+      try {
+        "codenarc${ sourceSet.name.capitalize() }"
+      } catch (Exception e) {
+        throw new TaskNamerException('codenarc', 'source set', sourceSet, e)
+      }
+    }
   }
 
   /**
    * Adds Spock to specified source set and tasks
    * @param sourceSet source set
    * @param tasks list of test tasks.
-   * @param reportDirNamer closure to set report directory name from task name
-   *        Nested directories are supported.
-   *        Call <code>org.gradle.internal.FileUtils.toSafeFileName</code> manually on individual directory/file names
+   * @param reportDirector path director for task reports
    */
-  void addSpockDependency(SourceSet sourceSet, Iterable<TaskProvider<Test>> tasks, Closure<Path> reportDirNamer) {
+  void addSpockDependency(SourceSet sourceSet, Iterable<TaskProvider<Test>> tasks, PathDirector<TaskProvider<Test>> reportDirector) {
     addJUnitDependency sourceSet
 
     project.pluginManager.apply GroovyBasePlugin
@@ -170,16 +219,6 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
       ]) { ModuleDependency dependency ->
         dependency.transitive = false
       }
-      add(sourceSet.implementationConfigurationName, [
-        group  : 'org.slf4j',
-        name   : 'slf4j-api',
-        version: 'latest.release'
-      ])
-      add(sourceSet.implementationConfigurationName, [
-        group  : 'org.slf4j',
-        name   : 'slf4j-simple',
-        version: 'latest.release'
-      ])
     }
     project.plugins.withType(GroovyBasePlugin).configureEach { GroovyBasePlugin plugin ->
       plugin.addGroovyDependency project.configurations.getByName(sourceSet.implementationConfigurationName)
@@ -188,11 +227,10 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
     ProjectConvention projectConvention = project.convention.getPlugin(ProjectConvention)
     tasks.each { TaskProvider<Test> taskProvider ->
       taskProvider.configure { Test test ->
-        GString reportDirName = "spock/${ reportDirNamer.call(test.name) }"
-        File spockReportsDir = new File(projectConvention.htmlReportsDir, reportDirName)
-        TaskProvider<Task> moveAggregatedReportProvider = project.tasks.register("move${ taskProvider.name.capitalize() }AggegatedReport") { Task moveAggregatedReport ->
+        File spockReportDir = projectConvention.getHtmlReportDir(reportDirector, taskProvider)
+        TaskProvider<Task> moveAggregatedReportProvider = project.tasks.register(MOVE_AGGREGATED_REPORT_NAMER.determineName(taskProvider)) { Task moveAggregatedReport ->
           moveAggregatedReport.with {
-            File aggregatedReportFile = new File(spockReportsDir, ReportDataAggregator.AGGREGATED_DATA_FILE.toString())
+            File aggregatedReportFile = spockReportDir.toPath().resolve(ReportDataAggregator.AGGREGATED_DATA_FILE.toString()).toFile()
             destroyables.register aggregatedReportFile
             /*
              * WORKAROUND:
@@ -204,14 +242,14 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
             doLast {
               project.ant.invokeMethod('move', [
                 file: aggregatedReportFile,
-                todir: new File(projectConvention.jsonReportsDir, reportDirName)
+                todir: projectConvention.jsonReportsDir
               ])
             }
           }
         }
         test.with {
           reports.html.enabled = false
-          systemProperty 'com.athaydes.spockframework.report.outputDir', spockReportsDir.absolutePath
+          systemProperty 'com.athaydes.spockframework.report.outputDir', spockReportDir.absolutePath
           /*
            * WORKAROUND:
            * Spock Reports generates aggregated_report.json in the same directory as HTML files
@@ -232,8 +270,8 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
     }
 
     project.plugins.withType(GroovyBasePlugin).configureEach { GroovyBasePlugin plugin -> // TODO: 4.9
-      project.tasks.withType(CodeNarc).named("codenarc${ sourceSet.name.capitalize() }").configure { CodeNarc codenarc ->
-        codenarc.convention.getPlugin(CodeNarcTaskConvention).disabledRules.addAll 'MethodName', 'FactoryMethodName', 'JUnitPublicProperty', 'JUnitPublicNonTestMethod', /* WORKAROUND: https://github.com/CodeNarc/CodeNarc/issues/308 <grv87 2018-06-26> */ 'Indentation'
+      project.tasks.withType(CodeNarc).named(CODENARC_NAMER.determineName(sourceSet)).configure { CodeNarc codenarc ->
+        codenarc.convention.getPlugin(CodeNarcTaskConvention).disabledRules.addAll 'MethodName', 'FactoryMethodName', 'JUnitPublicProperty', 'JUnitPublicNonTestMethod'
       }
     }
   }
@@ -269,7 +307,12 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
   /**
    * Name of functional test reports directory
    */
+  @Deprecated
   public static final String FUNCTIONAL_TEST_REPORTS_DIR_NAME = 'functionalTest'
+  /**
+   * Path of functional test reports directory
+   */
+  public static final Path FUNCTIONAL_TEST_REPORTS_PATH = Paths.get('functionalTest')
 
   /*
    * WORKAROUND:
@@ -295,8 +338,8 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
         shouldRunAfter project.tasks.named(TEST_TASK_NAME)
         testClassesDirs = functionalTestSourceSet.output.classesDirs
         classpath = functionalTestSourceSet.runtimeClasspath
-        reports.junitXml.setDestination new File(projectConvention.xmlReportsDir, FUNCTIONAL_TEST_REPORTS_DIR_NAME)
-        reports.html.setDestination new File(projectConvention.htmlReportsDir, FUNCTIONAL_TEST_REPORTS_DIR_NAME)
+        reports.junitXml.setDestination projectConvention.getXmlReportDir(FUNCTIONAL_TEST_REPORTS_PATH)
+        reports.html.setDestination projectConvention.getHtmlReportDir(FUNCTIONAL_TEST_REPORTS_PATH)
       }
     }
 
@@ -304,14 +347,32 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
   }
 
   private void configureTesting() {
-    project.convention.getPlugin(JavaPluginConvention).testReportDirName = project.extensions.getByType(ReportingExtension).baseDir.toPath().relativize(new File(project.convention.getPlugin(ProjectConvention).htmlReportsDir, 'tests').toPath()).toString() // TODO: ???
+    project.convention.getPlugin(JavaPluginConvention).testReportDirName = project.extensions.getByType(ReportingExtension).baseDir.toPath().relativize(project.convention.getPlugin(ProjectConvention).htmlReportsDir.toPath()).toString()
     project.tasks.withType(Test).configureEach { Test test ->
-      test.testLogging.exceptionFormat = TestExceptionFormat.FULL
+      test.with {
+        maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
+        testLogging.exceptionFormat = TestExceptionFormat.FULL
+      }
     }
 
     addJUnitDependency project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(TEST_SOURCE_SET_NAME)
 
     configureFunctionalTests()
+  }
+
+  /**
+   * Namer of sign task for maven publications
+   */
+  static final Namer<MavenPublication> SIGN_MAVEN_PUBLICATION_NAMER = new Namer<MavenPublication>() {
+    @Override
+    @SuppressWarnings('CatchException')
+    String determineName(MavenPublication mavenPublication) throws TaskNamerException {
+      try {
+        "sign${ mavenPublication.name.capitalize() }Publication"
+      } catch (Exception e) {
+        throw new TaskNamerException('sign', 'maven publication', mavenPublication, e)
+      }
+    }
   }
 
   private void configureArtifactory() {
@@ -332,7 +393,7 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
 
       artifactoryPublish.dependsOn project.tasks.withType(Sign).matching { Sign sign -> // TODO
         publications.withType(MavenPublication).any { MavenPublication mavenPublication ->
-          sign.name == "sign${ mavenPublication.name.capitalize() }Publication"
+          sign.name == SIGN_MAVEN_PUBLICATION_NAMER.determineName(mavenPublication)
         }
       }
     }
@@ -393,6 +454,20 @@ final class JVMBasePlugin extends AbstractPlugin implements PropertyChangeListen
   }
 
   private void configureDocumentation() {
+    project.tasks.withType(Javadoc).configureEach { Javadoc javadoc ->
+      javadoc.with {
+        options.encoding = UTF_8.name()
+        /*
+         * WORKAROUND:
+         * https://github.com/gradle/gradle/issues/6168
+         * <grv87 2018-08-01>
+         */
+        doFirst {
+          destinationDir.deleteDir()
+        }
+      }
+    }
+
     project.extensions.getByType(GitPublishExtension).contents.from(project.tasks.named(JAVADOC_TASK_NAME)).into "$project.version/javadoc"
   }
 }

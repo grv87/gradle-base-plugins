@@ -56,6 +56,6 @@ final class JVMBasePluginDependees {
 
   // Suppress default constructor for noninstantiability
   private JVMBasePluginDependees() {
-    throw new AssertionError()
+    throw new UnsupportedOperationException()
   }
 }

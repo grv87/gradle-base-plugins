@@ -19,6 +19,7 @@
  */
 package org.fidata.gradle
 
+import static java.nio.charset.StandardCharsets.UTF_8
 import static org.gradle.api.plugins.JavaPlugin.COMPILE_JAVA_TASK_NAME
 import static org.gradle.api.plugins.JavaPlugin.JAVADOC_TASK_NAME
 import static org.gradle.api.tasks.SourceSet.MAIN_SOURCE_SET_NAME
@@ -27,7 +28,7 @@ import org.gradle.api.tasks.SourceSet
 import groovy.transform.CompileStatic
 import io.franzbecker.gradle.lombok.task.DelombokTask
 import org.ajoberstar.gradle.git.publish.GitPublishExtension
-import org.fidata.gradle.internal.AbstractPlugin
+import org.fidata.gradle.internal.AbstractProjectPlugin
 import org.fidata.gradle.utils.PluginDependeesUtils
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPluginConvention
@@ -39,7 +40,7 @@ import org.gradle.api.tasks.TaskProvider
  * Provides an environment for a JDK project
  */
 @CompileStatic
-final class JavaProjectPlugin extends AbstractPlugin {
+final class JavaProjectPlugin extends AbstractProjectPlugin {
   @Override
   void apply(Project project) {
     super.apply(project)
@@ -76,6 +77,8 @@ final class JavaProjectPlugin extends AbstractPlugin {
     project.tasks.withType(Javadoc).named(JAVADOC_TASK_NAME).configure { Javadoc javadoc ->
       TaskProvider<DelombokTask> delombokProvider = project.tasks.register(DELOMBOK_TASK_NAME, DelombokTask) { DelombokTask delombok ->
         delombok.with {
+          args '--encoding', UTF_8
+
           SourceSet mainSourceSet = project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(MAIN_SOURCE_SET_NAME)
 
           dependsOn project.tasks.named(COMPILE_JAVA_TASK_NAME)
@@ -83,7 +86,7 @@ final class JavaProjectPlugin extends AbstractPlugin {
           outputs.dir outputDir
           mainSourceSet.java.srcDirs.each { File dir ->
             inputs.dir dir
-            args dir, '-d', outputDir
+            args dir, '--target', outputDir
           }
           classpath mainSourceSet.compileClasspath
           doFirst {

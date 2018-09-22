@@ -48,13 +48,26 @@ sourceSets.main.groovy.srcDirs += [new File(ext.rootDir, 'src/plugin-dependencie
  * <grv87 2018-06-23>
  */
 afterEvaluate {
-  jvm.javadocLinks['org.spdx'] = uri("https://static.javadoc.io/org.spdx/spdx-tools/${ configurations.getByName('compileClasspath').resolvedConfiguration.firstLevelModuleDependencies.find { it.moduleGroup == 'org.spdx' && it.moduleName == 'spdx-tools' }.moduleVersion }/")
+  jvm.javadocLinks['org.spdx'] = uri("https://static.javadoc.io/org.spdx/spdx-tools/${ configurations.getByName('compileClasspath').resolvedConfiguration.firstLevelModuleDependencies.find { it.moduleGroup == 'org.spdx' && it.moduleName == 'spdx-tools' }.moduleVersion }/index.html?")
 }
 
 apply from: new File(ext.rootDir, 'gradle/gradle-plugin-markers.gradle')
 
 dependencies {
   testImplementation group: 'pl.pragmatists', name: 'JUnitParams', version: 'latest.release'
+}
+
+sourceSets {
+  testFixtures {
+    groovy.srcDirs = ['src/testFixtures/groovy']
+  }
+}
+
+dependencies {
+  testFixturesImplementation localGroovy()
+  testFixturesImplementation gradleApi()
+  functionalTestImplementation sourceSets.testFixtures.output
+  compatTestImplementation sourceSets.testFixtures.output
 }
 
 stutter {
@@ -66,19 +79,12 @@ stutter {
   }
 }
 
-tasks.named('codenarcMain').configure { disabledRules.add 'JavaIoPackageAccess' }
-tasks.named('codenarcCompatTest').configure { disabledRules.add 'JavaIoPackageAccess' }
-tasks.named('codenarcBuildSrc').configure { disabledRules.add 'JavaIoPackageAccess' }
+tasks.named('codenarcBuildSrc').configure {
+  disabledRules.add 'DuplicateNumberLiteral'
+}
 
 tasks.register('codenarcMainResources', CodeNarc) {
   for (File srcDir in sourceSets.main.resources.srcDirs) {
     source fileTree(dir: srcDir, includes: ['**/*.groovy'])
   }
-  /*
-   * WORKAROUND:
-   * Indentation rule doesn't work correctly.
-   * https://github.com/CodeNarc/CodeNarc/issues/310
-   * <grv87 2018-06-26>
-   */
-  disabledRules.add 'Indentation'
 }

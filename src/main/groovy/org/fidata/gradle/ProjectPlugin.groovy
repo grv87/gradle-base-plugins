@@ -29,6 +29,12 @@ import static org.gradle.internal.FileUtils.toSafeFileName
 import static org.fidata.gradle.utils.VersionUtils.isPreReleaseVersion
 import static org.gradle.language.base.plugins.LifecycleBasePlugin.VERIFICATION_GROUP
 import static com.dorongold.gradle.tasktree.TaskTreePlugin.TASK_TREE_TASK_NAME
+import static org.fidata.gpg.GpgUtils.getGpgHome
+import org.gradle.tooling.UnsupportedVersionException
+import org.fidata.gradle.utils.PathDirector
+import org.fidata.gradle.utils.ReportPathDirectorException
+import java.nio.file.Path
+import java.nio.file.Paths
 import org.gradle.api.tasks.TaskCollection
 import org.ajoberstar.grgit.auth.AuthConfig
 import org.ajoberstar.grgit.Grgit
@@ -38,7 +44,7 @@ import org.fidata.gradle.tasks.CodeNarcTaskConvention
 import org.gradle.api.file.ConfigurableFileTree
 import groovy.transform.CompileStatic
 import groovy.transform.PackageScope
-import org.fidata.gradle.internal.AbstractPlugin
+import org.fidata.gradle.internal.AbstractProjectPlugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.tasks.testing.Test
@@ -86,7 +92,7 @@ import org.gradle.api.tasks.TaskProvider
  * Provides an environment for a general, language-agnostic project
  */
 @CompileStatic
-final class ProjectPlugin extends AbstractPlugin {
+final class ProjectPlugin extends AbstractProjectPlugin {
   /**
    * Name of fidata convention for {@link Project}
    */
@@ -126,7 +132,9 @@ final class ProjectPlugin extends AbstractPlugin {
   @Override
   @SuppressWarnings('CouldBeElvis')
   void apply(Project project) {
-    assert GradleVersion.current() >= GradleVersion.version(GRADLE_MINIMUM_SUPPORTED_VERSION) : "Gradle versions before $GRADLE_MINIMUM_SUPPORTED_VERSION are not supported"
+    if (GradleVersion.current() < GradleVersion.version(GRADLE_MINIMUM_SUPPORTED_VERSION)) {
+      throw new UnsupportedVersionException("Gradle versions before $GRADLE_MINIMUM_SUPPORTED_VERSION are not supported")
+    }
 
     super.apply(project)
 
@@ -192,7 +200,7 @@ final class ProjectPlugin extends AbstractPlugin {
       dependencyUpdates.group = null
       dependencyUpdates.revision = 'release'
       dependencyUpdates.outputFormatter = 'xml'
-      dependencyUpdates.outputDir = new File(project.convention.getPlugin(ProjectConvention).xmlReportsDir, 'dependencyUpdates').toString()
+      dependencyUpdates.outputDir = project.convention.getPlugin(ProjectConvention).getXmlReportDir(Paths.get('dependencyUpdates')).toString()
       dependencyUpdates.resolutionStrategy = { ResolutionStrategy resolutionStrategy ->
         resolutionStrategy.componentSelection { ComponentSelectionRules rules ->
           rules.all { ComponentSelection selection ->
@@ -207,7 +215,7 @@ final class ProjectPlugin extends AbstractPlugin {
     project.tasks.withType(Wrapper).configureEach { Wrapper wrapper ->
       wrapper.with {
         if (name == 'wrapper') {
-          gradleVersion = '4.9'
+          gradleVersion = '4.10.2'
         }
       }
     }
@@ -218,8 +226,36 @@ final class ProjectPlugin extends AbstractPlugin {
    */
   public static final String ARTIFACTORY_URL = 'https://fidata.jfrog.io/fidata'
 
+  /**
+   * List of patters of environment variables
+   * excluded from build info
+   */
+  /*
+   * TODO:
+   * Move these filters into separate library
+   * <grv87 2018-09-22>
+   */
+  public static final List<String> BUILD_INFO_ENV_VARS_EXCLUDE_PATTERS = [
+    '*Password',
+    '*Passphrase',
+    '*SecretKey',
+    '*SECRET_KEY',
+    '*APIKey',
+    '*_API_KEY',
+    '*gradlePluginsKey',
+    '*gradlePluginsSecret',
+    '*OAuthClientSecret',
+    '*Token',
+  ]
+
   private void configureArtifactory() {
-    project.convention.getPlugin(ArtifactoryPluginConvention).contextUrl = ARTIFACTORY_URL
+    project.convention.getPlugin(ArtifactoryPluginConvention).with {
+      contextUrl = ARTIFACTORY_URL
+      clientConfig.with {
+        includeEnvVars = true
+        envVarsExcludePatterns = BUILD_INFO_ENV_VARS_EXCLUDE_PATTERS.join(',')
+      }
+    }
   }
 
   private void configureDependencyResolution() {
@@ -250,6 +286,8 @@ final class ProjectPlugin extends AbstractPlugin {
     }
   }
 
+  // TODO: CodeNarc bug
+  @SuppressWarnings('UnnecessaryGetter')
   private void configureArtifactPublishing() {
     /*
      * WORKAROUND:
@@ -258,8 +296,15 @@ final class ProjectPlugin extends AbstractPlugin {
      * <grv87 2018-07-01>
      */
     project.extensions.extraProperties['signing.keyId'] = project.extensions.extraProperties['gpgKeyId'].toString()[-8..-1]
-    project.extensions.extraProperties['signing.password'] = project.extensions.extraProperties['gpgKeyPassword'].toString()
-    project.extensions.extraProperties['signing.secretKeyRingFile'] = project.extensions.extraProperties['gpgSecretKeyRingFile'].toString()
+    project.extensions.extraProperties['signing.password'] = project.extensions.extraProperties.has('gpgKeyPassphrase') ? project.extensions.extraProperties['gpgKeyPassphrase'].toString() : null
+    project.extensions.extraProperties['signing.secretKeyRingFile'] = getGpgHome().resolve('secring.gpg')
+
+    project.extensions.extraProperties['signing.gnupg.executable'] = 'gpg'
+    project.extensions.extraProperties['signing.gnupg.keyName'] = project.extensions.extraProperties['gpgKeyId'].toString()
+    project.extensions.extraProperties['signing.gnupg.passphrase'] = project.extensions.extraProperties.has('gpgKeyPassphrase') ? project.extensions.extraProperties['gpgKeyPassphrase'].toString() : null
+    if (System.getenv().containsKey('GNUPGHOME')) {
+      project.extensions.extraProperties['signing.gnupg.homeDir'] = System.getenv()['GNUPGHOME']
+    }
   }
 
   private void configureGit() {
@@ -329,7 +374,7 @@ final class ProjectPlugin extends AbstractPlugin {
        * See https://bugs.eclipse.org/bugs/show_bug.cgi?id=382212
        * <grv87 2018-06-22>
        */
-      TaskProvider<ResignGitCommit> resignGitPublishCommitProvider = project.tasks.register("resign${ gitPublishCommitProvider.name.capitalize() }", ResignGitCommit) { ResignGitCommit resignGitPublishCommit ->
+      ResignGitCommit.registerTask(project, gitPublishCommitProvider) { ResignGitCommit resignGitPublishCommit ->
         resignGitPublishCommit.with {
           enabled = repoClean
           description = 'Amend git publish commit adding sign to it'
@@ -350,7 +395,6 @@ final class ProjectPlugin extends AbstractPlugin {
       gitPublishCommit.with {
         enabled = repoClean
         dependsOn noJekyllProvider
-        finalizedBy resignGitPublishCommitProvider
       }
     }
 
@@ -377,6 +421,21 @@ final class ProjectPlugin extends AbstractPlugin {
    * Name of disabledRules convention for {@link CodeNarc} tasks
    */
   public static final String CODENARC_DISABLED_RULES_CONVENTION_NAME = 'disabledRules'
+
+  /**
+   * Path director for codenarc reports
+   */
+  static final PathDirector<CodeNarc> CODENARC_REPORT_DIRECTOR = new PathDirector<CodeNarc>() {
+    @Override
+    @SuppressWarnings('CatchException')
+    Path determinePath(CodeNarc object) throws ReportPathDirectorException {
+      try {
+        Paths.get(toSafeFileName((object.name - ~/^codenarc/ /* WORKAROUND: CodeNarcPlugin.getTaskBaseName has protected scope <grv87 2018-06-23> */).uncapitalize()))
+      } catch (Exception e) {
+        throw new ReportPathDirectorException(object, e)
+      }
+    }
+  }
 
   /*
    * WORKAROUND:
@@ -415,6 +474,12 @@ final class ProjectPlugin extends AbstractPlugin {
       extension.reportFormat = 'console'
     }
 
+    project.dependencies.add(/* WORKAROUND: CodeNarcPlugin.getConfigurationName has protected scope <grv87 2018-08-23> */ 'codenarc', [
+      group: 'org.codenarc',
+      name: 'CodeNarc',
+      version: '[1, 2['
+    ])
+
     checkProvider.configure { Task check ->
       check.taskDependencies.getDependencies(check).removeAll codenarcTasks
     }
@@ -423,11 +488,11 @@ final class ProjectPlugin extends AbstractPlugin {
     codenarcTasks.configureEach { CodeNarc codenarc ->
       codenarc.with {
         convention.plugins.put CODENARC_DISABLED_RULES_CONVENTION_NAME, new CodeNarcTaskConvention(codenarc)
-        String reportFileName = "codenarc/${ toSafeFileName((name - ~/^codenarc/ /* WORKAROUND: CodeNarcPlugin.getTaskBaseName has protected scope <grv87 2018-06-23> */).uncapitalize()) }"
+        Path reportSubpath = Paths.get('codenarc')
         reports.xml.enabled = true
-        reports.xml.setDestination new File(projectConvention.xmlReportsDir, "${ reportFileName }.xml")
+        reports.xml.setDestination projectConvention.getXmlReportFile(reportSubpath, CODENARC_REPORT_DIRECTOR, codenarc)
         reports.html.enabled = true
-        reports.html.setDestination new File(projectConvention.htmlReportsDir, "${ reportFileName }.html")
+        reports.html.setDestination projectConvention.getHtmlReportFile(reportSubpath, CODENARC_REPORT_DIRECTOR, codenarc)
       }
     }
 
@@ -439,27 +504,25 @@ final class ProjectPlugin extends AbstractPlugin {
         i < p.length && p[i] == DEFAULT_BUILD_DIR_NAME
       }
       codenarc.with {
-        for (File f in project.fileTree(project.projectDir) { ConfigurableFileTree fileTree ->
-          fileTree.include '**/*.gradle'
-          fileTree.exclude buildDirMatcher
-        }) {
-          source f
-        }
-        for (File f in project.fileTree(DEFAULT_BUILD_SRC_DIR) { ConfigurableFileTree fileTree ->
-          fileTree.include '**/*.groovy'
-          fileTree.exclude buildDirMatcher
-        }) {
-          source f
-        }
-        source 'Jenkinsfile'
-        source project.fileTree(dir: project.file('config'), includes: ['**/*.groovy'])
+        source project.fileTree(dir: project.projectDir, includes: ['*.gradle'])
+        source project.fileTree(dir: project.projectDir, includes: ['*.groovy'])
         /*
          * WORKAROUND:
-         * Indentation rule doesn't work correctly.
-         * https://github.com/CodeNarc/CodeNarc/issues/310
-         * <grv87 2018-06-26>
+         * We have to pass to CodeNarc resolved fileTree, otherwise we get the following error:
+         * Cannot add include/exclude specs to Ant node. Only include/exclude patterns are currently supported.
+         * This is not a problem since build sources can't change at build time,
+         * and also this code is executed only when codenarcBuildSrc task is actually created (i.e. run)
+         * <grv87 2018-08-22>
          */
-        codenarc.convention.getPlugin(CodeNarcTaskConvention).disabledRules.add 'Indentation'
+        source project.fileTree(DEFAULT_BUILD_SRC_DIR) { ConfigurableFileTree fileTree ->
+          fileTree.include '**/*.gradle'
+          fileTree.include '**/*.groovy'
+          fileTree.exclude buildDirMatcher
+        }.files
+        source project.fileTree(dir: project.file('gradle'), includes: ['**/*.gradle'])
+        source project.fileTree(dir: project.file('gradle'), includes: ['**/*.groovy'])
+        source project.fileTree(dir: project.file('config'), includes: ['**/*.groovy'])
+        source 'Jenkinsfile'
       }
     }
   }
@@ -484,7 +547,7 @@ final class ProjectPlugin extends AbstractPlugin {
   @SuppressWarnings('UnnecessarySetter')
   private void configureDiagnostics() {
     ProjectConvention projectConvention = project.convention.getPlugin(ProjectConvention)
-    project.convention.getPlugin(ProjectReportsPluginConvention).projectReportDirName = projectConvention.reportsDir.toPath().relativize(new File(projectConvention.txtReportsDir, 'project').toPath()).toString()
+    project.convention.getPlugin(ProjectReportsPluginConvention).projectReportDirName = projectConvention.getTxtReportDir(Paths.get('project')).toString()
 
     project.tasks.withType(BuildEnvironmentReportTask).configureEach { BuildEnvironmentReportTask buildEnvironmentReport ->
       buildEnvironmentReport.group = DIAGNOSTICS_TASK_GROUP_NAME
@@ -513,7 +576,7 @@ final class ProjectPlugin extends AbstractPlugin {
     project.tasks.withType(HtmlDependencyReportTask).configureEach { HtmlDependencyReportTask htmlDependencyReport ->
       htmlDependencyReport.with {
         group = DIAGNOSTICS_TASK_GROUP_NAME
-        reports.html.setDestination new File(projectConvention.htmlReportsDir, 'dependencies')
+        reports.html.setDestination projectConvention.getHtmlReportDir(Paths.get('dependencies'))
       }
     }
     project.tasks.withType(TaskReportTask).configureEach { TaskReportTask taskReport ->

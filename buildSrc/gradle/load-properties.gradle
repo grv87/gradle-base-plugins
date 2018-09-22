@@ -17,10 +17,13 @@
  * implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-new File(ext.rootDir, Project.GRADLE_PROPERTIES).withReader { Reader reader ->
-  Properties properties = new Properties()
-  properties.load(reader)
-  for (String key : properties.stringPropertyNames()) {
-    ext.set(key, properties.getProperty(key))
+File gradlePropertiesFile = new File(ext.rootDir, Project.GRADLE_PROPERTIES)
+if (gradlePropertiesFile.exists()) {
+  gradlePropertiesFile.withReader { Reader reader ->
+    Properties properties = new Properties()
+    properties.load(reader)
+    for (String key : properties.stringPropertyNames()) {
+      ext.set(key, properties.getProperty(key))
+    }
   }
 }

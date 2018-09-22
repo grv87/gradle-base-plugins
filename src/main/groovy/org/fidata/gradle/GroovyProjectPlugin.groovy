@@ -24,7 +24,7 @@ import static org.gradle.api.plugins.JavaPlugin.API_ELEMENTS_CONFIGURATION_NAME
 import static org.gradle.api.plugins.JavaPlugin.JAVADOC_TASK_NAME
 import org.fidata.gradle.utils.PluginDependeesUtils
 import groovy.transform.CompileStatic
-import org.fidata.gradle.internal.AbstractPlugin
+import org.fidata.gradle.internal.AbstractProjectPlugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.javadoc.Groovydoc
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition
@@ -36,7 +36,7 @@ import org.gradle.api.tasks.javadoc.Javadoc
  * Provides an environment for a Groovy project
  */
 @CompileStatic
-final class GroovyProjectPlugin extends AbstractPlugin {
+final class GroovyProjectPlugin extends AbstractProjectPlugin {
   @Override
   void apply(Project project) {
     super.apply(project)
@@ -62,7 +62,7 @@ final class GroovyProjectPlugin extends AbstractPlugin {
   }
 
   private void configureDocumentation() {
-    URI groovydocLink = project.uri("http://docs.groovy-lang.org/${ GroovySystem.version }/html/api/")
+    URI groovydocLink = project.uri("http://docs.groovy-lang.org/${ GroovySystem.version }/html/api/index.html?")
     project.extensions.configure(JVMBaseExtension) { JVMBaseExtension extension ->
       extension.javadocLinks.with {
         putAt 'groovy', groovydocLink

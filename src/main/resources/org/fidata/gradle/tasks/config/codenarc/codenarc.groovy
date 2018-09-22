@@ -23,6 +23,9 @@ ruleset {
   ruleset('rulesets/braces.xml')
   ruleset('rulesets/concurrency.xml')
   ruleset('rulesets/convention.xml') {
+    PublicMethodsBeforeNonPublicMethods(enabled: false)
+    StaticFieldsBeforeInstanceFields(enabled: false)
+    StaticMethodsBeforeInstanceMethods(enabled: false)
     TrailingComma(enabled: false)
   }
   ruleset('rulesets/design.xml') {
@@ -38,7 +41,6 @@ ruleset {
     Indentation(spacesPerIndentLevel: 2)
     LineLength(enabled: false)
     SpaceAroundMapEntryColon(enabled: false)
-    SpaceAfterClosingBrace(enabled: false)
   }
   ruleset('rulesets/generic.xml')
   ruleset('rulesets/grails.xml')
@@ -48,7 +50,9 @@ ruleset {
   ruleset('rulesets/junit.xml')
   ruleset('rulesets/logging.xml')
   ruleset('rulesets/naming.xml')
-  ruleset('rulesets/security.xml')
+  ruleset('rulesets/security.xml') {
+    JavaIoPackageAccess(enabled: false)
+  }
   ruleset('rulesets/serialization.xml')
   ruleset('rulesets/unnecessary.xml')
   ruleset('rulesets/unused.xml')

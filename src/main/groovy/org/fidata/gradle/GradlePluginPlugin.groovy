@@ -24,6 +24,9 @@ import static ProjectPlugin.ARTIFACTORY_URL
 import static JVMBasePlugin.FUNCTIONAL_TEST_SOURCE_SET_NAME
 import static JVMBasePlugin.FUNCTIONAL_TEST_TASK_NAME
 import static org.gradle.internal.FileUtils.toSafeFileName
+import org.fidata.gradle.utils.PathDirector
+import org.fidata.gradle.utils.ReportPathDirectorException
+import java.nio.file.Path
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.Task
 import org.gradle.api.tasks.SourceSet
@@ -34,7 +37,7 @@ import org.jfrog.gradle.plugin.artifactory.dsl.ArtifactoryPluginConvention
 import java.util.regex.Pattern
 import java.nio.file.Paths
 import groovy.transform.CompileStatic
-import org.fidata.gradle.internal.AbstractPlugin
+import org.fidata.gradle.internal.AbstractProjectPlugin
 import org.gradle.api.Project
 import com.gradle.publish.PluginBundleExtension
 import org.gradle.api.tasks.testing.Test
@@ -50,7 +53,7 @@ import org.gradle.api.tasks.TaskProvider
  * Provides an environment for a Gradle plugin project
  */
 @CompileStatic
-final class GradlePluginPlugin extends AbstractPlugin implements PropertyChangeListener {
+final class GradlePluginPlugin extends AbstractProjectPlugin implements PropertyChangeListener {
   @Override
   void apply(Project project) {
     super.apply(project)
@@ -83,7 +86,7 @@ final class GradlePluginPlugin extends AbstractPlugin implements PropertyChangeL
         }
         break
       default:
-        project.logger.warn('org.fidata.plugin: unexpected property change source: {}', e.source.toString())
+        project.logger.warn('org.fidata.plugin: unexpected property change source: {}', e.source)
     }
   }
 
@@ -108,10 +111,38 @@ final class GradlePluginPlugin extends AbstractPlugin implements PropertyChangeL
     }
   }
 
+  static final PathDirector<ValidateTaskProperties> VALIDATE_TASK_PROPERTIES_REPORT_DIRECTOR = new PathDirector<ValidateTaskProperties>() {
+    @Override
+    @SuppressWarnings('CatchException')
+    Path determinePath(ValidateTaskProperties object) throws ReportPathDirectorException {
+      try {
+        Paths.get(toSafeFileName(object.name))
+      } catch (Exception e) {
+        throw new ReportPathDirectorException(object, e)
+      }
+    }
+  }
+
+  private static final Pattern COMPAT_TEST_TASK_NAME_PATTERN = ~/^compatTest(.+)/
+
+  static final PathDirector<TaskProvider<Test>> COMPAT_TEST_REPORT_DIRECTOR = new PathDirector<TaskProvider<Test>>() {
+    @Override
+    @SuppressWarnings('CatchException')
+    Path determinePath(TaskProvider<Test> object) throws ReportPathDirectorException {
+      try {
+        Matcher compatTestMatcher = (object.name =~ COMPAT_TEST_TASK_NAME_PATTERN)
+        compatTestMatcher.find()
+        Paths.get('compatTest', toSafeFileName(compatTestMatcher.group(1).uncapitalize()))
+      } catch (Exception e) {
+        throw new ReportPathDirectorException(object, e)
+      }
+    }
+  }
+
   private void configureTesting() {
     project.tasks.withType(ValidateTaskProperties).configureEach { ValidateTaskProperties validateTaskProperties ->
       validateTaskProperties.with {
-        outputFile.set new File(project.convention.getPlugin(ProjectConvention).txtReportsDir, "${ toSafeFileName(name) }.txt")
+        outputFile.set project.convention.getPlugin(ProjectConvention).getTxtReportFile(VALIDATE_TASK_PROPERTIES_REPORT_DIRECTOR, validateTaskProperties)
         failOnWarning = true
       }
     }
@@ -122,18 +153,16 @@ final class GradlePluginPlugin extends AbstractPlugin implements PropertyChangeL
       project.plugins.getPlugin(JVMBasePlugin).addSpockDependency sourceSets.getByName(TestSet.baseName(/* WORKAROUND: org.ysb33r.gradle.gradletest.Names.DEFAULT_TASK has package scope <> */ 'gradleTest'))
     }
 
-    Pattern compatTestPattern = ~/^compatTest(.+)/
     project.plugins.getPlugin(JVMBasePlugin).addSpockDependency(
       sourceSets.getByName('compatTest'),
       /*
-       * Looks like there is no built-in way to get collection of TaskProvider
+       * TOTEST:
+       * Looks like there is no built-in way to get collection of TaskProvider.
+       * This is workaround, but it could trigger creation of tasks
+       * <grv87 2018-08-23>
        */
-      (Iterable<TaskProvider<Test>>)(project.tasks.withType(Test).matching { Test test -> test.name =~ compatTestPattern }.collect { Test test -> project.tasks.withType(Test).named(test.name) })
-    ) { String taskName ->
-      Matcher compatTestMatcher = (taskName =~ compatTestPattern)
-      compatTestMatcher.find()
-      Paths.get('compatTest', toSafeFileName(compatTestMatcher.group(1).uncapitalize()))
-    }
+      (Iterable<TaskProvider<Test>>)(project.tasks.withType(Test).matching { Test test -> test.name =~ COMPAT_TEST_TASK_NAME_PATTERN }.collect { Test test -> project.tasks.withType(Test).named(test.name) }), COMPAT_TEST_REPORT_DIRECTOR
+    )
 
     project.afterEvaluate {
       project.extensions.getByType(GradlePluginDevelopmentExtension).testSourceSets((project.extensions.getByType(GradlePluginDevelopmentExtension).testSourceSets + [sourceSets.getByName(TestSet.baseName(/* WORKAROUND: org.ysb33r.gradle.gradletest.Names.DEFAULT_TASK has package scope <> */ 'gradleTest')), sourceSets.getByName(FUNCTIONAL_TEST_SOURCE_SET_NAME)]).toArray(new SourceSet[0]))
@@ -152,7 +181,7 @@ final class GradlePluginPlugin extends AbstractPlugin implements PropertyChangeL
   }
 
   private void configureDocumentation() {
-    project.extensions.getByType(JVMBaseExtension).javadocLinks['org.gradle'] = project.uri("https://docs.gradle.org/${ project.gradle.gradleVersion }/javadoc/")
+    project.extensions.getByType(JVMBaseExtension).javadocLinks['org.gradle'] = project.uri("https://docs.gradle.org/${ project.gradle.gradleVersion }/javadoc/index.html?")
   }
 
   private void configureArtifactsPublishing() {

@@ -1,5 +1,5 @@
 /*
- * AbstractPlugin class
+ * AbstractProjectPlugin class
  * Copyright © 2017-2018  Basil Peace
  *
  * This file is part of gradle-base-plugins.
@@ -24,10 +24,10 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 
 /**
- * Base class for plugins
+ * Base class for plugins applicable to @{link Project}
  */
 @SuppressWarnings("AbstractClassWithoutAbstractMethod")
-public abstract class AbstractPlugin implements Plugin<Project> {
+public abstract class AbstractProjectPlugin implements Plugin<Project> {
   /**
    * @return project which this plugin instance is applied to
    */
@@ -40,5 +40,4 @@ public abstract class AbstractPlugin implements Plugin<Project> {
   public void apply(Project project) {
     this.project = project;
   }
-
 }

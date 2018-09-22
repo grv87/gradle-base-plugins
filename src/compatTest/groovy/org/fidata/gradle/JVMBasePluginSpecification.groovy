@@ -19,6 +19,7 @@
  */
 package org.fidata.gradle
 
+import static org.fidata.testfixtures.TestFixtures.initEmptyGitRepository
 import org.gradle.testkit.runner.GradleRunner
 import spock.lang.Specification
 
@@ -41,8 +42,6 @@ class JVMBasePluginSpecification extends Specification {
     'gitPassword': 'dummyGitPassword',
     'ghToken': 'dummyGhToken',
     'gpgKeyId'            : 'ABCD1234',
-    'gpgKeyPassword'      : '',
-    'gpgSecretKeyRingFile': 'dummyGPGSecretKeyRingFile',
   ]
 
   // fixture methods
@@ -52,16 +51,7 @@ class JVMBasePluginSpecification extends Specification {
 
   // run before every feature method
   void setup() {
-    /*
-     * WORKAROUND:
-     * https://github.com/tschulte/gradle-semantic-release-plugin/issues/24
-     * https://github.com/tschulte/gradle-semantic-release-plugin/issues/25
-     * <grv87 2018-06-24>
-     */
-    [
-      'git init',
-      'git commit --message "Initial commit" --allow-empty',
-    ].each { it.execute(null, testProjectDir).waitFor() }
+    initEmptyGitRepository(testProjectDir)
 
     buildFile << '''\
       plugins {
@@ -93,6 +83,43 @@ class JVMBasePluginSpecification extends Specification {
   // void cleanupSpec() { }
 
   // feature methods
+
+  void 'sets Java encoding to UTF-8'() {
+    given:
+    buildFile << '''\
+      sourceSets.main.java.srcDirs = ['src']
+      apply plugin: 'java'
+    '''
+    and:
+    File srcDir = new File(testProjectDir, 'src')
+    srcDir.mkdir()
+    new File(srcDir, 'EncodingTest.java').bytes = """\
+      public final class EncodingTest {
+        public static final String utf8String() {
+          return "${ Character.toChars(codepoint) }";
+        }
+      }
+    """.stripIndent().getBytes('UTF-8')
+
+    when:
+    GradleRunner.create()
+      .withGradleVersion(System.getProperty('compat.gradle.version'))
+      .withProjectDir(testProjectDir)
+      .withArguments('compileJava')
+      .withPluginClasspath()
+      .build()
+
+    then:
+    ClassLoader cl = new URLClassLoader(new File(testProjectDir, 'build/classes/java/main').toURL())
+    Class c = cl.loadClass('EncodingTest')
+    String result = c.getMethod('utf8String').invoke(null)
+    result.length() == 2
+    and:
+    result.codePointAt(0) == codepoint
+
+    where:
+    codepoint = 0x1D54B // U+1D54B Double-Struck Capital T
+  }
 
   void 'copies license file into resources META-INF directory'() {
     given: 'license file'

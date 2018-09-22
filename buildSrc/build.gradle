@@ -19,8 +19,6 @@
  */
 // Minimal set of plugins enough to compile plugins
 plugins {
-  id 'java'
-  id 'groovy'
   id 'java-library'
   id 'java-gradle-plugin'
 }

@@ -51,6 +51,6 @@ final class GradlePluginPluginDependees {
 
   // Suppress default constructor for noninstantiability
   private GradlePluginPluginDependees() {
-    throw new AssertionError()
+    throw new UnsupportedOperationException()
   }
 }

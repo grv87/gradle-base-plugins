@@ -19,18 +19,20 @@
  */
 package org.fidata.gradle
 
+import static java.nio.charset.StandardCharsets.UTF_8
 import org.fidata.gradle.utils.PluginDependeesUtils
 import org.gradle.api.artifacts.Configuration
 import groovy.transform.CompileStatic
-import org.fidata.gradle.internal.AbstractPlugin
+import org.fidata.gradle.internal.AbstractProjectPlugin
 import org.gradle.api.Project
+import org.gradle.api.tasks.compile.GroovyCompile
 import org.gradle.api.tasks.javadoc.Groovydoc
 
 /**
  * Provides tools for Groovy language
  */
 @CompileStatic
-final class GroovyBasePlugin extends AbstractPlugin {
+final class GroovyBasePlugin extends AbstractProjectPlugin {
   @Override
   void apply(Project project) {
     super.apply(project)
@@ -38,16 +40,11 @@ final class GroovyBasePlugin extends AbstractPlugin {
     project.pluginManager.apply JVMBasePlugin
     PluginDependeesUtils.applyPlugins project, GroovyBaseProjectPluginDependees.PLUGIN_DEPENDEES
 
-    /**
-     * WORKAROUND:
-     * https://github.com/gradle/gradle/issues/6168
-     * <grv87 2018-08-01>
-     */
-    project.tasks.withType(Groovydoc).configureEach { Groovydoc groovydoc ->
-      groovydoc.doFirst {
-        groovydoc.destinationDir.deleteDir()
-      }
+    project.tasks.withType(GroovyCompile).configureEach { GroovyCompile groovyCompile ->
+      groovyCompile.options.encoding = UTF_8.name()
     }
+
+    configureDocumentation()
   }
 
   /**
@@ -57,6 +54,19 @@ final class GroovyBasePlugin extends AbstractPlugin {
   void addGroovyDependency(Configuration configuration) {
     project.dependencies.with {
       add configuration.name, localGroovy()
+    }
+  }
+
+  void configureDocumentation() {
+    /*
+     * WORKAROUND:
+     * https://github.com/gradle/gradle/issues/6168
+     * <grv87 2018-08-01>
+     */
+    project.tasks.withType(Groovydoc).configureEach { Groovydoc groovydoc ->
+      groovydoc.doFirst {
+        groovydoc.destinationDir.deleteDir()
+      }
     }
   }
 }

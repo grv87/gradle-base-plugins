@@ -20,6 +20,7 @@
  */
 package org.fidata.gradle
 
+import static org.fidata.testfixtures.TestFixtures.initEmptyGitRepository
 import org.gradle.api.Project
 import org.gradle.api.internal.plugins.PluginApplicationException
 import org.gradle.testfixtures.ProjectBuilder
@@ -46,8 +47,6 @@ class ProjectPluginExtraPropertiesSpecification extends Specification {
     'gitPassword': 'dummyGitPassword',
     'ghToken': 'dummyGhToken',
     'gpgKeyId'            : 'ABCD1234',
-    'gpgKeyPassword'      : '',
-    'gpgSecretKeyRingFile': 'dummyGPGSecretKeyRingFile',
   ]
 
   // fixture methods
@@ -57,16 +56,7 @@ class ProjectPluginExtraPropertiesSpecification extends Specification {
 
   // run before every feature method
   void setup() {
-    /*
-     * WORKAROUND:
-     * https://github.com/tschulte/gradle-semantic-release-plugin/issues/24
-     * https://github.com/tschulte/gradle-semantic-release-plugin/issues/25
-     * <grv87 2018-06-24>
-     */
-    [
-      'git init',
-      'git commit --message "Initial commit" --allow-empty',
-    ].each { it.execute(null, testProjectDir.root).waitFor() }
+    initEmptyGitRepository(testProjectDir.root)
     project = ProjectBuilder.builder().withProjectDir(testProjectDir.root).build()
   }
 

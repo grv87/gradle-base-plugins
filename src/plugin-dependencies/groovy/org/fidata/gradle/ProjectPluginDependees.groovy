@@ -94,6 +94,6 @@ final class ProjectPluginDependees {
 
   // Suppress default constructor for noninstantiability
   private ProjectPluginDependees() {
-    throw new AssertionError()
+    throw new UnsupportedOperationException()
   }
 }

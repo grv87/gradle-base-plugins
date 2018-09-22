@@ -60,6 +60,6 @@ public final class VersionUtils {
 
   // Suppress default constructor for noninstantiability
   private VersionUtils() {
-    throw new AssertionError();
+    throw new UnsupportedOperationException();
   }
 }

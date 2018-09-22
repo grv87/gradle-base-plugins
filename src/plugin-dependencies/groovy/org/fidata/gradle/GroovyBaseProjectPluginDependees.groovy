@@ -36,6 +36,6 @@ final class GroovyBaseProjectPluginDependees {
 
   // Suppress default constructor for noninstantiability
   private GroovyBaseProjectPluginDependees() {
-    throw new AssertionError()
+    throw new UnsupportedOperationException()
   }
 }
