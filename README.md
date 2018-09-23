@@ -165,6 +165,13 @@ All these tasks are put into `Diagnostics` group.
 	It should be set with [SPDX license identifier
 	](https://spdx.org/licenses/).
 
+*   Provides `generateChangelog` and `generateChangelogTxt` tasks
+    that generate changelog in Markdown and text formats
+    in `build/changelog` directory
+
+    The main usage is to check generated changelog
+    during release preparation to make sure that everything is correct.
+
 *   Provides `tags` property used by other plugins
 
 *	Applies [`nebula.contacts` plugin
