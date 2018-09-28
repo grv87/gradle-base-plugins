@@ -144,6 +144,7 @@ node {
                   reportName: 'CodeNarc',
                   reportDir: 'build/reports/html/codenarc',
                   reportFiles: [
+                    'exceptions',
                     'main',
                     'mainResources',
                     'testFixtures',

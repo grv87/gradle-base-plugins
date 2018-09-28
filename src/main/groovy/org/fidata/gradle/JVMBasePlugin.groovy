@@ -80,28 +80,41 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
     super.apply(project)
 
     project.pluginManager.apply ProjectPlugin
-    PluginDependeesUtils.applyPlugins project, JVMBasePluginDependees.PLUGIN_DEPENDEES
+
+    ProjectConvention projectConvention = project.project.convention.getPlugin(ProjectConvention)
+    boolean isBuildSrc = projectConvention.isBuildSrc
+
+    PluginDependeesUtils.applyPlugins project, isBuildSrc, JVMBasePluginDependees.PLUGIN_DEPENDEES
 
     project.extensions.add JVM_EXTENSION_NAME, new JVMBaseExtension(project)
 
-    project.convention.getPlugin(ProjectConvention).addPropertyChangeListener this
-    configurePublicReleases()
+    projectConvention.addPropertyChangeListener this
+
+    if (!isBuildSrc) {
+      configurePublicReleases()
+    }
 
     project.tasks.withType(JavaCompile).configureEach { JavaCompile javaCompile ->
       javaCompile.options.encoding = UTF_8.name()
     }
 
-    project.tasks.withType(ProcessResources).configureEach { ProcessResources processResources ->
-      processResources.from(LICENSE_FILE_NAMES) { CopySpec copySpec ->
-        copySpec.into 'META-INF'
+    if (!isBuildSrc) {
+      project.tasks.withType(ProcessResources).configureEach { ProcessResources processResources ->
+        processResources.from(LICENSE_FILE_NAMES) { CopySpec copySpec ->
+          copySpec.into 'META-INF'
+        }
       }
+    }
+
+    if (!isBuildSrc) {
+      configureDocumentation()
     }
 
     configureTesting()
 
-    configureDocumentation()
-
-    configureArtifactsPublishing()
+    if (!isBuildSrc) {
+      configureArtifactsPublishing()
+    }
   }
 
   /**

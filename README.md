@@ -172,6 +172,13 @@ All these tasks are put into `Diagnostics` group.
 
 	Provides `contacts` extension.
 
+### buildSrc projects
+
+Plugin can be applied to buildSrc projects.
+However, buildSrc projects can't have releases and documentation,
+so all related features are turned off.
+They also don't publish build info to Artifactory.
+
 ### Supported tools versions:
 
 *	Requires Gradle >= 4.9

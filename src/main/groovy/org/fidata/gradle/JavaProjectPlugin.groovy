@@ -46,11 +46,16 @@ final class JavaProjectPlugin extends AbstractProjectPlugin {
     super.apply(project)
 
     project.pluginManager.apply JVMBasePlugin
-    PluginDependeesUtils.applyPlugins project, JavaProjectPluginDependees.PLUGIN_DEPENDEES
+
+    boolean isBuildSrc = project.project.convention.getPlugin(ProjectConvention).isBuildSrc
+
+    PluginDependeesUtils.applyPlugins project, isBuildSrc, JavaProjectPluginDependees.PLUGIN_DEPENDEES
 
     configureLombok()
 
-    configureDocumentation()
+    if (!isBuildSrc) {
+      configureDocumentation()
+    }
   }
 
   private void configureLombok() {

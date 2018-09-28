@@ -21,6 +21,9 @@ import org.fidata.gradle.utils.PluginDependee
 import org.fidata.gradle.utils.PluginDependeeExclusion
 
 dependencies {
+  exceptionsImplementation/*exceptionsApi*/ localGroovy()
+  implementation sourceSets.exceptions.output
+
   Closure addDependencies = { Map<String, PluginDependee> pluginDependees ->
     pluginDependees.findAll { !it.key.startsWith('org.gradle.') }*.value.findAll().each { PluginDependee pluginDependee ->
       pluginDependee.with {

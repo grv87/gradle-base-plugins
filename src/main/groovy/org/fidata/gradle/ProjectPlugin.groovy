@@ -138,9 +138,11 @@ final class ProjectPlugin extends AbstractProjectPlugin {
 
     super.apply(project)
 
-    PluginDependeesUtils.applyPlugins project, ProjectPluginDependees.PLUGIN_DEPENDEES
+    ProjectConvention projectConvention = new ProjectConvention(project)
+    project.convention.plugins.put(FIDATA_CONVENTION_NAME, projectConvention)
+    boolean isBuildSrc = projectConvention.isBuildSrc
 
-    project.convention.plugins.put FIDATA_CONVENTION_NAME, new ProjectConvention(project)
+    PluginDependeesUtils.applyPlugins project, isBuildSrc, ProjectPluginDependees.PLUGIN_DEPENDEES
 
     if (!project.group) { project.group = "${ -> defaultProjectGroup }" }
 
@@ -149,19 +151,25 @@ final class ProjectPlugin extends AbstractProjectPlugin {
     }
     // project.extensions.getByType(ReportingExtension).baseDir = project.convention.getPlugin(ProjectConvention).reportsDir
 
-    configureGit()
+    if (!isBuildSrc) {
+      configureGit()
+    }
 
     configureLifecycle()
 
     configurePrerequisitesLifecycle()
 
-    configureArtifactory()
+    if (!isBuildSrc) {
+      configureArtifactory()
+    }
 
     configureDependencyResolution()
 
-    configureDocumentation()
+    if (!isBuildSrc) {
+      configureDocumentation()
 
-    configureArtifactPublishing()
+      configureArtifactPublishing()
+    }
 
     configureCodeQuality()
 
@@ -177,27 +185,32 @@ final class ProjectPlugin extends AbstractProjectPlugin {
     project.tasks.named(BUILD_TASK_NAME).configure { Task build ->
       build.dependsOn.remove CHECK_TASK_NAME
     }
-    project.tasks.named(RELEASE_TASK_NAME).configure { Task release ->
-      release.with {
-        group = RELEASE_TASK_GROUP_NAME
-        dependsOn project.tasks.named(BUILD_TASK_NAME) // TODO
-        dependsOn project.tasks.named(CHECK_TASK_NAME)
+    boolean isBuildSrc = project.convention.getPlugin(ProjectConvention).isBuildSrc
+    if (!isBuildSrc) {
+      project.tasks.named(RELEASE_TASK_NAME).configure { Task release ->
+        release.with {
+          group = RELEASE_TASK_GROUP_NAME
+          dependsOn project.tasks.named(BUILD_TASK_NAME) // TODO
+          dependsOn project.tasks.named(CHECK_TASK_NAME)
+        }
       }
     }
     project.tasks.named(CHECK_TASK_NAME).configure { Task check ->
       check.dependsOn check.project.tasks.withType(Test)
     }
 
-    project.extensions.getByType(SemanticReleasePluginExtension).branchNames.with {
-      replace 'develop', ''
-      // TODO: Support other CIs
-      if (System.getenv('CHANGE_ID') != null) {
-        replace 'HEAD', System.getenv('BRANCH_NAME')
+    if (!isBuildSrc) {
+      project.extensions.getByType(SemanticReleasePluginExtension).branchNames.with {
+        replace 'develop', ''
+        // TODO: Support other CIs
+        if (System.getenv('CHANGE_ID') != null) {
+          replace 'HEAD', System.getenv('BRANCH_NAME')
+        }
       }
-    }
 
-    project.tasks.withType(UpdateGithubRelease).named('updateGithubRelease').configure { UpdateGithubRelease updateGithubRelease ->
-      updateGithubRelease.repo.ghToken = project.extensions.extraProperties['ghToken'].toString()
+      project.tasks.withType(UpdateGithubRelease).named('updateGithubRelease').configure { UpdateGithubRelease updateGithubRelease ->
+        updateGithubRelease.repo.ghToken = project.extensions.extraProperties['ghToken'].toString()
+      }
     }
   }
 
@@ -265,6 +278,7 @@ final class ProjectPlugin extends AbstractProjectPlugin {
   }
 
   private void configureDependencyResolution() {
+    ProjectConvention projectConvention = project.convention.getPlugin(ProjectConvention)
     project.repositories.maven { MavenArtifactRepository mavenArtifactRepository ->
       mavenArtifactRepository.with {
         /*
@@ -273,7 +287,7 @@ final class ProjectPlugin extends AbstractProjectPlugin {
          * When GString is used, URI property setter is called anyway, and we got cast error
          * <grv87 2018-06-26>
          */
-        url = project.uri("$ARTIFACTORY_URL/libs-${ project.convention.getPlugin(ProjectConvention).isRelease.get() ? 'release' : 'snapshot' }/")
+        url = project.uri("$ARTIFACTORY_URL/libs-${ !projectConvention.isBuildSrc && projectConvention.isRelease.get() ? 'release' : 'snapshot' }/")
         credentials.username = project.extensions.extraProperties['artifactoryUser'].toString()
         credentials.password = project.extensions.extraProperties['artifactoryPassword'].toString()
       }
