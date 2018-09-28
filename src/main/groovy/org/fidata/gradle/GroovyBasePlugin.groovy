@@ -38,13 +38,18 @@ final class GroovyBasePlugin extends AbstractProjectPlugin {
     super.apply(project)
 
     project.pluginManager.apply JVMBasePlugin
-    PluginDependeesUtils.applyPlugins project, GroovyBaseProjectPluginDependees.PLUGIN_DEPENDEES
+
+    boolean isBuildSrc = project.project.convention.getPlugin(ProjectConvention).isBuildSrc
+
+    PluginDependeesUtils.applyPlugins project, isBuildSrc, GroovyBaseProjectPluginDependees.PLUGIN_DEPENDEES
 
     project.tasks.withType(GroovyCompile).configureEach { GroovyCompile groovyCompile ->
       groovyCompile.options.encoding = UTF_8.name()
     }
 
-    configureDocumentation()
+    if (!isBuildSrc) {
+      configureDocumentation()
+    }
   }
 
   /**

@@ -58,18 +58,27 @@ final class GradlePluginPlugin extends AbstractProjectPlugin implements Property
     super.apply(project)
 
     project.pluginManager.apply JVMBasePlugin
-    PluginDependeesUtils.applyPlugins project, GradlePluginPluginDependees.PLUGIN_DEPENDEES
+
+    ProjectConvention projectConvention = project.project.convention.getPlugin(ProjectConvention)
+    boolean isBuildSrc = projectConvention.isBuildSrc
+
+    PluginDependeesUtils.applyPlugins project, isBuildSrc, GradlePluginPluginDependees.PLUGIN_DEPENDEES
 
     project.plugins.getPlugin(ProjectPlugin).defaultProjectGroup = 'org.fidata.gradle'
 
-    project.convention.getPlugin(ProjectConvention).addPropertyChangeListener(this)
-    configurePublicReleases()
+    projectConvention.addPropertyChangeListener(this)
 
-    configureDocumentation()
+    if (!isBuildSrc) {
+      configurePublicReleases()
+
+      configureDocumentation()
+    }
 
     configureTesting()
 
-    configureArtifactsPublishing()
+    if (!isBuildSrc) {
+      configureArtifactsPublishing()
+    }
   }
 
   /**

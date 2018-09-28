@@ -39,9 +39,22 @@ contacts {
 
 ext.rootDir = '.'
 
+sourceSets {
+  exceptions {
+    java.srcDirs = [new File(project.ext.rootDir, 'src/exceptions/java')]
+    groovy.srcDirs = [new File(project.ext.rootDir, 'src/exceptions/groovy')]
+  }
+  main.groovy.srcDirs += [new File(project.ext.rootDir, 'src/plugin-dependencies/groovy')]
+}
+
 apply from: new File(ext.rootDir, 'gradle/dependencies-compile.gradle')
 
-sourceSets.main.groovy.srcDirs += [new File(ext.rootDir, 'src/plugin-dependencies/groovy')]
+groovydoc.source sourceSets.exceptions.groovy
+
+jar {
+  from sourceSets.exceptions.output
+  dependsOn exceptionsClasses
+}
 
 /*
  * WORKAROUND:
