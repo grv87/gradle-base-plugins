@@ -463,7 +463,7 @@ public class ProjectConvention extends AbstractExtension {
 
   /**
    * Returns file
-   * inside standard directory for TXT reports
+   * inside standard directory for XML reports
    *
    * @param pathDirector Path director. Path provided by {@code pathDirector}
    *                     is resolved relatively to the root of standard directory.
