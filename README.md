@@ -50,9 +50,8 @@ plugin](https://github.com/FIDATA/gradle-semantic-release-plugin).
 *	Applies and configures [`com.jfrog.artifactory` plugin
     ](https://www.jfrog.com/confluence/display/RTF/Gradle+Artifactory+Plugin)
 
-    Allows us to resolve artifacts from
-    [FIDATA Artifactory](https://artifactory.fidata.org/), and also
-    to publish build info there.
+    Allows us to publish artifacts and build info to [FIDATA Artifactory
+    ](https://artifactory.fidata.org/).
 
 *   Turns off changing modules caching, so that SNAPSHOT dependencies
     are updated on each run
