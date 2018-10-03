@@ -38,7 +38,7 @@ com.jcraft:jsch.agentproxy.usocket-nc:0.0.9
 com.jcraft:jsch:0.1.54
 com.jcraft:jzlib:1.1.1
 com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4
-com.netflix.nebula:gradle-contacts-plugin:4.0.1
+com.netflix.nebula:gradle-contacts-plugin:4.1.1
 com.thoughtworks.xstream:xstream:1.4.10
 commons-beanutils:commons-beanutils:1.8.0
 commons-cli:commons-cli:1.3
