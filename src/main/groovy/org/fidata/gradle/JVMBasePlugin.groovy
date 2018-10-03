@@ -189,7 +189,7 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
       add(sourceSet.implementationConfigurationName, [
         group  : 'org.spockframework',
         name   : 'spock-core',
-        version: "1.1-groovy-${ (GroovySystem.version =~ /^\d+\.\d+/)[0] }"
+        version: "1.2-groovy-${ (GroovySystem.version =~ /^\d+\.\d+/)[0] }"
       ]) { ModuleDependency dependency ->
         dependency.exclude(
           group: 'org.codehaus.groovy',

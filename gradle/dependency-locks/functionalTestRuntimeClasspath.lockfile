@@ -149,7 +149,7 @@ org.multiverse:multiverse-core:0.7.0
 org.objenesis:objenesis:2.6
 org.slf4j:jcl-over-slf4j:1.7.21
 org.spdx:spdx-tools:2.1.12
-org.spockframework:spock-core:1.1-groovy-2.4
+org.spockframework:spock-core:1.2-groovy-2.4
 stax:stax-api:1.0.1
 xerces:xercesImpl:2.12.0
 xml-apis:xml-apis:1.4.01
