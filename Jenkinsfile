@@ -25,10 +25,6 @@ import org.jfrog.hudson.pipeline.types.buildInfo.BuildInfo
 @SuppressWarnings(['UnusedVariable', 'NoDef', 'VariableTypeRequired'])
 @Library('jenkins-pipeline-shared-library@v1.1.1') dummy
 
-properties([
-  disableConcurrentBuilds()
-])
-
 node {
   GradleBuild rtGradle
 
@@ -192,6 +188,7 @@ node {
             stage('Release') {
               try {
                 timeout(time: 5, unit: 'MINUTES') {
+                  milestone()
                   buildInfo = rtGradle.run tasks: 'release', switches: gradleSwitches, buildInfo: buildInfo
                 }
               } finally {
