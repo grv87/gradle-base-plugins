@@ -3,7 +3,6 @@
 # This file is expected to be part of source control.
 backport-util-concurrent:backport-util-concurrent:3.1
 classworlds:classworlds:1.1-alpha-2
-com.athaydes:spock-reports:1.6.0
 com.fasterxml.jackson.core:jackson-annotations:2.9.0
 com.fasterxml.jackson.core:jackson-core:2.9.5
 com.fasterxml.jackson.core:jackson-databind:2.9.5
@@ -147,7 +146,6 @@ org.objenesis:objenesis:2.6
 org.projectlombok:lombok:1.18.2
 org.slf4j:jcl-over-slf4j:1.7.21
 org.spdx:spdx-tools:2.1.12
-org.spockframework:spock-core:1.1-groovy-2.4
 pl.pragmatists:JUnitParams:1.1.1
 stax:stax-api:1.0.1
 xerces:xercesImpl:2.12.0

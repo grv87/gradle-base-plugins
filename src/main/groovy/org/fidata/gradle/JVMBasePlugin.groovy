@@ -59,7 +59,6 @@ import org.ajoberstar.gradle.git.publish.GitPublishExtension
 import com.jfrog.bintray.gradle.BintrayExtension
 import com.jfrog.bintray.gradle.tasks.BintrayPublishTask
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
-import com.athaydes.spockframework.report.internal.ReportDataAggregator
 import java.nio.file.Path
 import java.nio.file.Paths
 import org.gradle.api.tasks.TaskProvider
@@ -161,21 +160,6 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
   }
 
   /**
-   * Namer of moveAggegatedReport task for test tasks
-   */
-  static final Namer<TaskProvider<Test>> MOVE_AGGREGATED_REPORT_NAMER = new Namer<TaskProvider<Test>>() {
-    @Override
-    @SuppressWarnings('CatchException')
-    String determineName(TaskProvider<Test> testProvider) throws TaskNamerException {
-      try {
-        "move${ testProvider.name.capitalize() }AggegatedReport"
-      } catch (Exception e) {
-        throw new TaskNamerException('moveAggregatedReport', 'task', testProvider, e)
-      }
-    }
-  }
-
-  /**
    * Namer of codenarc task for source sets
    */
   static final Namer<SourceSet> CODENARC_NAMER = new Namer<SourceSet>() {
@@ -227,37 +211,14 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
     ProjectConvention projectConvention = project.convention.getPlugin(ProjectConvention)
     tasks.each { TaskProvider<Test> taskProvider ->
       taskProvider.configure { Test test ->
-        File spockReportDir = projectConvention.getHtmlReportDir(reportDirector, taskProvider)
-        TaskProvider<Task> moveAggregatedReportProvider = project.tasks.register(MOVE_AGGREGATED_REPORT_NAMER.determineName(taskProvider)) { Task moveAggregatedReport ->
-          moveAggregatedReport.with {
-            File aggregatedReportFile = spockReportDir.toPath().resolve(ReportDataAggregator.AGGREGATED_DATA_FILE.toString()).toFile()
-            destroyables.register aggregatedReportFile
-            /*
-             * WORKAROUND:
-             * There is no built-in way to skip task if its single file input doesn't exist
-             * https://github.com/gradle/gradle/issues/2919
-             * <grv87 2018-07-25>
-             */
-            onlyIf { aggregatedReportFile.exists() }
-            doLast {
-              project.ant.invokeMethod('move', [
-                file: aggregatedReportFile,
-                todir: projectConvention.jsonReportsDir
-              ])
-            }
-          }
-        }
         test.with {
           reports.html.enabled = false
-          systemProperty 'com.athaydes.spockframework.report.outputDir', spockReportDir.absolutePath
-          outputs.dir spockReportDir
-          /*
-           * WORKAROUND:
-           * Spock Reports generates aggregated_report.json in the same directory as HTML files
-           * https://github.com/renatoathaydes/spock-reports/issues/155
-           * <grv87 2018-07-25>
-           */
-          finalizedBy moveAggregatedReportProvider
+          File spockHtmlReportDir = projectConvention.getHtmlReportDir(reportDirector, taskProvider)
+          File spockJsonReportDir = projectConvention.getJsonReportDir(reportDirector, taskProvider)
+          systemProperty 'com.athaydes.spockframework.report.outputDir', spockHtmlReportDir.absolutePath
+          systemProperty 'com.athaydes.spockframework.report.aggregatedJsonReportDir', spockJsonReportDir.absolutePath
+          outputs.dir spockHtmlReportDir
+          outputs.dir spockJsonReportDir
         }
         /*
          * WORKAROUND:
