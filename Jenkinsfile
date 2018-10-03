@@ -23,7 +23,7 @@ import org.jfrog.hudson.pipeline.types.buildInfo.BuildInfo
 
 //noinspection GroovyUnusedAssignment
 @SuppressWarnings(['UnusedVariable', 'NoDef', 'VariableTypeRequired'])
-@Library('jenkins-pipeline-shared-library@v1.1.0') dummy
+@Library('jenkins-pipeline-shared-library@v1.1.1') dummy
 
 properties([
   disableConcurrentBuilds()
@@ -33,18 +33,15 @@ node {
   GradleBuild rtGradle
 
   stage ('Checkout') {
-    List<Map<String, ? extends Serializable>> extensions = [
-      [$class: 'WipeWorkspace'],
-      [$class: 'CloneOption', noTags: false, shallow: false],
-    ]
-    if (!env.CHANGE_ID) {
-      extensions.add([$class: 'LocalBranch', localBranch: env.BRANCH_NAME])
-    }
     checkout([
       $class: 'GitSCM',
       branches: scm.branches,
       doGenerateSubmoduleConfigurations: scm.doGenerateSubmoduleConfigurations,
-      extensions: extensions,
+      extensions: [
+        [$class: 'WipeWorkspace'],
+        [$class: 'CloneOption', noTags: false, shallow: false],
+        [$class: 'LocalBranch', localBranch: env.BRANCH_NAME],
+      ],
       userRemoteConfigs: scm.userRemoteConfigs,
     ])
     gitAuthor()
