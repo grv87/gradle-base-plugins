@@ -148,7 +148,8 @@ plugin](https://github.com/FIDATA/gradle-semantic-release-plugin).
 
 	*	[`cz.malohlava`](https://github.com/mmalohlava/gradle-visteg)
 
-		Generates task dependency graph in Graphviz format.
+		Generates task dependency graph
+		in [Graphviz](http://www.graphviz.org/) format.
 
 *	Provides `inputsOutputs` task which generates reports about all task
 	file inputs and outputs
