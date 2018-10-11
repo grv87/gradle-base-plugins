@@ -72,7 +72,7 @@ node {
    * and put gradle.properties under version control
    * <grv87 2018-09-22>
    */
-  String gradleSwitches = '-Dorg.gradle.internal.launcher.welcomeMessageEnabled=false --console=plain --info --warning-mode all --full-stacktrace --build-cache'
+  String gradleSwitches = '-Dorg.gradle.internal.launcher.welcomeMessageEnabled=false --no-daemon --console=plain --info --warning-mode all --full-stacktrace --build-cache'
 
   ansiColor {
     withGpgScope("${ pwd() }/.scoped-gpg", 'GPG', 'GPG_KEY_PASSWORD') { String fingerprint ->
