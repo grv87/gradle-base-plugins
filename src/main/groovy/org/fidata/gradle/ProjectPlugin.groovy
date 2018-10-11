@@ -274,8 +274,8 @@ final class ProjectPlugin extends AbstractProjectPlugin {
          * <grv87 2018-06-26>
          */
         url = project.uri("$ARTIFACTORY_URL/libs-${ project.convention.getPlugin(ProjectConvention).isRelease.get() ? 'release' : 'snapshot' }/")
-        credentials.username = project.extensions.extraProperties['artifactoryUser']
-        credentials.password = project.extensions.extraProperties['artifactoryPassword']
+        credentials.username = project.extensions.extraProperties['artifactoryUser'].toString()
+        credentials.password = project.extensions.extraProperties['artifactoryPassword'].toString()
       }
     }
 
@@ -302,12 +302,12 @@ final class ProjectPlugin extends AbstractProjectPlugin {
      * <grv87 2018-07-01>
      */
     project.extensions.extraProperties['signing.keyId'] = project.extensions.extraProperties['gpgKeyId'].toString()[-8..-1]
-    project.extensions.extraProperties['signing.password'] = project.extensions.extraProperties.has('gpgKeyPassphrase') ? project.extensions.extraProperties['gpgKeyPassphrase'].toString() : null
+    project.extensions.extraProperties['signing.password'] = project.extensions.extraProperties.has('gpgKeyPassphrase') ? project.extensions.extraProperties['gpgKeyPassphrase'] : null
     project.extensions.extraProperties['signing.secretKeyRingFile'] = getGpgHome().resolve('secring.gpg')
 
     project.extensions.extraProperties['signing.gnupg.executable'] = 'gpg'
-    project.extensions.extraProperties['signing.gnupg.keyName'] = project.extensions.extraProperties['gpgKeyId'].toString()
-    project.extensions.extraProperties['signing.gnupg.passphrase'] = project.extensions.extraProperties.has('gpgKeyPassphrase') ? project.extensions.extraProperties['gpgKeyPassphrase'].toString() : null
+    project.extensions.extraProperties['signing.gnupg.keyName'] = project.extensions.extraProperties['gpgKeyId']
+    project.extensions.extraProperties['signing.gnupg.passphrase'] = project.extensions.extraProperties.has('gpgKeyPassphrase') ? project.extensions.extraProperties['gpgKeyPassphrase'] : null
     String gnupgHome = System.getenv('GNUPGHOME')
     if (gnupgHome != null) {
       project.extensions.extraProperties['signing.gnupg.homeDir'] = gnupgHome

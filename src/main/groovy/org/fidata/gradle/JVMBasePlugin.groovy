@@ -341,8 +341,8 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
   private void configureArtifactory() {
     project.convention.getPlugin(ArtifactoryPluginConvention).with {
       clientConfig.publisher.repoKey = "libs-${ project.convention.getPlugin(ProjectConvention).isRelease.get() ? 'release' : 'snapshot' }-local"
-      clientConfig.publisher.username = project.extensions.extraProperties['artifactoryUser']
-      clientConfig.publisher.password = project.extensions.extraProperties['artifactoryPassword']
+      clientConfig.publisher.username = project.extensions.extraProperties['artifactoryUser'].toString()
+      clientConfig.publisher.password = project.extensions.extraProperties['artifactoryPassword'].toString()
       clientConfig.publisher.maven = true
     }
     project.tasks.withType(ArtifactoryTask).named(ARTIFACTORY_PUBLISH_TASK_NAME).configure { ArtifactoryTask artifactoryPublish ->
