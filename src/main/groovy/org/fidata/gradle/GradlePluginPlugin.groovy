@@ -195,8 +195,8 @@ final class GradlePluginPlugin extends AbstractProjectPlugin implements Property
          * <grv87 2018-06-26>
          */
         url = project.uri("$ARTIFACTORY_URL/$repository/")
-        credentials.username = project.extensions.extraProperties['artifactoryUser']
-        credentials.password = project.extensions.extraProperties['artifactoryPassword']
+        credentials.username = project.extensions.extraProperties['artifactoryUser'].toString()
+        credentials.password = project.extensions.extraProperties['artifactoryPassword'].toString()
       }
     }
   }
