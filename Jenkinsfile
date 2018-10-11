@@ -192,7 +192,9 @@ node {
               try {
                 timeout(time: 5, unit: 'MINUTES') {
                   milestone()
-                  buildInfo = rtGradle.run tasks: 'release', switches: gradleSwitches, buildInfo: buildInfo
+                  lock('gradle-base-plugins/gh-pages') {
+                    buildInfo = rtGradle.run tasks: 'release', switches: gradleSwitches, buildInfo: buildInfo
+                  }
                 }
               } finally {
                 warnings(
