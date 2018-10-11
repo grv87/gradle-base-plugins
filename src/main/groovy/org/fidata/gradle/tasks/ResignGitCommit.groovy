@@ -62,15 +62,15 @@ class ResignGitCommit extends DefaultTask {
       We better pass password through commandLine than preset - so we need not start agent manually at all */
     }
     try {
-      String gpgKeyId = project.extensions.extraProperties['gpgKeyId']
-      if (project.extensions.extraProperties.has('gpgKeyPassphrase')) {
+      String gpgKeyId = project.rootProject.extensions.extraProperties['gpgKeyId']
+      if (project.rootProject.extensions.extraProperties.has('gpgKeyPassphrase')) {
         project.logger.info('ResignGitCommit: presetting gpgKeyPassphrase')
         project.exec { ExecSpec execSpec ->
           execSpec.executable 'gpg-preset-passphrase'
           if (!OperatingSystem.current().windows) {
             execSpec.executable Paths.get('/usr/local/libexec', execSpec.executable).toString()
           }
-          execSpec.args '--preset', '--passphrase', project.extensions.extraProperties['gpgKeyPassphrase'], GpgUtils.getKeyGrip(project, gpgKeyId)
+          execSpec.args '--preset', '--passphrase', project.rootProject.extensions.extraProperties['gpgKeyPassphrase'], GpgUtils.getKeyGrip(project, gpgKeyId)
         }
       }
       project.exec { ExecSpec execSpec ->

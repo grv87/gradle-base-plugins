@@ -39,7 +39,7 @@ final class GroovyBasePlugin extends AbstractProjectPlugin {
 
     project.pluginManager.apply JVMBasePlugin
 
-    boolean isBuildSrc = project.project.convention.getPlugin(ProjectConvention).isBuildSrc
+    boolean isBuildSrc = project.rootProject.convention.getPlugin(RootProjectConvention).isBuildSrc
 
     PluginDependeesUtils.applyPlugins project, isBuildSrc, GroovyBaseProjectPluginDependees.PLUGIN_DEPENDEES
 

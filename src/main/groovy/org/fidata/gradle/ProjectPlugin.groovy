@@ -97,6 +97,11 @@ import org.gradle.api.tasks.TaskProvider
 @CompileStatic
 final class ProjectPlugin extends AbstractProjectPlugin {
   /**
+   * Name of fidata.root convention for {@link Project}
+   */
+  public static final String FIDATA_ROOT_CONVENTION_NAME = 'fidata.root'
+
+  /**
    * Name of fidata convention for {@link Project}
    */
   public static final String FIDATA_CONVENTION_NAME = 'fidata'
@@ -141,11 +146,18 @@ final class ProjectPlugin extends AbstractProjectPlugin {
 
     super.apply(project)
 
-    ProjectConvention projectConvention = new ProjectConvention(project)
-    project.convention.plugins.put(FIDATA_CONVENTION_NAME, projectConvention)
-    boolean isBuildSrc = projectConvention.isBuildSrc
+    RootProjectConvention rootProjectConvention
+    if (project == project.rootProject) {
+      rootProjectConvention = new RootProjectConvention(project)
+      project.convention.plugins.put FIDATA_ROOT_CONVENTION_NAME, rootProjectConvention
+    } else {
+      rootProjectConvention = project.rootProject.convention.getPlugin(RootProjectConvention)
+    }
+    boolean isBuildSrc = rootProjectConvention.isBuildSrc
 
     PluginDependeesUtils.applyPlugins project, isBuildSrc, ProjectPluginDependees.PLUGIN_DEPENDEES
+
+    project.convention.plugins.put FIDATA_CONVENTION_NAME, new ProjectConvention(project)
 
     if (!project.group) { project.group = "${ -> defaultProjectGroup }" }
 
@@ -154,7 +166,7 @@ final class ProjectPlugin extends AbstractProjectPlugin {
     }
     // project.extensions.getByType(ReportingExtension).baseDir = project.convention.getPlugin(ProjectConvention).reportsDir
 
-    if (!isBuildSrc) {
+    if (!isBuildSrc && project == project.rootProject) {
       configureGit()
     }
 
@@ -178,8 +190,12 @@ final class ProjectPlugin extends AbstractProjectPlugin {
 
     configureDiagnostics()
 
-    if (!isBuildSrc) {
+    if (!isBuildSrc && project == project.rootProject) {
       createGenerateChangelogTasks()
+    }
+
+    project.subprojects { Project subproject ->
+      subproject.pluginManager.apply ProjectPlugin
     }
   }
 
@@ -189,11 +205,15 @@ final class ProjectPlugin extends AbstractProjectPlugin {
   public static final String RELEASE_TASK_GROUP_NAME = 'Release'
 
   private void configureLifecycle() {
-    boolean isBuildSrc = project.convention.getPlugin(ProjectConvention).isBuildSrc
+    boolean isBuildSrc = project.rootProject.convention.getPlugin(RootProjectConvention).isBuildSrc
     if (!isBuildSrc) {
-      project.tasks.named(RELEASE_TASK_NAME).configure { Task release ->
+      if (project == project.rootProject) {
+        project./*rootProject.*/ tasks.named(RELEASE_TASK_NAME).configure { Task release ->
+          release.group = RELEASE_TASK_GROUP_NAME
+        }
+      }
+      project.rootProject.tasks.named(RELEASE_TASK_NAME).configure { Task release ->
         release.with {
-          group = RELEASE_TASK_GROUP_NAME
           dependsOn project.tasks.named(ASSEMBLE_TASK_NAME)
           dependsOn project.tasks.named(CHECK_TASK_NAME)
         }
@@ -203,7 +223,7 @@ final class ProjectPlugin extends AbstractProjectPlugin {
       check.dependsOn check.project.tasks.withType(Test)
     }
 
-    if (!isBuildSrc) {
+    if (!isBuildSrc && project == project.rootProject) {
       project.extensions.getByType(SemanticReleasePluginExtension).branchNames.with {
         replace 'develop', ''
         // TODO: Support other CIs
@@ -213,7 +233,7 @@ final class ProjectPlugin extends AbstractProjectPlugin {
       }
 
       project.tasks.withType(UpdateGithubRelease).named('updateGithubRelease').configure { UpdateGithubRelease updateGithubRelease ->
-        updateGithubRelease.repo.ghToken = project.extensions.extraProperties['ghToken'].toString()
+        updateGithubRelease.repo.ghToken = project./*rootProject.*/extensions.extraProperties['ghToken'].toString()
       }
     }
   }
@@ -282,7 +302,7 @@ final class ProjectPlugin extends AbstractProjectPlugin {
   }
 
   private void configureDependencyResolution() {
-    ProjectConvention projectConvention = project.convention.getPlugin(ProjectConvention)
+    RootProjectConvention rootProjectConvention = project.rootProject.convention.getPlugin(RootProjectConvention)
     project.repositories.maven { MavenArtifactRepository mavenArtifactRepository ->
       mavenArtifactRepository.with {
         /*
@@ -291,9 +311,9 @@ final class ProjectPlugin extends AbstractProjectPlugin {
          * When GString is used, URI property setter is called anyway, and we got cast error
          * <grv87 2018-06-26>
          */
-        url = project.uri("$ARTIFACTORY_URL/libs-${ !projectConvention.isBuildSrc && projectConvention.isRelease.get() ? 'release' : 'snapshot' }/")
-        credentials.username = project.extensions.extraProperties['artifactoryUser'].toString()
-        credentials.password = project.extensions.extraProperties['artifactoryPassword'].toString()
+        url = project.uri("$ARTIFACTORY_URL/libs-${ !rootProjectConvention.isBuildSrc && rootProjectConvention.isRelease.get() ? 'release' : 'snapshot' }/")
+        credentials.username = project.rootProject.extensions.extraProperties['artifactoryUser'].toString()
+        credentials.password = project.rootProject.extensions.extraProperties['artifactoryPassword'].toString()
       }
     }
 
@@ -319,13 +339,13 @@ final class ProjectPlugin extends AbstractProjectPlugin {
      * Signing plugin doesn't support GPG 2 key IDs
      * <grv87 2018-07-01>
      */
-    project.extensions.extraProperties['signing.keyId'] = project.extensions.extraProperties['gpgKeyId'].toString()[-8..-1]
-    project.extensions.extraProperties['signing.password'] = project.extensions.extraProperties.has('gpgKeyPassphrase') ? project.extensions.extraProperties['gpgKeyPassphrase'] : null
+    project.extensions.extraProperties['signing.keyId'] = project.rootProject.extensions.extraProperties['gpgKeyId'].toString()[-8..-1]
+    project.extensions.extraProperties['signing.password'] = project.rootProject.extensions.extraProperties.has('gpgKeyPassphrase') ? project.rootProject.extensions.extraProperties['gpgKeyPassphrase'] : null
     project.extensions.extraProperties['signing.secretKeyRingFile'] = getGpgHome().resolve('secring.gpg')
 
     project.extensions.extraProperties['signing.gnupg.executable'] = 'gpg'
-    project.extensions.extraProperties['signing.gnupg.keyName'] = project.extensions.extraProperties['gpgKeyId']
-    project.extensions.extraProperties['signing.gnupg.passphrase'] = project.extensions.extraProperties.has('gpgKeyPassphrase') ? project.extensions.extraProperties['gpgKeyPassphrase'] : null
+    project.extensions.extraProperties['signing.gnupg.keyName'] = project.rootProject.extensions.extraProperties['gpgKeyId']
+    project.extensions.extraProperties['signing.gnupg.passphrase'] = project.rootProject.extensions.extraProperties.has('gpgKeyPassphrase') ? project.rootProject.extensions.extraProperties['gpgKeyPassphrase'] : null
     String gnupgHome = System.getenv('GNUPGHOME')
     if (gnupgHome != null) {
       project.extensions.extraProperties['signing.gnupg.homeDir'] = gnupgHome
@@ -333,8 +353,8 @@ final class ProjectPlugin extends AbstractProjectPlugin {
   }
 
   private void configureGit() {
-    System.setProperty AuthConfig.USERNAME_OPTION, project.extensions.extraProperties['gitUsername'].toString()
-    System.setProperty AuthConfig.PASSWORD_OPTION, project.extensions.extraProperties['gitPassword'].toString()
+    System.setProperty AuthConfig.USERNAME_OPTION, project./*rootProject.*/extensions.extraProperties['gitUsername'].toString()
+    System.setProperty AuthConfig.PASSWORD_OPTION, project./*rootProject.*/extensions.extraProperties['gitPassword'].toString()
   }
 
   /**
@@ -343,92 +363,94 @@ final class ProjectPlugin extends AbstractProjectPlugin {
   public static final String NO_JEKYLL_TASK_NAME = 'noJekyll'
 
   private void configureDocumentation() {
-    project.extensions.configure(GitPublishExtension) { GitPublishExtension extension ->
-      extension.with {
-        branch.set 'gh-pages'
-        preserve.include '**'
-        /*
-         * CAVEAT:
-         * SNAPSHOT documentation for other branches should be removed manually
-         */
-        preserve.exclude { FileTreeElement fileTreeElement ->
-          Pattern snapshotSuffix = ~/-SNAPSHOT$/
-          Matcher m = snapshotSuffix.matcher(fileTreeElement.relativePath.segments[0])
-          if (!m) {
-            return false
+    if (project == project.rootProject) {
+      project.extensions.configure(GitPublishExtension) { GitPublishExtension extension ->
+        extension.with {
+          branch.set 'gh-pages'
+          preserve.include '**'
+          /*
+           * CAVEAT:
+           * SNAPSHOT documentation for other branches should be removed manually
+           */
+          preserve.exclude { FileTreeElement fileTreeElement ->
+            Pattern snapshotSuffix = ~/-SNAPSHOT$/
+            Matcher m = snapshotSuffix.matcher(fileTreeElement.relativePath.segments[0])
+            if (!m) {
+              return false
+            }
+            String dirVersion = m.replaceFirst('')
+            String projectVersion = project.version.toString() - snapshotSuffix
+            try {
+              return Version.valueOf(dirVersion).preReleaseVersion == Version.valueOf(projectVersion).preReleaseVersion
+            } catch (ignored) {
+              return false
+            }
           }
-          String dirVersion = m.replaceFirst('')
-          String projectVersion = project.version.toString() - snapshotSuffix
-          try {
-            return Version.valueOf(dirVersion).preReleaseVersion == Version.valueOf(projectVersion).preReleaseVersion
-          } catch (ignored) {
-            return false
-          }
+          commitMessage.set COMMIT_MESSAGE_TEMPLATE.make(
+            type: 'docs',
+            subject: "publish documentation for version ${ project.version }",
+            generatedBy: 'org.ajoberstar:gradle-git-publish'
+          ).toString()
         }
-        commitMessage.set COMMIT_MESSAGE_TEMPLATE.make(
-          type: 'docs',
-          subject: "publish documentation for version ${ project.version }",
-          generatedBy: 'org.ajoberstar:gradle-git-publish'
-        ).toString()
       }
-    }
 
-    boolean repoClean = ((Grgit)project.extensions.extraProperties.get('grgit')).status().clean
+      boolean repoClean = ((Grgit) project./*rootProject.*/extensions.extraProperties.get('grgit')).status().clean
 
-    TaskProvider<Task> gitPublishCommitProvider = project.tasks.named(/* WORKAROUND: GitPublishPlugin.COMMIT_TASK has package scope <grv87 2018-06-23> */ 'gitPublishCommit')
-    gitPublishCommitProvider.configure { Task gitPublishCommit ->
-      TaskProvider<NoJekyll> noJekyllProvider = project.tasks.register(NO_JEKYLL_TASK_NAME, NoJekyll) { NoJekyll noJekyll ->
-        noJekyll.with {
-          description = 'Generates .nojekyll file in gitPublish repository'
-          destinationDir.set project.extensions.getByType(GitPublishExtension).repoDir
+      TaskProvider<Task> gitPublishCommitProvider = project.tasks.named(/* WORKAROUND: GitPublishPlugin.COMMIT_TASK has package scope <grv87 2018-06-23> */ 'gitPublishCommit')
+      gitPublishCommitProvider.configure { Task gitPublishCommit ->
+        TaskProvider<NoJekyll> noJekyllProvider = project.tasks.register(NO_JEKYLL_TASK_NAME, NoJekyll) { NoJekyll noJekyll ->
+          noJekyll.with {
+            description = 'Generates .nojekyll file in gitPublish repository'
+            destinationDir.set project.extensions.getByType(GitPublishExtension).repoDir
+          }
+          /*
+           * WORKAROUND:
+           * Without that we get error:
+           * [Static type checking] - Cannot call <T extends org.gradle.api.Task>
+           * org.gradle.api.tasks.TaskContainer#register(java.lang.String, java.lang.Class <T>, org.gradle.api.Action
+           * <java.lang.Object extends java.lang.Object>) with arguments [java.lang.String, java.lang.Class
+           * <org.fidata.gradle.tasks.NoJekyll>, groovy.lang.Closure <java.io.File>]
+           * <grv87 2018-07-31>
+           */
+          null
         }
         /*
          * WORKAROUND:
-         * Without that we get error:
-         * [Static type checking] - Cannot call <T extends org.gradle.api.Task>
-         * org.gradle.api.tasks.TaskContainer#register(java.lang.String, java.lang.Class <T>, org.gradle.api.Action
-         * <java.lang.Object extends java.lang.Object>) with arguments [java.lang.String, java.lang.Class
-         * <org.fidata.gradle.tasks.NoJekyll>, groovy.lang.Closure <java.io.File>]
-         * <grv87 2018-07-31>
+         * JGit doesn't support signed commits yet.
+         * See https://bugs.eclipse.org/bugs/show_bug.cgi?id=382212
+         * <grv87 2018-06-22>
          */
-        null
-      }
-      /*
-       * WORKAROUND:
-       * JGit doesn't support signed commits yet.
-       * See https://bugs.eclipse.org/bugs/show_bug.cgi?id=382212
-       * <grv87 2018-06-22>
-       */
-      ResignGitCommit.registerTask(project, gitPublishCommitProvider) { ResignGitCommit resignGitPublishCommit ->
-        resignGitPublishCommit.with {
+        ResignGitCommit.registerTask(project, gitPublishCommitProvider) { ResignGitCommit resignGitPublishCommit ->
+          resignGitPublishCommit.with {
+            enabled = repoClean
+            description = 'Amend git publish commit adding sign to it'
+            workingDir.set project.extensions.getByType(GitPublishExtension).repoDir
+            onlyIf { gitPublishCommitProvider.get().didWork }
+          }
+          /*
+           * WORKAROUND:
+           * Without that we get error:
+           * [Static type checking] - Cannot call <T extends org.gradle.api.Task>
+           * org.gradle.api.tasks.TaskContainer#register(java.lang.String, java.lang.Class <T>, org.gradle.api.Action
+           * <java.lang.Object extends java.lang.Object>) with arguments [groovy.lang.GString, java.lang.Class
+           * <org.fidata.gradle.tasks.ResignGitCommit>, groovy.lang.Closure <java.lang.Void>]
+           * <grv87 2018-07-31>
+           */
+          null
+        }
+        gitPublishCommit.with {
           enabled = repoClean
-          description = 'Amend git publish commit adding sign to it'
-          workingDir.set project.extensions.getByType(GitPublishExtension).repoDir
-          onlyIf { gitPublishCommitProvider.get().didWork }
+          dependsOn noJekyllProvider
         }
-        /*
-         * WORKAROUND:
-         * Without that we get error:
-         * [Static type checking] - Cannot call <T extends org.gradle.api.Task>
-         * org.gradle.api.tasks.TaskContainer#register(java.lang.String, java.lang.Class <T>, org.gradle.api.Action
-         * <java.lang.Object extends java.lang.Object>) with arguments [groovy.lang.GString, java.lang.Class
-         * <org.fidata.gradle.tasks.ResignGitCommit>, groovy.lang.Closure <java.lang.Void>]
-         * <grv87 2018-07-31>
-         */
-        null
       }
-      gitPublishCommit.with {
-        enabled = repoClean
-        dependsOn noJekyllProvider
-      }
-    }
 
-    TaskProvider<Task> gitPublishPushProvider = project.tasks.named(/* WORKAROUND: GitPublishPlugin.PUSH_TASK has package scope <grv87 2018-06-23> */'gitPublishPush')
-    gitPublishPushProvider.configure { Task gitPublishPush ->
-      gitPublishPush.enabled = repoClean
-    }
-    project.tasks.named(RELEASE_TASK_NAME).configure { Task release ->
-      release.dependsOn gitPublishPushProvider
+      TaskProvider<Task> gitPublishPushProvider = project.tasks.named(/* WORKAROUND: GitPublishPlugin.PUSH_TASK has package scope <grv87 2018-06-23> */ 'gitPublishPush')
+      gitPublishPushProvider.configure { Task gitPublishPush ->
+        gitPublishPush.enabled = repoClean
+      }
+      project.tasks.named(RELEASE_TASK_NAME).configure { Task release ->
+        release.dependsOn gitPublishPushProvider
+      }
     }
   }
 
@@ -536,32 +558,34 @@ final class ProjectPlugin extends AbstractProjectPlugin {
     }
 
     project.tasks.register("${ /* WORKAROUND: CodeNarcPlugin.getTaskBaseName has protected scope <grv87 2018-06-23> */ 'codenarc' }${ DEFAULT_BUILD_SRC_DIR.capitalize() }", CodeNarc) { CodeNarc codenarc ->
-      Closure buildDirMatcher = { FileTreeElement fte ->
-        String[] p = fte.relativePath.segments
-        int i = 0
-        while (i < p.length && p[i] == DEFAULT_BUILD_SRC_DIR) { i++ }
-        i < p.length && p[i] == DEFAULT_BUILD_DIR_NAME
-      }
       codenarc.with {
         source project.fileTree(dir: project.projectDir, includes: ['*.gradle'])
         source project.fileTree(dir: project.projectDir, includes: ['*.groovy'])
-        /*
-         * WORKAROUND:
-         * We have to pass to CodeNarc resolved fileTree, otherwise we get the following error:
-         * Cannot add include/exclude specs to Ant node. Only include/exclude patterns are currently supported.
-         * This is not a problem since build sources can't change at build time,
-         * and also this code is executed only when codenarcBuildSrc task is actually created (i.e. run)
-         * <grv87 2018-08-22>
-         */
-        source project.fileTree(DEFAULT_BUILD_SRC_DIR) { ConfigurableFileTree fileTree ->
-          fileTree.include '**/*.gradle'
-          fileTree.include '**/*.groovy'
-          fileTree.exclude buildDirMatcher
-        }.files
         source project.fileTree(dir: project.file('gradle'), includes: ['**/*.gradle'])
         source project.fileTree(dir: project.file('gradle'), includes: ['**/*.groovy'])
         source project.fileTree(dir: project.file('config'), includes: ['**/*.groovy'])
-        source 'Jenkinsfile'
+        if (project == project.rootProject) {
+          Closure buildDirMatcher = { FileTreeElement fte ->
+            String[] p = fte.relativePath.segments
+            int i = 0
+            while (i < p.length && p[i] == DEFAULT_BUILD_SRC_DIR) { i++ }
+            i < p.length && p[i] == DEFAULT_BUILD_DIR_NAME
+          }
+          /*
+           * WORKAROUND:
+           * We have to pass to CodeNarc resolved fileTree, otherwise we get the following error:
+           * Cannot add include/exclude specs to Ant node. Only include/exclude patterns are currently supported.
+           * This is not a problem since build sources can't change at build time,
+           * and also this code is executed only when codenarcBuildSrc task is actually created (i.e. run)
+           * <grv87 2018-08-22>
+           */
+          source project.fileTree(DEFAULT_BUILD_SRC_DIR) { ConfigurableFileTree fileTree ->
+            fileTree.include '**/*.gradle'
+            fileTree.include '**/*.groovy'
+            fileTree.exclude buildDirMatcher
+          }.files
+          source 'Jenkinsfile'
+        }
       }
     }
   }
@@ -675,10 +699,10 @@ final class ProjectPlugin extends AbstractProjectPlugin {
   @SuppressWarnings(['FactoryMethodName', 'BuilderMethodWithSideEffects'])
   private void createGenerateChangelogTasks() {
     Path changelogOutputDir = project.buildDir.toPath().resolve('changelog')
-    ProjectConvention projectConvention = project.convention.getPlugin(ProjectConvention)
+    RootProjectConvention rootProjectConvention = project.rootProject.convention.getPlugin(RootProjectConvention)
     project.tasks.register(GENERATE_CHANGELOG_TASK_NAME) { Task generateChangelog ->
       File outputFile = changelogOutputDir.resolve(GENERATE_CHANGELOG_OUTPUT_FILE_NAME).toFile()
-      String changeLog = projectConvention.changeLog.get()
+      String changeLog = rootProjectConvention.changeLog.get()
       generateChangelog.with {
         inputs.property 'changeLog', changeLog
         doLast {
@@ -689,7 +713,7 @@ final class ProjectPlugin extends AbstractProjectPlugin {
     }
     project.tasks.register(GENERATE_CHANGELOG_TXT_TASK_NAME) { Task generateChangelogTxt ->
       File outputFile = changelogOutputDir.resolve(GENERATE_CHANGELOG_TXT_OUTPUT_FILE_NAME).toFile()
-      String changeLog = projectConvention.changeLogTxt.get()
+      String changeLog = rootProjectConvention.changeLogTxt.get()
       generateChangelogTxt.with {
         inputs.property 'changeLog', changeLog
         doLast {
