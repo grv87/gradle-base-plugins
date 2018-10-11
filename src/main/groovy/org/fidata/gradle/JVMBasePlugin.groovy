@@ -85,16 +85,17 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
   void apply(Project project) {
     super.apply(project)
 
-    project.pluginManager.apply ProjectPlugin
+    if (project == project.rootProject) {
+      project.pluginManager.apply ProjectPlugin
+    }
 
-    ProjectConvention projectConvention = project.project.convention.getPlugin(ProjectConvention)
-    boolean isBuildSrc = projectConvention.isBuildSrc
+    boolean isBuildSrc = project.rootProject.convention.getPlugin(RootProjectConvention).isBuildSrc
 
     PluginDependeesUtils.applyPlugins project, isBuildSrc, JVMBasePluginDependees.PLUGIN_DEPENDEES
 
     project.extensions.add JVM_EXTENSION_NAME, new JVMBaseExtension(project)
 
-    projectConvention.addPropertyChangeListener this
+    project.convention.getPlugin(ProjectConvention).addPropertyChangeListener this
 
     if (!isBuildSrc) {
       configurePublicReleases()
@@ -338,8 +339,11 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
   }
 
   private void configureTesting() {
-    project.convention.getPlugin(JavaPluginConvention).testReportDirName = project.extensions.getByType(ReportingExtension).baseDir.toPath().relativize(project.convention.getPlugin(ProjectConvention).htmlReportsDir.toPath()).toString()
-    project.convention.getPlugin(JavaPluginConvention).testResultsDirName = project.buildDir.toPath().relativize(project.convention.getPlugin(ProjectConvention).xmlReportsDir.toPath()).toString()
+    project.convention.getPlugin(JavaPluginConvention).with {
+      ProjectConvention projectConvention = project.convention.getPlugin(ProjectConvention)
+      testReportDirName = project.extensions.getByType(ReportingExtension).baseDir.toPath().relativize(projectConvention.htmlReportsDir.toPath()).toString()
+      testResultsDirName = project.buildDir.toPath().relativize(projectConvention.xmlReportsDir.toPath()).toString()
+    }
     project.tasks.withType(Test).configureEach { Test test ->
       test.with {
         environment = environment.findAll { String key, Object value -> key != 'GRADLE_OPTS' && !key.startsWith(ENV_PROJECT_PROPERTIES_PREFIX) }
@@ -370,9 +374,9 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
 
   private void configureArtifactory() {
     project.convention.getPlugin(ArtifactoryPluginConvention).with {
-      clientConfig.publisher.repoKey = "libs-${ project.convention.getPlugin(ProjectConvention).isRelease.get() ? 'release' : 'snapshot' }-local"
-      clientConfig.publisher.username = project.extensions.extraProperties['artifactoryUser'].toString()
-      clientConfig.publisher.password = project.extensions.extraProperties['artifactoryPassword'].toString()
+      clientConfig.publisher.repoKey = "libs-${ project.rootProject.convention.getPlugin(RootProjectConvention).isRelease.get() ? 'release' : 'snapshot' }-local"
+      clientConfig.publisher.username = project.rootProject.extensions.extraProperties['artifactoryUser'].toString()
+      clientConfig.publisher.password = project.rootProject.extensions.extraProperties['artifactoryPassword'].toString()
       clientConfig.publisher.maven = true
     }
     project.tasks.withType(ArtifactoryTask).named(ARTIFACTORY_PUBLISH_TASK_NAME).configure { ArtifactoryTask artifactoryPublish ->
@@ -390,7 +394,7 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
         }
       }
     }
-    project.tasks.named(RELEASE_TASK_NAME).configure { Task release ->
+    project.rootProject.tasks.named(RELEASE_TASK_NAME).configure { Task release ->
       release.finalizedBy project.tasks.withType(ArtifactoryTask)
     }
   }
@@ -418,30 +422,31 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
 
   @SuppressWarnings(['UnnecessaryObjectReferences', 'UnnecessarySetter'])
   private void configureBintray() {
+    RootProjectConvention rootProjectConvention = project.rootProject.convention.getPlugin(RootProjectConvention)
     ProjectConvention projectConvention = project.convention.getPlugin(ProjectConvention)
     project.pluginManager.apply 'com.jfrog.bintray'
 
     project.extensions.configure(BintrayExtension) { BintrayExtension extension ->
       extension.with {
-        user = project.extensions.extraProperties['bintrayUser'].toString()
-        key = project.extensions.extraProperties['bintrayAPIKey'].toString()
+        user = project.rootProject.extensions.extraProperties['bintrayUser'].toString()
+        key = project.rootProject.extensions.extraProperties['bintrayAPIKey'].toString()
         pkg.repo = 'generic'
         pkg.name = 'gradle-project'
         pkg.userOrg = 'fidata'
         pkg.version.name = ''
         pkg.version.vcsTag = '' // TODO
         pkg.version.gpg.sign = true // TODO ?
-        pkg.desc = project.version.toString() == '1.0.0' ? project.description : projectConvention.changeLogTxt.get().toString()
+        pkg.desc = project.version.toString() == '1.0.0' ? project.description : rootProjectConvention.changeLogTxt.get().toString()
         pkg.labels = projectConvention.tags.get().toArray(new String[0])
         pkg.setLicenses projectConvention.license
-        pkg.vcsUrl = projectConvention.vcsUrl.get()
+        pkg.vcsUrl = rootProjectConvention.vcsUrl.get()
         // pkg.version.attributes // Attributes to be attached to the version
       }
     }
     project.tasks.withType(BintrayPublishTask).configureEach { BintrayPublishTask bintrayPublish ->
-      bintrayPublish.onlyIf { projectConvention.isRelease.get() }
+      bintrayPublish.onlyIf { rootProjectConvention.isRelease.get() }
     }
-    project.tasks.named(RELEASE_TASK_NAME).configure { Task release ->
+    project.rootProject.tasks.named(RELEASE_TASK_NAME).configure { Task release ->
       release.finalizedBy project.tasks.withType(BintrayPublishTask)
     }
   }

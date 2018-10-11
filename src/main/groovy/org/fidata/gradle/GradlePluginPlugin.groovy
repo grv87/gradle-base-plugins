@@ -59,14 +59,13 @@ final class GradlePluginPlugin extends AbstractProjectPlugin implements Property
 
     project.pluginManager.apply JVMBasePlugin
 
-    ProjectConvention projectConvention = project.project.convention.getPlugin(ProjectConvention)
-    boolean isBuildSrc = projectConvention.isBuildSrc
+    boolean isBuildSrc = project.rootProject.convention.getPlugin(RootProjectConvention).isBuildSrc
 
     PluginDependeesUtils.applyPlugins project, isBuildSrc, GradlePluginPluginDependees.PLUGIN_DEPENDEES
 
     project.plugins.getPlugin(ProjectPlugin).defaultProjectGroup = 'org.fidata.gradle'
 
-    projectConvention.addPropertyChangeListener(this)
+    project.convention.getPlugin(ProjectConvention).addPropertyChangeListener this
 
     if (!isBuildSrc) {
       configurePublicReleases()
@@ -97,21 +96,22 @@ final class GradlePluginPlugin extends AbstractProjectPlugin implements Property
   }
 
   private void configurePublicReleases() {
+    RootProjectConvention rootProjectConvention = project.rootProject.convention.getPlugin(RootProjectConvention)
     ProjectConvention projectConvention = project.convention.getPlugin(ProjectConvention)
     if (projectConvention.publicReleases) {
       project.pluginManager.apply 'com.gradle.plugin-publish'
       project.extensions.configure(PluginBundleExtension) { PluginBundleExtension extension ->
         extension.with {
-          description = project.version.toString() == '1.0.0' ? project.description : projectConvention.changeLogTxt.get().toString()
+          description = project.version.toString() == '1.0.0' ? project.description : rootProjectConvention.changeLogTxt.get().toString()
           tags = (Collection<String>)projectConvention.tags.get()
           website = projectConvention.websiteUrl.get()
-          vcsUrl = projectConvention.vcsUrl.get()
+          vcsUrl = rootProjectConvention.vcsUrl.get()
         }
       }
       project.tasks.named(/* WORKAROUND: PublishPlugin.BASE_TASK_NAME has private scope <grv87 2018-06-23> */ 'publishPlugins').configure { Task publishPlugins ->
-        publishPlugins.onlyIf { projectConvention.isRelease.get() }
+        publishPlugins.onlyIf { rootProjectConvention.isRelease.get() }
       }
-      project.tasks.named(RELEASE_TASK_NAME).configure { Task release ->
+      project.rootProject.tasks.named(RELEASE_TASK_NAME).configure { Task release ->
         release.finalizedBy /* WORKAROUND: PublishPlugin.BASE_TASK_NAME has private scope <grv87 2018-06-23> */ 'publishPlugins'
       }
     }
@@ -187,7 +187,7 @@ final class GradlePluginPlugin extends AbstractProjectPlugin implements Property
   private void configureArtifactsPublishing() {
     project.plugins.getPlugin(JVMBasePlugin).createMavenJavaPublication = false
 
-    GString repository = "plugins-${ project.convention.getPlugin(ProjectConvention).isRelease.get() ? 'release' : 'snapshot' }"
+    GString repository = "plugins-${ project.rootProject.convention.getPlugin(RootProjectConvention).isRelease.get() ? 'release' : 'snapshot' }"
     project.convention.getPlugin(ArtifactoryPluginConvention).clientConfig.publisher.repoKey = "$repository-local"
     project.repositories.maven { MavenArtifactRepository mavenArtifactRepository ->
       mavenArtifactRepository.with {
@@ -198,8 +198,8 @@ final class GradlePluginPlugin extends AbstractProjectPlugin implements Property
          * <grv87 2018-06-26>
          */
         url = project.uri("$ARTIFACTORY_URL/$repository/")
-        credentials.username = project.extensions.extraProperties['artifactoryUser'].toString()
-        credentials.password = project.extensions.extraProperties['artifactoryPassword'].toString()
+        credentials.username = project.rootProject.extensions.extraProperties['artifactoryUser'].toString()
+        credentials.password = project.rootProject.extensions.extraProperties['artifactoryPassword'].toString()
       }
     }
   }
