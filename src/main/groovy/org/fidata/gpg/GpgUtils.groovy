@@ -48,8 +48,9 @@ final class GpgUtils {
    * @return GPG home directory
    */
   static final Path getGpgHome() {
-    if (System.getenv().containsKey('GNUPGHOME')) {
-      return Paths.get(System.getenv()['GNUPGHOME'])
+    String gnupgHome = System.getenv('GNUPGHOME')
+    if (gnupgHome != null) {
+      return Paths.get(gnupgHome)
     }
 
     if (/*IS_OS_WINDOWS*/ OperatingSystem.current().windows) {
@@ -60,9 +61,9 @@ final class GpgUtils {
         }
       } catch (Win32Exception ignored) { } // TODO: check error codes and ignore non-existence only
 
-      Path path = Paths.get(System.getenv()['APPDATA'], 'GnuPg')
+      Path path = Paths.get(System.getenv('APPDATA'), 'GnuPg')
       if (!path.toFile().exists()) {
-        Path path2 = Paths.get(System.getenv()['USERPROFILE'], '.gnupg')
+        Path path2 = Paths.get(System.getenv('USERPROFILE'), '.gnupg')
         if (path2.toFile().exists()) {
           // Old version of GnuPG under Windows (MinGW?) ? // TODO: log warning
           return path2
@@ -71,7 +72,7 @@ final class GpgUtils {
       return path
     }
 
-    Paths.get(System.getenv()['HOME'], '.gnupg')
+    Paths.get(System.getenv('HOME'), '.gnupg')
   }
 
   /**

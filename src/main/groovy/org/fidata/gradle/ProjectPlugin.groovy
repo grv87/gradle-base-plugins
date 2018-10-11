@@ -308,8 +308,9 @@ final class ProjectPlugin extends AbstractProjectPlugin {
     project.extensions.extraProperties['signing.gnupg.executable'] = 'gpg'
     project.extensions.extraProperties['signing.gnupg.keyName'] = project.extensions.extraProperties['gpgKeyId'].toString()
     project.extensions.extraProperties['signing.gnupg.passphrase'] = project.extensions.extraProperties.has('gpgKeyPassphrase') ? project.extensions.extraProperties['gpgKeyPassphrase'].toString() : null
-    if (System.getenv().containsKey('GNUPGHOME')) {
-      project.extensions.extraProperties['signing.gnupg.homeDir'] = System.getenv()['GNUPGHOME']
+    String gnupgHome = System.getenv('GNUPGHOME')
+    if (gnupgHome != null) {
+      project.extensions.extraProperties['signing.gnupg.homeDir'] = gnupgHome
     }
   }
 
