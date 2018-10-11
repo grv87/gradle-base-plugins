@@ -188,7 +188,13 @@ final class ProjectPlugin extends AbstractProjectPlugin {
       check.dependsOn check.project.tasks.withType(Test)
     }
 
-    project.extensions.getByType(SemanticReleasePluginExtension).branchNames.replace 'develop', ''
+    project.extensions.getByType(SemanticReleasePluginExtension).branchNames.with {
+      replace 'develop', ''
+      // TODO: Support other CIs
+      if (System.getenv('CHANGE_ID') != null) {
+        replace 'HEAD', System.getenv('BRANCH_NAME')
+      }
+    }
 
     project.tasks.withType(UpdateGithubRelease).named('updateGithubRelease').configure { UpdateGithubRelease updateGithubRelease ->
       updateGithubRelease.repo.ghToken = project.extensions.extraProperties['ghToken'].toString()
