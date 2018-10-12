@@ -53,4 +53,12 @@ final class PluginDependee {
    * True by default
    */
   boolean enabled = true
+  /**
+   * Whether this dependee is enabled during default applicating
+   * for buildSrc project.
+   * True by default.
+   *
+   * Makes no difference if enabled = false
+   */
+  boolean enabledForBuildSrc = true
 }

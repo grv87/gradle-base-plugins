@@ -34,7 +34,9 @@ final class JVMBasePluginDependees {
   static final Map<String, PluginDependee> PLUGIN_DEPENDEES = [
     'org.gradle.java-base': new PluginDependee(),
     'org.gradle.java-library': new PluginDependee(),
-    'org.gradle.maven-publish': new PluginDependee(),
+    'org.gradle.maven-publish': new PluginDependee(
+      enabledForBuildSrc: false,
+    ),
     'com.jfrog.bintray': new PluginDependee(
       configurationName: 'implementation',
       group: 'com.jfrog.bintray.gradle',

@@ -41,6 +41,7 @@ final class ProjectPluginDependees {
     'nebula.contacts': new PluginDependee(
       group: 'com.netflix.nebula',
       module: 'gradle-contacts-plugin',
+      enabledForBuildSrc: false,
     ),
     'com.github.ben-manes.versions': new PluginDependee(
       configurationName: 'implementation',
@@ -57,8 +58,11 @@ final class ProjectPluginDependees {
           module: 'groovy-all'
         ),
       ],
+      enabledForBuildSrc: false,
     ),
-    'org.gradle.signing': new PluginDependee(),
+    'org.gradle.signing': new PluginDependee(
+      enabledForBuildSrc: false,
+    ),
     /*
      * WORKAROUND:
      * We use custom fork of semantic-release plugin due to
@@ -71,11 +75,13 @@ final class ProjectPluginDependees {
       group: 'org.fidata.gradle.semantic-release',
       module: 'gradle-semantic-release-plugin',
       version: '[2,3)',
+      enabledForBuildSrc: false,
     ),
     'org.ajoberstar.git-publish': new PluginDependee(
       configurationName: 'implementation',
       group: 'org.ajoberstar',
       module: 'gradle-git-publish',
+      enabledForBuildSrc: false,
     ),
     'org.gradle.reporting-base': new PluginDependee(),
     'org.gradle.codenarc': new PluginDependee(),

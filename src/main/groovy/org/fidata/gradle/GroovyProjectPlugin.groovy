@@ -42,7 +42,10 @@ final class GroovyProjectPlugin extends AbstractProjectPlugin {
     super.apply(project)
 
     project.pluginManager.apply GroovyBasePlugin
-    PluginDependeesUtils.applyPlugins project, GroovyProjectPluginDependees.PLUGIN_DEPENDEES
+
+    boolean isBuildSrc = project.project.convention.getPlugin(ProjectConvention).isBuildSrc
+
+    PluginDependeesUtils.applyPlugins project, isBuildSrc, GroovyProjectPluginDependees.PLUGIN_DEPENDEES
 
     project.plugins.getPlugin(GroovyBasePlugin).addGroovyDependency project.configurations.getByName(API_CONFIGURATION_NAME)
 
@@ -58,7 +61,9 @@ final class GroovyProjectPlugin extends AbstractProjectPlugin {
       builtBy: project.tasks.withType(GroovyCompile).getByName('compileGroovy')
     )
 
-    configureDocumentation()
+    if (!isBuildSrc) {
+      configureDocumentation()
+    }
   }
 
   private void configureDocumentation() {
