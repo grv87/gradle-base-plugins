@@ -39,7 +39,6 @@ final class JVMBasePluginDependees {
       configurationName: 'implementation',
       group: 'com.jfrog.bintray.gradle',
       module: 'gradle-bintray-plugin',
-      enabled: false,
       excludes: [
         /*
          * WORKAROUND:
@@ -50,7 +49,8 @@ final class JVMBasePluginDependees {
           group: 'org.codehaus.plexus',
           module: 'plexus-container-default'
         )
-      ]
+      ],
+      enabled: false,
     ),
   ]
 

@@ -40,11 +40,6 @@ final class PluginDependee {
    */
   String module
   /**
-   * Whether this dependee is enabled during default applicating.
-   * True by default
-   */
-  boolean enabled = true
-  /**
    * Version.
    * latest.release by default
    */
@@ -53,4 +48,9 @@ final class PluginDependee {
    * List of exclusions
    */
   List<PluginDependeeExclusion> excludes = null
+  /**
+   * Whether this dependee is enabled during default applicating.
+   * True by default
+   */
+  boolean enabled = true
 }
