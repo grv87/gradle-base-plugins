@@ -45,7 +45,7 @@ final class GradlePluginPluginDependees {
       configurationName: 'implementation',
       group: 'com.gradle.publish',
       module: 'plugin-publish-plugin',
-      enabled: false
+      enabled: false,
     ),
   ]
 

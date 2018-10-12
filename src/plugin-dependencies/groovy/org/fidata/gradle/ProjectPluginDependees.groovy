@@ -56,7 +56,7 @@ final class ProjectPluginDependees {
           group: 'org.codehaus.groovy',
           module: 'groovy-all'
         ),
-      ]
+      ],
     ),
     'org.gradle.signing': new PluginDependee(),
     /*
@@ -70,7 +70,7 @@ final class ProjectPluginDependees {
       configurationName: 'implementation',
       group: 'org.fidata.gradle.semantic-release',
       module: 'gradle-semantic-release-plugin',
-      version: '[2,3)'
+      version: '[2,3)',
     ),
     'org.ajoberstar.git-publish': new PluginDependee(
       configurationName: 'implementation',
