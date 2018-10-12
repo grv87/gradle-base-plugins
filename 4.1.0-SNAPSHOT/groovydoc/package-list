@@ -1,3 +1,4 @@
+org.fidata.exceptions
 org.fidata.gpg
 org.fidata.gradle
 org.fidata.gradle.internal
