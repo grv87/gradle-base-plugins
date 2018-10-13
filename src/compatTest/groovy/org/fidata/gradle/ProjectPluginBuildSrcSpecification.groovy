@@ -40,7 +40,7 @@ class ProjectPluginBuildSrcSpecification extends Specification {
 
   File buildSrcBuildFile = new File(buildSrcTestProjectDir, 'build.gradle')
 
-  File propertiesFile = new File(testProjectDir, 'gradle.properties')
+  File buildSrcPropertiesFile = new File(buildSrcTestProjectDir, 'gradle.properties')
 
   static final Map<String, String> EXTRA_PROPERTIES = [
     'artifactoryUser'    : 'dummyArtifactoryUser',
@@ -48,7 +48,7 @@ class ProjectPluginBuildSrcSpecification extends Specification {
     'gitUsername': 'dummyGitUser',
     'gitPassword': 'dummyGitPassword',
     'ghToken': 'dummyGhToken',
-    'gpgKeyId'            : 'ABCD1234',
+    'gpgKeyId': 'ABCD1234',
   ]
 
   // fixture methods
@@ -69,7 +69,7 @@ class ProjectPluginBuildSrcSpecification extends Specification {
       }
     '''.stripIndent()
 
-    propertiesFile.withPrintWriter { PrintWriter printWriter ->
+    buildSrcPropertiesFile.withPrintWriter { PrintWriter printWriter ->
       EXTRA_PROPERTIES.each { String key, String value ->
         printWriter.println "$key=$value"
       }
