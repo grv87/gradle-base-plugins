@@ -148,7 +148,7 @@ node {
                   ]
                 )
                 junit(
-                  testResults: 'build/reports/**/*.xml',
+                  testResults: 'build/reports/xml/**/*.xml',
                   allowEmptyResults: true,
                   keepLongStdio: true,
                 )
