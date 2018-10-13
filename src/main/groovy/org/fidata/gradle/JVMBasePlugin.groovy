@@ -27,6 +27,7 @@ import static org.gradle.api.tasks.SourceSet.MAIN_SOURCE_SET_NAME
 import static org.ajoberstar.gradle.git.release.base.BaseReleasePlugin.RELEASE_TASK_NAME
 import static ProjectPlugin.LICENSE_FILE_NAMES
 import static org.jfrog.gradle.plugin.artifactory.task.ArtifactoryTask.ARTIFACTORY_PUBLISH_TASK_NAME
+import static org.gradle.initialization.IGradlePropertiesLoader.ENV_PROJECT_PROPERTIES_PREFIX
 import org.gradle.api.Namer
 import org.fidata.gradle.utils.TaskNamerException
 import org.fidata.gradle.utils.PathDirector
@@ -326,6 +327,7 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
     project.convention.getPlugin(JavaPluginConvention).testResultsDirName = project.buildDir.toPath().relativize(project.convention.getPlugin(ProjectConvention).xmlReportsDir.toPath()).toString()
     project.tasks.withType(Test).configureEach { Test test ->
       test.with {
+        environment = environment.findAll { String key, Object value -> key != 'GRADLE_OPTS' && !key.startsWith(ENV_PROJECT_PROPERTIES_PREFIX) }
         maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
         testLogging.exceptionFormat = TestExceptionFormat.FULL
       }
