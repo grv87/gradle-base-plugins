@@ -88,9 +88,9 @@ node {
         ]) {
           BuildInfo buildInfo = null
           try {
-            stage('Clean') {
+            stage('Generate Changelog') {
               timeout(time: 5, unit: 'MINUTES') {
-                buildInfo = rtGradle.run tasks: 'clean', switches: gradleSwitches, buildInfo: buildInfo
+                buildInfo = rtGradle.run tasks: 'generateChangelog', switches: gradleSwitches, buildInfo: buildInfo
                 /*
                  * TODO:
                  * Move these filters into separate library
@@ -109,6 +109,17 @@ node {
                 buildInfo.env.filter.addExclude('*Token')
                 buildInfo.env.collect()
               }
+              dir('build/changelog') {
+                exec 'pandoc --from=markdown_github --to=html --output=CHANGELOG.html CHANGELOG.md'
+              }
+              publishHTML(target: [
+                reportName: 'CHANGELOG',
+                reportDir: 'build/changelog',
+                reportFiles: 'CHANGELOG.html',
+                allowMissing: false,
+                keepAll: true,
+                alwaysLinkToLastBuild: env.BRANCH_NAME == 'develop' && !env.CHANGE_ID
+              ])
             }
             stage('Assemble') {
               try {

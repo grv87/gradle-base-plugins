@@ -174,6 +174,10 @@ final class ProjectPlugin extends AbstractProjectPlugin {
     configureCodeQuality()
 
     configureDiagnostics()
+
+    if (!isBuildSrc) {
+      createGenerateChangelogTasks()
+    }
   }
 
   /**
@@ -630,6 +634,54 @@ final class ProjectPlugin extends AbstractProjectPlugin {
         nodeShape      = 'box'
         startNodeShape = 'hexagon'
         endNodeShape   = 'doubleoctagon'
+      }
+    }
+  }
+
+  /**
+   * Name of generateChangelog task
+   */
+  public static final String GENERATE_CHANGELOG_TASK_NAME = 'generateChangelog'
+
+  /**
+   * generateChangelog output file name
+   */
+  public static final String GENERATE_CHANGELOG_OUTPUT_FILE_NAME = 'CHANGELOG.md'
+
+  /**
+   * Name of generateChangelogTxt task
+   */
+  public static final String GENERATE_CHANGELOG_TXT_TASK_NAME = 'generateChangelogTxt'
+
+  /**
+   * generateChangelogTxt output file name
+   */
+  public static final String GENERATE_CHANGELOG_TXT_OUTPUT_FILE_NAME = 'CHANGELOG.txt'
+
+  @SuppressWarnings(['FactoryMethodName', 'BuilderMethodWithSideEffects'])
+  private void createGenerateChangelogTasks() {
+    Path changelogOutputDir = project.buildDir.toPath().resolve('changelog')
+    ProjectConvention projectConvention = project.convention.getPlugin(ProjectConvention)
+    project.tasks.register(GENERATE_CHANGELOG_TASK_NAME) { Task generateChangelog ->
+      File outputFile = changelogOutputDir.resolve(GENERATE_CHANGELOG_OUTPUT_FILE_NAME).toFile()
+      String changeLog = projectConvention.changeLog.get()
+      generateChangelog.with {
+        inputs.property 'changeLog', changeLog
+        doLast {
+          outputFile.text = changeLog
+        }
+        outputs.file outputFile
+      }
+    }
+    project.tasks.register(GENERATE_CHANGELOG_TXT_TASK_NAME) { Task generateChangelogTxt ->
+      File outputFile = changelogOutputDir.resolve(GENERATE_CHANGELOG_TXT_OUTPUT_FILE_NAME).toFile()
+      String changeLog = projectConvention.changeLogTxt.get()
+      generateChangelogTxt.with {
+        inputs.property 'changeLog', changeLog
+        doLast {
+          outputFile.text = changeLog
+        }
+        outputs.file outputFile
       }
     }
   }
