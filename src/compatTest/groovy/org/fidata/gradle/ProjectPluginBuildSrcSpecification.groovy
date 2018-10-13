@@ -48,7 +48,7 @@ class ProjectPluginBuildSrcSpecification extends Specification {
     'gitUsername': 'dummyGitUser',
     'gitPassword': 'dummyGitPassword',
     'ghToken': 'dummyGhToken',
-    'gpgKeyId'            : 'ABCD1234',
+    'gpgKeyId': 'ABCD1234',
   ]
 
   // fixture methods
