@@ -26,55 +26,55 @@ import org.jfrog.hudson.pipeline.types.buildInfo.BuildInfo
 @Library('jenkins-pipeline-shared-library@v1.1.1') dummy
 
 node {
-  GradleBuild rtGradle
-
-  stage ('Checkout') {
-    List<Map<String, ? extends Serializable>> extensions = [
-      [$class: 'WipeWorkspace'],
-      [$class: 'CloneOption', noTags: false, shallow: false],
-    ]
-    if (!env.CHANGE_ID) {
-      extensions.add([$class: 'LocalBranch', localBranch: env.BRANCH_NAME])
-    }
-    checkout([
-      $class: 'GitSCM',
-      branches: scm.branches,
-      doGenerateSubmoduleConfigurations: scm.doGenerateSubmoduleConfigurations,
-      extensions: extensions,
-      userRemoteConfigs: scm.userRemoteConfigs,
-    ])
-    gitAuthor()
-  }
-
-  ArtifactoryServer server = Artifactory.server 'FIDATA'
-  rtGradle = Artifactory.newGradleBuild()
-  rtGradle.useWrapper = true
-  rtGradle.usesPlugin = true
-
-  /*
-   * WORKAROUND:
-   * Disabling Gradle Welcome message
-   * should be done in fidata_build_toolset.
-   * See https://github.com/FIDATA/infrastructure/issues/85
-   * <grv87 2018-09-21>
-   */
-  /*
-   * WORKAROUND:
-   * Gradle can't provide console with colors but no other rich features.
-   * So, we use plain console for now
-   * https://github.com/gradle/gradle/issues/6843
-   * <grv87 2018-09-21>
-   */
-  /*
-   * WORKAROUND:
-   * Build cache should be turned on in gradle.properties
-   * as soon as we move sensitive properties to separate place
-   * and put gradle.properties under version control
-   * <grv87 2018-09-22>
-   */
-  String gradleSwitches = '-Dorg.gradle.internal.launcher.welcomeMessageEnabled=false --no-daemon --console=plain --info --warning-mode all --full-stacktrace --build-cache'
-
   ansiColor {
+    GradleBuild rtGradle
+
+    stage ('Checkout') {
+      List<Map<String, ? extends Serializable>> extensions = [
+        [$class: 'WipeWorkspace'],
+        [$class: 'CloneOption', noTags: false, shallow: false],
+      ]
+      if (!env.CHANGE_ID) {
+        extensions.add([$class: 'LocalBranch', localBranch: env.BRANCH_NAME])
+      }
+      checkout([
+        $class: 'GitSCM',
+        branches: scm.branches,
+        doGenerateSubmoduleConfigurations: scm.doGenerateSubmoduleConfigurations,
+        extensions: extensions,
+        userRemoteConfigs: scm.userRemoteConfigs,
+      ])
+      gitAuthor()
+    }
+
+    ArtifactoryServer server = Artifactory.server 'FIDATA'
+    rtGradle = Artifactory.newGradleBuild()
+    rtGradle.useWrapper = true
+    rtGradle.usesPlugin = true
+
+    /*
+     * WORKAROUND:
+     * Disabling Gradle Welcome message
+     * should be done in fidata_build_toolset.
+     * See https://github.com/FIDATA/infrastructure/issues/85
+     * <grv87 2018-09-21>
+     */
+    /*
+     * WORKAROUND:
+     * Gradle can't provide console with colors but no other rich features.
+     * So, we use plain console for now
+     * https://github.com/gradle/gradle/issues/6843
+     * <grv87 2018-09-21>
+     */
+    /*
+     * WORKAROUND:
+     * Build cache should be turned on in gradle.properties
+     * as soon as we move sensitive properties to separate place
+     * and put gradle.properties under version control
+     * <grv87 2018-09-22>
+     */
+    String gradleSwitches = '-Dorg.gradle.internal.launcher.welcomeMessageEnabled=false --no-daemon --console=plain --info --warning-mode all --full-stacktrace --build-cache'
+
     withGpgScope("${ pwd() }/.scoped-gpg", 'GPG', 'GPG_KEY_PASSWORD') { String fingerprint ->
       withEnv([
         "ORG_GRADLE_PROJECT_gpgKeyId=$fingerprint",
