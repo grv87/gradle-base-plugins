@@ -23,7 +23,7 @@ import org.jfrog.hudson.pipeline.types.buildInfo.BuildInfo
 
 //noinspection GroovyUnusedAssignment
 @SuppressWarnings(['UnusedVariable', 'NoDef', 'VariableTypeRequired'])
-@Library('jenkins-pipeline-shared-library@v1.1.1') dummy
+@Library('jenkins-pipeline-shared-library@v1.2.0') dummy
 
 node {
   ansiColor {
@@ -45,6 +45,7 @@ node {
         userRemoteConfigs: scm.userRemoteConfigs,
       ])
       gitAuthor()
+      configureGrape('Artifactory')
     }
 
     ArtifactoryServer server = Artifactory.server 'FIDATA'
