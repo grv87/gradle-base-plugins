@@ -194,6 +194,14 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
    * @param tasks list of test tasks.
    * @param reportDirector path director for task reports
    */
+  /*
+   * WORKAROUND:
+   * Groovy error. Usage of `destination =` instead of setDestination leads to error:
+   * [Static type checking] - Cannot set read-only property: destination
+   * Also may be CodeNarc error
+   * <grv87 2018-06-26>
+   */
+  @SuppressWarnings('UnnecessarySetter')
   void addSpockDependency(SourceSet sourceSet, Iterable<TaskProvider<Test>> tasks, PathDirector<TaskProvider<Test>> reportDirector) {
     addJUnitDependency sourceSet
 
@@ -226,7 +234,10 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
     tasks.each { TaskProvider<Test> taskProvider ->
       taskProvider.configure { Test test ->
         test.with {
-          reports.html.enabled = false
+          reports.with {
+            html.enabled = false
+            junitXml.setDestination projectConvention.getXmlReportDir(reportDirector, taskProvider)
+          }
           File spockHtmlReportDir = projectConvention.getHtmlReportDir(reportDirector, taskProvider)
           File spockJsonReportDir = projectConvention.getJsonReportDir(reportDirector, taskProvider)
           systemProperty 'com.athaydes.spockframework.report.outputDir', spockHtmlReportDir.absolutePath
@@ -306,7 +317,6 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
       configureIntegrationTestSourceSetClasspath sourceSet
     }
 
-    ProjectConvention projectConvention = project.convention.getPlugin(ProjectConvention)
     TaskProvider<Test> functionalTestProvider = project.tasks.register(FUNCTIONAL_TEST_TASK_NAME, Test) { Test test ->
       test.with {
         group = 'Verification'
@@ -314,8 +324,6 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
         shouldRunAfter project.tasks.named(TEST_TASK_NAME)
         testClassesDirs = functionalTestSourceSet.output.classesDirs
         classpath = functionalTestSourceSet.runtimeClasspath
-        reports.junitXml.setDestination projectConvention.getXmlReportDir(FUNCTIONAL_TEST_REPORTS_PATH)
-        reports.html.setDestination projectConvention.getHtmlReportDir(FUNCTIONAL_TEST_REPORTS_PATH)
       }
     }
 
