@@ -23,11 +23,14 @@ import static java.nio.charset.StandardCharsets.UTF_8
 import static org.gradle.api.plugins.JavaPlugin.TEST_TASK_NAME
 import static org.gradle.api.tasks.SourceSet.TEST_SOURCE_SET_NAME
 import static org.gradle.api.plugins.JavaPlugin.JAVADOC_TASK_NAME
+import static org.gradle.api.plugins.JavaPlugin.JAR_TASK_NAME
 import static org.gradle.api.tasks.SourceSet.MAIN_SOURCE_SET_NAME
 import static org.ajoberstar.gradle.git.release.base.BaseReleasePlugin.RELEASE_TASK_NAME
 import static ProjectPlugin.LICENSE_FILE_NAMES
 import static org.jfrog.gradle.plugin.artifactory.task.ArtifactoryTask.ARTIFACTORY_PUBLISH_TASK_NAME
 import static org.gradle.initialization.IGradlePropertiesLoader.ENV_PROJECT_PROPERTIES_PREFIX
+import de.gliderpilot.gradle.semanticrelease.SemanticReleasePluginExtension
+import org.gradle.jvm.tasks.Jar
 import org.gradle.api.Namer
 import org.fidata.gradle.utils.TaskNamerException
 import org.fidata.gradle.utils.PathDirector
@@ -388,6 +391,16 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
   @PackageScope
   boolean createMavenJavaPublication = true
 
+  /**
+   * sourcesJar task name
+   */
+  public static final String SOURCES_JAR_TASK_NAME = 'sourcesJar'
+
+  /**
+   * sourcesJar task name
+   */
+  public static final String SOURCES_JAR_TASK_NAME = 'sourcesJar'
+
   private void configureArtifactsPublishing() {
     project.afterEvaluate {
       if (createMavenJavaPublication) {
@@ -397,6 +410,12 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
       }
     }
     project.extensions.getByType(SigningExtension).sign project.extensions.getByType(PublishingExtension).publications
+
+    project.tasks.register()
+
+    project.configurations.getByName()
+
+    project.extensions.getByType(SemanticReleasePluginExtension).repo.releaseAsset project.tasks.withType(Jar).getByName(JAR_TASK_NAME)
 
     configureArtifactory()
   }
