@@ -46,6 +46,8 @@ import groovy.lang.Writable;
  * Provides additional properties to the project
  */
 public class ProjectConvention extends AbstractExtension {
+  private Project project;
+
   /**
    * @return list of tags for the project
    */
@@ -85,7 +87,7 @@ public class ProjectConvention extends AbstractExtension {
    */
   public final boolean getPublicReleases() {
     if (isBuildSrc) {
-      throw new InvalidOperationException("buildSrc project can't have releases at all");
+      project.getLogger().warn("buildSrc project can't have releases at all");
     }
     return publicReleases;
   }
@@ -110,7 +112,7 @@ public class ProjectConvention extends AbstractExtension {
    */
   public final Provider<Boolean> getIsRelease() {
     if (isBuildSrc) {
-      throw new InvalidOperationException("buildSrc project can't have releases at all");
+      project.getLogger().warn("buildSrc project can't have releases at all");
     }
     return isRelease;
   }
@@ -122,7 +124,7 @@ public class ProjectConvention extends AbstractExtension {
    */
   public final Provider<Writable> getChangeLog() {
     if (isBuildSrc) {
-      throw new InvalidOperationException("buildSrc project can't have changelog");
+      project.getLogger().warn("buildSrc project can't have changelog");
     }
     return changeLog;
   }
@@ -134,7 +136,7 @@ public class ProjectConvention extends AbstractExtension {
    */
   public final Provider<Writable> getChangeLogTxt() {
     if (isBuildSrc) {
-      throw new InvalidOperationException("buildSrc project can't have changelog");
+      project.getLogger().warn("buildSrc project can't have changelog");
     }
     return changeLogTxt;
   }
@@ -188,6 +190,8 @@ public class ProjectConvention extends AbstractExtension {
 
   public ProjectConvention(final Project project) {
     super();
+
+    this.project = project;
 
     tags = project.getObjects().listProperty(String.class);
 
