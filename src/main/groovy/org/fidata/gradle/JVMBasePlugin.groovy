@@ -24,13 +24,13 @@ import static org.gradle.api.plugins.JavaPlugin.COMPILE_CONFIGURATION_NAME
 import static org.gradle.api.plugins.JavaPlugin.API_CONFIGURATION_NAME
 import static org.gradle.api.plugins.JavaPlugin.TEST_TASK_NAME
 import static org.gradle.api.tasks.SourceSet.TEST_SOURCE_SET_NAME
-import static org.gradle.api.plugins.JavaPlugin.JAVADOC_TASK_NAME
 import static org.gradle.api.tasks.SourceSet.MAIN_SOURCE_SET_NAME
 import static org.ajoberstar.gradle.git.release.base.BaseReleasePlugin.RELEASE_TASK_NAME
 import static ProjectPlugin.LICENSE_FILE_NAMES
 import static org.gradle.language.base.plugins.LifecycleBasePlugin.VERIFICATION_GROUP
 import static org.jfrog.gradle.plugin.artifactory.task.ArtifactoryTask.ARTIFACTORY_PUBLISH_TASK_NAME
 import static org.gradle.initialization.IGradlePropertiesLoader.ENV_PROJECT_PROPERTIES_PREFIX
+import org.gradle.external.javadoc.StandardJavadocDocletOptions
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.plugins.quality.FindBugs
 import org.gradle.api.plugins.quality.JDepend
@@ -62,7 +62,6 @@ import java.beans.PropertyChangeEvent
 import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.reporting.ReportingExtension
-import org.ajoberstar.gradle.git.publish.GitPublishExtension
 import com.jfrog.bintray.gradle.BintrayExtension
 import com.jfrog.bintray.gradle.tasks.BintrayPublishTask
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
@@ -457,18 +456,21 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
     project.tasks.withType(Javadoc).configureEach { Javadoc javadoc ->
       javadoc.with {
         options.encoding = UTF_8.name()
-        /*
-         * WORKAROUND:
-         * https://github.com/gradle/gradle/issues/6168
-         * <grv87 2018-08-01>
-         */
         doFirst {
+          /*
+           * WORKAROUND:
+           * https://github.com/gradle/gradle/issues/6168
+           * <grv87 2018-08-01>
+           */
           destinationDir.deleteDir()
+          javadoc.options { StandardJavadocDocletOptions options ->
+            javadoc.project.extensions.getByType(JVMBaseExtension).javadocLinks.values().each { URI link ->
+              options.links link.toString()
+            }
+          }
         }
       }
     }
-
-    project.extensions.getByType(GitPublishExtension).contents.from(project.tasks.named(JAVADOC_TASK_NAME)).into "$project.version/javadoc"
   }
 
   /**
