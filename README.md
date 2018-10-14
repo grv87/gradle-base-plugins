@@ -81,9 +81,10 @@ plugin](https://github.com/FIDATA/gradle-semantic-release-plugin).
 *	Applies [`codenarc` plugin
     ](https://docs.gradle.org/current/userguide/codenarc_plugin.html)
 
-*	Provides `codenarc` task that runs all CodeNarc tasks
+*	Provides `codenarc` and `pmd` tasks that run all PMD and CodeNarc
+    tasks respectively.
 
-	Includes this task in execution list for `lint` task.
+	Includes these tasks in execution list for `lint` task.
 
 *	Provides `codenarcBuildSrc` task for `build.gradle` itself
 	and accompanying Groovy scripts
@@ -265,6 +266,13 @@ and also:
 	](https://github.com/bintray/gradle-bintray-plugin)
 	and configures publication to JCenter
 
+### Code Quality
+
+*	Provides `findbugs` and `jdepend` tasks that run all FindBugs
+    and JDepend tasks respectively.
+
+	Includes these tasks in execution list for `lint` task.
+
 ### Other features
 
 *	Adds license file into JAR `META-INF` directory
@@ -287,6 +295,10 @@ and also:
 *   Configures `javadoc` to parse sources through Delombok first
 
 *   Adds `javadoc` output to GitHub Pages publication
+
+*	Provides `checkstyle` task that run all Checkstyle tasks.
+
+	Includes this task in execution list for `lint` task.
 
 ## `org.fidata.base.groovy` plugin
 
