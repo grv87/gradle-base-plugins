@@ -19,8 +19,8 @@
  */
 package org.fidata.gradle
 
+import static org.gradle.language.base.plugins.LifecycleBasePlugin.ASSEMBLE_TASK_NAME
 import static org.gradle.language.base.plugins.LifecycleBasePlugin.CHECK_TASK_NAME
-import static org.gradle.language.base.plugins.LifecycleBasePlugin.BUILD_TASK_NAME
 import static org.ajoberstar.gradle.git.release.base.BaseReleasePlugin.RELEASE_TASK_NAME
 import static org.gradle.api.plugins.ProjectReportsPlugin.PROJECT_REPORT
 import static org.gradle.initialization.DefaultSettings.DEFAULT_BUILD_SRC_DIR
@@ -189,15 +189,12 @@ final class ProjectPlugin extends AbstractProjectPlugin {
   public static final String RELEASE_TASK_GROUP_NAME = 'Release'
 
   private void configureLifecycle() {
-    project.tasks.named(BUILD_TASK_NAME).configure { Task build ->
-      build.dependsOn.remove CHECK_TASK_NAME
-    }
     boolean isBuildSrc = project.convention.getPlugin(ProjectConvention).isBuildSrc
     if (!isBuildSrc) {
       project.tasks.named(RELEASE_TASK_NAME).configure { Task release ->
         release.with {
           group = RELEASE_TASK_GROUP_NAME
-          dependsOn project.tasks.named(BUILD_TASK_NAME) // TODO
+          dependsOn project.tasks.named(ASSEMBLE_TASK_NAME)
           dependsOn project.tasks.named(CHECK_TASK_NAME)
         }
       }

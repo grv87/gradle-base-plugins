@@ -22,12 +22,10 @@ General, language-agnostic project.
 
 ### Lifecycle
 
-Basic development cycle is `build` → `check` → `release`.
+Basic build lifecycle is `assemble` → `check` → `release`.
 
-`build`, `check` and, also, `clean` tasks are provided by applied
-`lifecycle-base` plugin. In original `lifecycle-base` plugin
-`build` task depends on `check` task.
-This plugin changes this behavior.
+`assemble`, `check` and, also, `clean` tasks are provided by applied
+`lifecycle-base` plugin.
 
 `release` task is provided by applied [`de.gliderpilot.semantic-release`
 plugin](https://github.com/FIDATA/gradle-semantic-release-plugin).
