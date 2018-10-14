@@ -77,8 +77,8 @@ class ProjectPluginSpecification extends Specification {
 
     then: 'clean task exists'
     project.tasks.findByName('clean')
-    and: 'build task exists'
-    Task build = project.tasks.getByName('build')
+    and: 'assemble task exists'
+    Task assemble = project.tasks.getByName('assemble')
     and: 'check task exists'
     Task check = project.tasks.getByName('check')
     and: 'release task exists'
@@ -88,11 +88,9 @@ class ProjectPluginSpecification extends Specification {
     project.evaluate()
 
     then: 'release task depends on build task'
-    release.taskDependencies.getDependencies(release).contains(build)
+    release.taskDependencies.getDependencies(release).contains(assemble)
     and: 'release task depends on check task'
     release.taskDependencies.getDependencies(release).contains(check)
-    and: 'build task does not depend on check task'
-    !build.taskDependencies.getDependencies(build).contains(check)
   }
 
   void 'provides prerequisites lifecycle tasks'() {
