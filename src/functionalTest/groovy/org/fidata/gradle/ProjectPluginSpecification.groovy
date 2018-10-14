@@ -115,22 +115,37 @@ class ProjectPluginSpecification extends Specification {
     project.apply plugin: 'org.fidata.project'
 
     then: 'lint task exists'
-    Task lint = project.tasks.getByName('lint')
-
-    when: 'project evaluated'
-    project.evaluate()
-
-    then: 'check task depends on lint task'
-    Task check = project.tasks['check']
-    check.taskDependencies.getDependencies(check).contains(lint)
+    project.tasks.findByName('lint')
   }
 
-  void 'provides codenarc task'() {
+  @SuppressWarnings('BuilderMethodWithSideEffects')
+  void 'makes check task depend on code quality tasks indirectly only'() {
     when: 'plugin is applied'
     project.apply plugin: 'org.fidata.project'
 
     then: 'codenarc task exists'
-    project.tasks.getByName('codenarc')
+    Task codenarc = project.tasks.getByName('codenarc')
+
+    when: 'groovy plugin is applied'
+    project.apply plugin: 'groovy'
+
+    and: 'project evaluated'
+    project.evaluate()
+
+    then: 'check task does not depend on codenarcMain task'
+    Task codenarcMain = project.tasks.getByName('codenarcMain')
+    Task check = project.tasks.getByName('check')
+    !check.taskDependencies.getDependencies(check).contains(codenarcMain)
+
+    and: 'check task depends on lint task'
+    Task lint = project.tasks.getByName('lint')
+    check.taskDependencies.getDependencies(check).contains(lint)
+
+    and: 'lint task depends on codenarc task'
+    lint.taskDependencies.getDependencies(lint).contains(codenarc)
+
+    and: 'codenarc task depends on codenarcMain task'
+    codenarc.taskDependencies.getDependencies(check).contains(codenarcMain)
   }
 
   void 'provides codenarcBuildSrc task'() {
@@ -148,9 +163,6 @@ class ProjectPluginSpecification extends Specification {
     then: 'codenarc task depends on codenarcBuildSrc task'
     Task codenarc = project.tasks['codenarc']
     codenarc.taskDependencies.getDependencies(codenarc).contains(codenarcBuildSrc)
-    and: 'check task does not depend on codenarcBuildSrc task'
-    Task check = project.tasks['check']
-    !check.taskDependencies.getDependencies(check).contains(codenarcBuildSrc)
   }
 
   @Unroll
