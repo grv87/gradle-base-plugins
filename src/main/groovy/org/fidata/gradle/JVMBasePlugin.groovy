@@ -28,6 +28,8 @@ import static org.ajoberstar.gradle.git.release.base.BaseReleasePlugin.RELEASE_T
 import static ProjectPlugin.LICENSE_FILE_NAMES
 import static org.jfrog.gradle.plugin.artifactory.task.ArtifactoryTask.ARTIFACTORY_PUBLISH_TASK_NAME
 import static org.gradle.initialization.IGradlePropertiesLoader.ENV_PROJECT_PROPERTIES_PREFIX
+import org.gradle.api.plugins.quality.FindBugs
+import org.gradle.api.plugins.quality.JDepend
 import org.gradle.api.Namer
 import org.fidata.gradle.utils.TaskNamerException
 import org.fidata.gradle.utils.PathDirector
@@ -116,6 +118,8 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
     if (!isBuildSrc) {
       configureArtifactsPublishing()
     }
+
+    configureCodeQuality()
   }
 
   /**
@@ -455,5 +459,20 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
     }
 
     project.extensions.getByType(GitPublishExtension).contents.from(project.tasks.named(JAVADOC_TASK_NAME)).into "$project.version/javadoc"
+  }
+
+  /**
+   * Name of FindBugs common task
+   */
+  public static final String FINDBUGS_TASK_NAME = 'findbugs'
+
+  /**
+   * Name of JDepend common task
+   */
+  public static final String JDEPEND_TASK_NAME = 'jdepend'
+
+  private void configureCodeQuality() {
+    project.plugins.getPlugin(ProjectPlugin).addCodeQualityCommonTask 'FindBugs', FINDBUGS_TASK_NAME, FindBugs
+    project.plugins.getPlugin(ProjectPlugin).addCodeQualityCommonTask 'JDepend', JDEPEND_TASK_NAME, JDepend
   }
 }
