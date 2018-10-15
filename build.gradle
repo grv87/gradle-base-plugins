@@ -95,6 +95,17 @@ stutter {
   }
 }
 
+/*
+ * TOTEST:
+ * Looks like there is no built-in way to get collection of TaskProvider.
+ * This is workaround, but it could trigger creation of tasks
+ * <grv87 2018-08-23>
+ */
+project.tasks.withType(Test).matching { Test test -> test.name =~ org.fidata.gradle.GradlePluginPlugin.COMPAT_TEST_TASK_NAME_PATTERN }.configureEach {
+  systemProperty 'org.fidata.compatTest.artifactoryUser', artifactoryUser
+  systemProperty 'org.fidata.compatTest.artifactoryPassword', artifactoryPassword
+}
+
 tasks.named('codenarcBuildSrc').configure {
   disabledRules.add 'DuplicateNumberLiteral'
 }
