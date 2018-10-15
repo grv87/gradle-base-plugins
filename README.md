@@ -191,6 +191,9 @@ They could have code quality and diagnostic tasks, but usage of them
 is discouraged. Note that all buildSrc's Gradle and Groovy scripts
 are already covered by `codenarcBuildSrc` task.
 
+Project gets `isBuildSrc` read-only property which will be set to true
+when buildSrc project is detected.
+
 ### Supported tools versions:
 
 *	Requires Gradle >= 4.9
