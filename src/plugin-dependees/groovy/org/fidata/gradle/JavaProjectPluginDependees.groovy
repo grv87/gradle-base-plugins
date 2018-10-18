@@ -34,8 +34,6 @@ final class JavaProjectPluginDependees {
     'org.gradle.java': new PluginDependee(),
     'io.franzbecker.gradle-lombok': new PluginDependee(
       configurationName: 'implementation',
-      group: 'io.franzbecker',
-      module: 'gradle-lombok',
       version: '[1, 2[',
     ),
   ]
