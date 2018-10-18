@@ -25,12 +25,12 @@ dependencies {
   implementation sourceSets.exceptions.output
 
   Closure addDependencies = { Map<String, PluginDependee> pluginDependees ->
-    pluginDependees.findAll { !it.key.startsWith('org.gradle.') }*.value.findAll().each { PluginDependee pluginDependee ->
-      pluginDependee.with {
+    pluginDependees.findAll { !it.key.startsWith('org.gradle.') }.each { Map.Entry<String, PluginDependee> entry ->
+      entry.value.with {
         add(
           configurationName, [
-            group  : group,
-            name   : module,
+            group  : group ?: entry.key,
+            name   : module ?: "${ entry.key }.gradle.plugin",
             version: version
           ]
         ) { ExternalModuleDependency dependency ->
