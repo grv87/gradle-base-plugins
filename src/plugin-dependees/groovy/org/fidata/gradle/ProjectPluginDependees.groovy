@@ -37,21 +37,25 @@ final class ProjectPluginDependees {
     'org.fidata.prerequisites': new PluginDependee(
       group: 'org.fidata.gradle',
       module: 'gradle-prerequisites-plugin',
+      version: '[1, 2[',
     ),
     'nebula.contacts': new PluginDependee(
       group: 'com.netflix.nebula',
       module: 'gradle-contacts-plugin',
+      version: '[4, 5[',
       enabledForBuildSrc: false,
     ),
     'com.github.ben-manes.versions': new PluginDependee(
       configurationName: 'implementation',
       group: 'com.github.ben-manes',
       module: 'gradle-versions-plugin',
+      version: '[0, 1[',
     ),
     'com.jfrog.artifactory': new PluginDependee(
       configurationName: 'implementation',
       group: 'org.jfrog.buildinfo',
       module: 'build-info-extractor-gradle',
+      version: '[4, 5[',
       excludes: [
         new PluginDependeeExclusion(
           group: 'org.codehaus.groovy',
@@ -74,7 +78,7 @@ final class ProjectPluginDependees {
       configurationName: 'implementation',
       group: 'org.fidata.gradle.semantic-release',
       module: 'gradle-semantic-release-plugin',
-      version: '[2,3)',
+      version: '[2, 3[',
       enabledForBuildSrc: false,
       enabledForSubprojects: false,
     ),
@@ -82,6 +86,7 @@ final class ProjectPluginDependees {
       configurationName: 'implementation',
       group: 'org.ajoberstar',
       module: 'gradle-git-publish',
+      version: '[1, 2[',
       enabledForBuildSrc: false,
       enabledForSubprojects: false,
     ),
@@ -92,11 +97,13 @@ final class ProjectPluginDependees {
       configurationName: 'implementation',
       group: 'gradle.plugin.com.dorongold.plugins',
       module: 'task-tree',
+      version: '[1, 2[',
     ),
     'cz.malohlava': new PluginDependee(
       configurationName: 'implementation',
       group: 'cz.malohlava',
       module: 'visteg',
+      version: '[1, 2[',
     ),
   ]
 
