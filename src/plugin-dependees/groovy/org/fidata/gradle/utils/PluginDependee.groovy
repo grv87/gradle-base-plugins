@@ -45,6 +45,12 @@ final class PluginDependee {
    */
   String version
   /**
+   * Status.
+   * Should be used in combination with version ranges to manually include pre-release artifacts,
+   * i.e. {@code status = 'integration'}
+   */
+  String status
+  /**
    * List of exclusions
    */
   List<PluginDependeeExclusion> excludes = null

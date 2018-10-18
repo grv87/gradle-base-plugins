@@ -38,6 +38,7 @@ final class GradlePluginPluginDependees {
     'org.ysb33r.gradletest': new PluginDependee(
       configurationName: 'implementation',
       version: '[2, 3[',
+      status: 'milestone',
     ),
     'com.gradle.plugin-publish': new PluginDependee(
       configurationName: 'implementation',

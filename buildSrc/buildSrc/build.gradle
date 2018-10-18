@@ -19,6 +19,7 @@
  */
 plugins {
   id 'java-library'
+  id 'java-gradle-plugin'
 }
 
 group = 'org.fidata.gradle'
@@ -39,6 +40,8 @@ repositories {
   }
 }
 
+apply from: new File(ext.rootDir, 'gradle/dependencies-dependencyUtils-compile.gradle')
+
 dependencies {
   /*
    * CAVEAT:
@@ -48,6 +51,14 @@ dependencies {
   runtimeOnly group: 'io.franzbecker', name: 'gradle-lombok', version: '[1, 2['
 }
 
-sourceSets.main.groovy.srcDirs = [new File(ext.rootDir, 'src/plugin-dependees/groovy')]
+sourceSets.main {
+  java.srcDirs = [new File(project.ext.rootDir, 'src/dependencyUtils/java')]
+  groovy.srcDirs = [
+    new File(project.ext.rootDir, 'src/dependencyUtils/groovy'),
+    new File(project.ext.rootDir, 'src/plugin-dependees/groovy'),
+  ]
+}
+
+apply from: new File(ext.rootDir, 'gradle/gradle-plugin-markers-dependencyUtils.gradle')
 
 dependencies.runtime project(path)
