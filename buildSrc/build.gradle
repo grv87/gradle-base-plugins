@@ -60,6 +60,11 @@ apply from: new File(ext.rootDir, 'gradle/dependencies-compile.gradle')
 
 apply from: new File(ext.rootDir, 'gradle/gradle-plugin-markers.gradle')
 
+/*
+ * CAVEAT:
+ * Lombok should be 1.18.1+.
+ * See https://github.com/rzwitserloot/lombok/issues/1782
+ */
 lombok {
-  version = 'latest.release'
+  version = '[1.18.1, 2['
 }

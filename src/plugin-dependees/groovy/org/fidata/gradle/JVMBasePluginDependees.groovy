@@ -41,6 +41,7 @@ final class JVMBasePluginDependees {
       configurationName: 'implementation',
       group: 'com.jfrog.bintray.gradle',
       module: 'gradle-bintray-plugin',
+      version: '[1, 2[',
       excludes: [
         /*
          * WORKAROUND:

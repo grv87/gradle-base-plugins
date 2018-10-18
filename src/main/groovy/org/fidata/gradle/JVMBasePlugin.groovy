@@ -157,7 +157,7 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
     project.dependencies.add(sourceSet.implementationConfigurationName, [
       group: 'junit',
       name: 'junit',
-      version: '[4.0,5.0)'
+      version: '[4, 5['
     ])
   }
 
@@ -229,7 +229,7 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
       add(sourceSet.runtimeOnlyConfigurationName, [
         group  : 'com.athaydes',
         name   : 'spock-reports',
-        version: 'latest.release'
+        version: '[1, 2['
       ]) { ModuleDependency dependency ->
         dependency.transitive = false
       }
