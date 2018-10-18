@@ -86,12 +86,14 @@ dependencies {
   compatTestImplementation sourceSets.testFixtures.output
 }
 
+import static org.fidata.gradle.ProjectPlugin.GRADLE_MINIMUM_SUPPORTED_VERSION
+
 stutter {
   java(8) {
-    compatibleRange '4.9'
+    compatibleRange GRADLE_MINIMUM_SUPPORTED_VERSION
   }
   java(9) {
-    compatibleRange '4.9'
+    compatibleRange GRADLE_MINIMUM_SUPPORTED_VERSION
   }
 }
 
