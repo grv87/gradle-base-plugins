@@ -444,6 +444,12 @@ Whenever new Gradle version is released, the way to upgrade is this:
 4.  Change Gradle version for `wrapper` task in plugin code
 5.  Run `./gradlew wrapper && ./gradlew wrapper`
 
+If a new version of a plugin won't be compatible
+with previous Gradle versions:
+1.  Update `ProjectPlugin.GRADLE_MINIMUM_SUPPORTED_VERSION` value
+2.  Run `./gradlew stutterWriteLock`
+3.  Update required Gradle version in this README file
+
 
 ------------------------------------------------------------------------
 Copyright © 2017-2018  Basil Peace
