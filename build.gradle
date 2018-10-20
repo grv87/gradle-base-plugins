@@ -55,6 +55,9 @@ sourceSets {
 
 apply from: new File(ext.rootDir, 'gradle/dependencies-compile.gradle')
 
+tasks.named('delombok').configure {
+  sourceSet project.sourceSets.exceptions
+}
 tasks.named('groovydoc').configure {
   source sourceSets.exceptions.groovy
 }
