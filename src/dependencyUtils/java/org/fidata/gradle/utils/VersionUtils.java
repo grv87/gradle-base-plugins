@@ -44,16 +44,22 @@ public final class VersionUtils {
       return null;
     }
     try {
-      return !Version.valueOf(version).getPreReleaseVersion().isEmpty();
+      String preReleaseVersion = Version.valueOf(version).getPreReleaseVersion();
+      if (preReleaseVersion.isEmpty()) {
+        return false;
+      }
+      return !Iterables.all(Splitter.on(CharMatcher.anyOf("-\\._")).split(preReleaseVersion), new Predicate<String>() {
+        public boolean apply(String label) {
+          label = label.toUpperCase();
+          return label.startsWith("FINAL") || label.startsWith("GA") || label.startsWith("SP") || label.startsWith("SR") || label.matches("^\\d+$");
+        }
+      });
     }
     catch (ParseException e) {
       return Iterables.any(Splitter.on(CharMatcher.anyOf("-\\._")).split(version), new Predicate<String>() {
         public boolean apply(String label) {
-          if (label == null) {
-            return false;
-          }
           label = label.toUpperCase();
-          return label.startsWith("ALPHA") || label.startsWith("BETA") || label.startsWith("RC") || label.startsWith("CR") || label.startsWith("SNAPSHOT");
+          return label.startsWith("ALPHA") || label.startsWith("BETA") || label.startsWith("MILESTONE") || label.startsWith("RC") || label.startsWith("CR") || label.startsWith("SNAPSHOT") || label.matches("^[ABM]\\d+$");
         }
       });
     }
