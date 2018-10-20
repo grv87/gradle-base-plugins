@@ -79,7 +79,6 @@ import org.gradle.api.tasks.wrapper.Wrapper
 import org.gradle.api.reporting.ReportingExtension
 import org.ajoberstar.gradle.git.publish.GitPublishExtension
 import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
-import org.gradle.api.artifacts.ComponentSelectionRules
 import org.gradle.api.artifacts.ResolutionStrategy
 import de.gliderpilot.gradle.semanticrelease.UpdateGithubRelease
 import org.jfrog.gradle.plugin.artifactory.dsl.ArtifactoryPluginConvention
@@ -244,11 +243,9 @@ final class ProjectPlugin extends AbstractProjectPlugin {
       dependencyUpdates.outputFormatter = 'xml'
       dependencyUpdates.outputDir = project.convention.getPlugin(ProjectConvention).getXmlReportDir(Paths.get('dependencyUpdates')).toString()
       dependencyUpdates.resolutionStrategy = { ResolutionStrategy resolutionStrategy ->
-        resolutionStrategy.componentSelection { ComponentSelectionRules rules ->
-          rules.all { ComponentSelection selection ->
-            if (dependencyUpdates.revision == 'release' && isPreReleaseVersion(selection.candidate.version)) {
-              selection.reject 'Pre-release version'
-            }
+        resolutionStrategy.componentSelection.all { ComponentSelection selection ->
+          if (dependencyUpdates.revision == 'release' && isPreReleaseVersion(selection.candidate.version)) {
+            selection.reject 'Pre-release version'
           }
         }
       }
