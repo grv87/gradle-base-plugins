@@ -46,11 +46,13 @@ plugin](https://github.com/FIDATA/gradle-semantic-release-plugin).
 
 ### Dependency Resolution
 
-*	Applies and configures [`com.jfrog.artifactory` plugin
-    ](https://www.jfrog.com/confluence/display/RTF/Gradle+Artifactory+Plugin)
+*   Adds Maven repository hosted on [FIDATA Artifactory
+    ](https://artifactory.fidata.org/)
 
-    Allows us to publish artifacts and build info to [FIDATA Artifactory
-    ](https://artifactory.fidata.org/).
+    For releases, it is always `-release` repository, so releases
+    cannot have snapshot dependencies.
+    Otherwise it is `-snapshot` repository, so snapshot versions
+    could be used during development (but won't by default - see below).
 
 *   Turns off changing modules caching, so that SNAPSHOT dependencies
     are updated on each run
@@ -176,6 +178,12 @@ plugin](https://github.com/FIDATA/gradle-semantic-release-plugin).
 All these tasks are put into `Diagnostics` group.
 
 ### Other features
+
+*	Applies and configures [`com.jfrog.artifactory` plugin
+    ](https://www.jfrog.com/confluence/display/RTF/Gradle+Artifactory+Plugin)
+
+    Allows us to publish artifacts and build info to [FIDATA Artifactory
+    ](https://artifactory.fidata.org/).
 
 *	Sets project's `group` to `org.fidata` if it hasn't been set already
 
