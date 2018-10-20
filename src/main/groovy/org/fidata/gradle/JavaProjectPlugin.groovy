@@ -89,7 +89,7 @@ final class JavaProjectPlugin extends AbstractProjectPlugin {
       TaskProvider<DelombokExtended> delombokProvider = project.tasks.register(DELOMBOK_TASK_NAME, DelombokExtended) { DelombokExtended delombok ->
         delombok.with {
           encoding.set UTF_8.toString()
-          sourceSet project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(MAIN_SOURCE_SET_NAME)
+          sourceSet project.convention.getPlugin(JavaPluginConvention).sourceSets.named(MAIN_SOURCE_SET_NAME)
 
           dependsOn project.tasks.named(COMPILE_JAVA_TASK_NAME)
 

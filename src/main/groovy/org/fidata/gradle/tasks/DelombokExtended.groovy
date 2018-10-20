@@ -95,7 +95,7 @@ class DelombokExtended extends DelombokTask {
       sourceSets.add((SourceSet)sourceSet)
     }
     else if (String.isInstance(sourceSet)) {
-      sourceSets.add(project.providers.provider { project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName((String)sourceSet) })
+      sourceSets.add project.convention.getPlugin(JavaPluginConvention).sourceSets.named((String)sourceSet)
     } else {
       throw new IllegalArgumentException(sprintf('Unsupported argument type: %s', sourceSet))
     }

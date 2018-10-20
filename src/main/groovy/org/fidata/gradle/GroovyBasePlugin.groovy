@@ -20,6 +20,7 @@
 package org.fidata.gradle
 
 import static java.nio.charset.StandardCharsets.UTF_8
+import org.gradle.api.NamedDomainObjectProvider
 import org.fidata.gradle.utils.PluginDependeesUtils
 import org.gradle.api.artifacts.Configuration
 import groovy.transform.CompileStatic
@@ -56,7 +57,7 @@ final class GroovyBasePlugin extends AbstractProjectPlugin {
    * Adds groovy to specific configuration
    * @param configuration configuration
    */
-  void addGroovyDependency(Configuration configuration) {
+  void addGroovyDependency(NamedDomainObjectProvider<Configuration> configuration) {
     project.dependencies.with {
       add configuration.name, localGroovy()
     }
