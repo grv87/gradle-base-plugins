@@ -170,11 +170,7 @@ final class GradlePluginPlugin extends AbstractProjectPlugin implements Property
 
     project.afterEvaluate {
       project.extensions.getByType(GradlePluginDevelopmentExtension).testSourceSets((project.extensions.getByType(GradlePluginDevelopmentExtension).testSourceSets + [sourceSets.getByName(TestSet.baseName(/* WORKAROUND: org.ysb33r.gradle.gradletest.Names.DEFAULT_TASK has package scope <> */ 'gradleTest')), sourceSets.getByName(FUNCTIONAL_TEST_SOURCE_SET_NAME)]).toArray(new SourceSet[0]))
-      // https://docs.gradle.org/current/userguide/test_kit.html#sub:test-kit-automatic-classpath-injection
       project.extensions.getByType(GradlePluginDevelopmentExtension).testSourceSets.each { SourceSet sourceSet ->
-        /*SourceSet mainSourceSet = project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(MAIN_SOURCE_SET_NAME)
-        sourceSet.compileClasspath += mainSourceSet.output
-        sourceSet.runtimeClasspath += sourceSet.output + mainSourceSet.output*/
         project.plugins.getPlugin(JVMBasePlugin).configureIntegrationTestSourceSetClasspath sourceSet
       }
     }
