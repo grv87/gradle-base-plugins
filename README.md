@@ -222,7 +222,7 @@ when buildSrc project is detected.
 
 ### Supported tools versions:
 
-*	Requires Gradle >= 4.9
+*	Requires Gradle >= 4.10
 
 *	Built and tested with JDK 8
 

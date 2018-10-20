@@ -159,7 +159,7 @@ class ProjectPluginSpecification extends Specification {
     project.evaluate()
 
     then: 'codenarc task depends on codenarcBuildSrc task'
-    Task codenarc = project.tasks['codenarc']
+    Task codenarc = project.tasks.getByName('codenarc')
     codenarc.taskDependencies.getDependencies(codenarc).contains(codenarcBuildSrc)
   }
 
@@ -174,7 +174,7 @@ class ProjectPluginSpecification extends Specification {
     project.apply plugin: 'org.fidata.project'
 
     then:
-    project.tasks['codenarcBuildSrc'].source.files.contains(file) == include
+    project.tasks.getByName('codenarcBuildSrc').source.files.contains(file) == include
 
     where:
     filename                                   | include
