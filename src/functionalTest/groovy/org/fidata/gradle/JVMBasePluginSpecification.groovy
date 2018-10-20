@@ -85,7 +85,7 @@ class JVMBasePluginSpecification extends Specification {
 
     then:
     'functionalTest should be run after test task'
-    functionalTest.shouldRunAfter.getDependencies(functionalTest).contains(project.tasks['test'])
+    functionalTest.shouldRunAfter.getDependencies(functionalTest).contains(project.tasks.getByName('test'))
   }
 
   void 'provides mavenJava publication'() {
