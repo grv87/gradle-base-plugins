@@ -101,8 +101,7 @@ plugin](https://github.com/FIDATA/gradle-semantic-release-plugin).
 	By default, Java-based implementation of PGP is used. Secret keyring
 	should be placed at GnuPG home in `secring.gpg` file.
 
-	If you want to use GnuPG for signing,
-	properties for this are already set.
+	If you want to use GnuPG for signing, properties for this are already set.
 	Switch can be made with [`signing.useGpgCmd()`
 	](https://docs.gradle.org/current/userguide/signing_plugin.html#example_sign_with_gnupg).
 
@@ -361,8 +360,7 @@ used in the project.
 	`pluginBundle.plugins` should be configured manually. Other
 	properties are set automatically.
 
-*	Sets project's `group` to `org.fidata.gradle`
-    if it hasn't been set already
+*	Sets project's `group` to `org.fidata.gradle` if it hasn't been set already
 
 # Properties
 
