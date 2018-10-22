@@ -89,7 +89,7 @@ public class RootProjectConvention extends AbstractExtension {
   private final Property<String> issuesUrl;
 
   /**
-   * Project VCS URL
+   * @return project VCS URL
    */
   public final Provider<String> vcsUrl;
 
