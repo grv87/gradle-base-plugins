@@ -30,8 +30,6 @@ import static org.fidata.gradle.utils.VersionUtils.isPreReleaseVersion
 import static org.gradle.language.base.plugins.LifecycleBasePlugin.VERIFICATION_GROUP
 import static com.dorongold.gradle.tasktree.TaskTreePlugin.TASK_TREE_TASK_NAME
 import static org.fidata.gpg.GpgUtils.getGpgHome
-import org.gradle.api.plugins.quality.internal.AbstractCodeQualityPlugin
-import java.util.concurrent.Callable
 import org.gradle.tooling.UnsupportedVersionException
 import org.fidata.gradle.utils.PathDirector
 import org.fidata.gradle.utils.ReportPathDirectorException
@@ -507,12 +505,8 @@ final class ProjectPlugin extends AbstractProjectPlugin {
       version: '[1, 2['
     ])
 
-    project.afterEvaluate { Project project ->
-      checkProvider.configure { Task check ->
-        check.dependsOn.removeAll { Object dependency ->
-          Callable.isInstance(dependency) && ((Callable)dependency).class.enclosingMethod.declaringClass.enclosingMethod.declaringClass == AbstractCodeQualityPlugin
-        }
-      }
+    checkProvider.configure { Task check ->
+      check.taskDependencies.getDependencies(check).removeAll codenarcTasks
     }
 
     ProjectConvention projectConvention = project.convention.getPlugin(ProjectConvention)
