@@ -275,7 +275,7 @@ and also:
 
 ### Other features
 
-*	Adds license file(s) into JAR `META-INF` directory
+*	Adds license file into JAR `META-INF` directory
 
 ## `org.fidata.project.java` plugin
 
