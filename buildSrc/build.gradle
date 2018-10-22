@@ -54,7 +54,7 @@ sourceSets {
     ]
     groovy.srcDirs = [
       new File(project.ext.rootDir, 'src/dependencyUtils/groovy'),
-      new File(project.ext.rootDir, 'src/pluginDependees/groovy'),
+      new File(project.ext.rootDir, 'src/plugin-dependees/groovy'),
       new File(project.ext.rootDir, 'src/main/groovy'),
     ]
     resources.srcDirs = [new File(project.ext.rootDir, 'src/main/resources')]
