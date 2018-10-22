@@ -34,6 +34,7 @@ import org.fidata.gradle.utils.PluginDependeesUtils
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.tasks.javadoc.Javadoc
+import org.gradle.external.javadoc.StandardJavadocDocletOptions
 import org.gradle.api.tasks.TaskProvider
 
 /**
@@ -110,6 +111,16 @@ final class JavaProjectPlugin extends AbstractProjectPlugin {
 
   private void configureDocumentation() {
     configureDelombok()
+
+    project.tasks.withType(Javadoc).configureEach { Javadoc javadoc ->
+      javadoc.doFirst {
+        javadoc.options { StandardJavadocDocletOptions options ->
+          javadoc.project.extensions.getByType(JVMBaseExtension).javadocLinks.values().each { URI link ->
+            options.links link.toString()
+          }
+        }
+      }
+    }
 
     project.extensions.getByType(GitPublishExtension).contents.from(project.tasks.named(JAVADOC_TASK_NAME)).into "$project.version/javadoc"
   }

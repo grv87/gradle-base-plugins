@@ -22,8 +22,6 @@ package org.fidata.gradle
 import static org.gradle.api.plugins.JavaPlugin.API_CONFIGURATION_NAME
 import static org.gradle.api.plugins.JavaPlugin.API_ELEMENTS_CONFIGURATION_NAME
 import static org.gradle.api.plugins.JavaPlugin.JAVADOC_TASK_NAME
-import static org.gradle.api.plugins.GroovyPlugin.GROOVYDOC_TASK_NAME
-import org.gradle.api.tasks.TaskProvider
 import org.fidata.gradle.utils.PluginDependeesUtils
 import groovy.transform.CompileStatic
 import org.fidata.gradle.internal.AbstractProjectPlugin
@@ -69,15 +67,25 @@ final class GroovyProjectPlugin extends AbstractProjectPlugin {
   }
 
   private void configureDocumentation() {
-    TaskProvider<Javadoc> javadocProvider = project.tasks.withType(Javadoc).named(JAVADOC_TASK_NAME)
-    javadocProvider.configure { Javadoc javadoc ->
-      javadoc.enabled = false
-    }
-    TaskProvider groovydocProvider = project.tasks.withType(Groovydoc).named(GROOVYDOC_TASK_NAME)
-    groovydocProvider.configure { Groovydoc groovydoc ->
-      groovydoc.source javadocProvider.get().source
+    URI groovydocLink = project.uri("http://docs.groovy-lang.org/${ GroovySystem.version }/html/api/index.html?")
+    project.extensions.configure(JVMBaseExtension) { JVMBaseExtension extension ->
+      extension.javadocLinks.with {
+        putAt 'groovy', groovydocLink
+        putAt 'org.codehaus.groovy', groovydocLink
+      }
     }
 
-    project.extensions.getByType(GitPublishExtension).contents.from(groovydocProvider).into "$project.version/groovydoc"
+    Javadoc javadoc = project.tasks.withType(Javadoc).getByName(JAVADOC_TASK_NAME) // TODO
+    javadoc.enabled = false
+    project.tasks.withType(Groovydoc) { Groovydoc groovydoc ->
+      groovydoc.source javadoc.source
+      groovydoc.doFirst {
+        groovydoc.project.extensions.getByType(JVMBaseExtension).javadocLinks.each { String key, URI value ->
+          groovydoc.link value.toString(), "$key."
+        }
+      }
+    }
+
+    project.extensions.getByType(GitPublishExtension).contents.from(project.tasks.named('groovydoc')).into "$project.version/groovydoc"
   }
 }

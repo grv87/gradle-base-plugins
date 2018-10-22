@@ -63,25 +63,14 @@ final class GroovyBasePlugin extends AbstractProjectPlugin {
   }
 
   void configureDocumentation() {
-    URI groovydocLink = project.uri("http://docs.groovy-lang.org/${ GroovySystem.version }/html/api/index.html?")
-    project.extensions.configure(JVMBaseExtension) { JVMBaseExtension extension ->
-      extension.javadocLinks.with {
-        putAt 'groovy', groovydocLink
-        putAt 'org.codehaus.groovy', groovydocLink
-      }
-    }
-
+    /*
+     * WORKAROUND:
+     * https://github.com/gradle/gradle/issues/6168
+     * <grv87 2018-08-01>
+     */
     project.tasks.withType(Groovydoc).configureEach { Groovydoc groovydoc ->
       groovydoc.doFirst {
-        /*
-         * WORKAROUND:
-         * https://github.com/gradle/gradle/issues/6168
-         * <grv87 2018-10-15>
-         */
         groovydoc.destinationDir.deleteDir()
-        groovydoc.project.extensions.getByType(JVMBaseExtension).javadocLinks.each { String key, URI value ->
-          groovydoc.link value.toString(), "$key."
-        }
       }
     }
   }
