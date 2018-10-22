@@ -36,11 +36,7 @@ final class PluginDependeesUtils {
    * @param pluginDependees list of plugin dependees
    */
   static final void applyPlugins(Project project, boolean isBuildSrc, Map<String, PluginDependee> pluginDependees) {
-    pluginDependees.findAll { String key, PluginDependee value ->
-      value.enabled &&
-        (!isBuildSrc || value.enabledForBuildSrc) &&
-        (project == project.rootProject || value.enabledForSubprojects)
-    }.keySet().each { String id ->
+    pluginDependees.findAll { String key, PluginDependee value -> value.enabled && !isBuildSrc || value.enabledForBuildSrc }.keySet().each { String id ->
       project.pluginManager.apply id
     }
   }

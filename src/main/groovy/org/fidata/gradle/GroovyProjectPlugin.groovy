@@ -45,7 +45,7 @@ final class GroovyProjectPlugin extends AbstractProjectPlugin {
 
     project.pluginManager.apply GroovyBasePlugin
 
-    boolean isBuildSrc = project.rootProject.convention.getPlugin(RootProjectConvention).isBuildSrc
+    boolean isBuildSrc = project.project.convention.getPlugin(ProjectConvention).isBuildSrc
 
     PluginDependeesUtils.applyPlugins project, isBuildSrc, GroovyProjectPluginDependees.PLUGIN_DEPENDEES
 
@@ -78,6 +78,6 @@ final class GroovyProjectPlugin extends AbstractProjectPlugin {
       groovydoc.source javadocProvider.get().source
     }
 
-    project.rootProject.extensions.getByType(GitPublishExtension).contents.from(project.tasks.named('groovydoc')).into "$project.version/groovydoc"
+    project.extensions.getByType(GitPublishExtension).contents.from(groovydocProvider).into "$project.version/groovydoc"
   }
 }

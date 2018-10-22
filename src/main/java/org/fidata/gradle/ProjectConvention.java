@@ -24,12 +24,23 @@ import org.fidata.gradle.internal.AbstractExtension;
 import org.fidata.gradle.utils.PathDirector;
 import org.gradle.api.Project;
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.concurrent.Callable;
+import org.ajoberstar.gradle.git.release.base.ReleasePluginExtension;
+import com.github.zafarkhaja.semver.Version;
+import de.gliderpilot.gradle.semanticrelease.SemanticReleasePluginExtension;
+import de.gliderpilot.gradle.semanticrelease.SemanticReleaseChangeLogService;
+import org.ajoberstar.gradle.git.release.base.ReleaseVersion;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
+import org.gradle.api.provider.Provider;
+import org.gradle.cache.internal.filelock.LockFileAccess;
+import org.gradle.cache.internal.filelock.LockStateAccess;
+import org.gradle.cache.internal.filelock.Version1LockStateSerializer;
 import org.spdx.spdxspreadsheet.InvalidLicenseStringException;
 import org.spdx.rdfparser.license.LicenseInfoFactory;
+import groovy.lang.Writable;
 
 /**
  * Provides additional properties to the project
@@ -61,6 +72,10 @@ public class ProjectConvention extends AbstractExtension {
     getPropertyChangeSupport().firePropertyChange("license", oldLicense, newValue);
   }
 
+  /**
+   * @return whether the project this convention is applied to is buildSrc
+   */
+  @Getter
   private final boolean isBuildSrc;
 
   private boolean publicReleases = false;
@@ -88,11 +103,58 @@ public class ProjectConvention extends AbstractExtension {
     getPropertyChangeSupport().firePropertyChange("publicReleases", oldValue, newValue);
   }
 
+  private final Provider<Boolean> isRelease;
+
+  /**
+   * @return whether this run has release version (not snapshot)
+   */
+  public final Provider<Boolean> getIsRelease() {
+    if (isBuildSrc) {
+      throw new InvalidOperationException("buildSrc project can't have releases at all");
+    }
+    return isRelease;
+  }
+
+  private final Provider<Writable> changeLog;
+
+  /**
+   * @return changelog since last release
+   */
+  public final Provider<Writable> getChangeLog() {
+    if (isBuildSrc) {
+      throw new InvalidOperationException("buildSrc project can't have changelog");
+    }
+    return changeLog;
+  }
+
+  private final Provider<Writable> changeLogTxt;
+
+  /**
+   * @return changelog since last release in text format
+   */
+  public final Provider<Writable> getChangeLogTxt() {
+    if (isBuildSrc) {
+      throw new InvalidOperationException("buildSrc project can't have changelog");
+    }
+    return changeLogTxt;
+  }
+
   /**
    * @return project website URL
    */
   @Getter
   private final Property<String> websiteUrl;
+
+  /**
+   * @return issues URL
+   */
+  @Getter
+  private final Property<String> issuesUrl;
+
+  /**
+   * @return project VCS URL
+   */
+  public final Provider<String> vcsUrl;
 
   /**
    * @return parent output directory for reports
@@ -124,38 +186,78 @@ public class ProjectConvention extends AbstractExtension {
   @Getter
   private final File txtReportsDir;
 
-  private File getReportsDirForFormat(Project project, String format) {
-    File result = new File(reportsDir, format);
-    if (project != project.getRootProject()) {
-      result = new File(result, project.getName());
-    }
-    return result;
-  }
-
   public ProjectConvention(final Project project) {
     super();
 
     tags = project.getObjects().listProperty(String.class);
 
-    isBuildSrc = project.getRootProject().getConvention().getPlugin(RootProjectConvention.class).getIsBuildSrc();
+    boolean _isBuildSrc;
+    try {
+      _isBuildSrc = "buildSrc".equals(project.getProjectDir().getName()) && new LockFileAccess(project.file(".gradle/noVersion/buildSrc.lock"), new LockStateAccess(new Version1LockStateSerializer())).readLockInfo().lockId != 0;
+    } catch (IOException e) {
+      _isBuildSrc = false;
+    }
+    isBuildSrc = _isBuildSrc;
 
     if (!isBuildSrc) {
-      websiteUrl = project.getObjects().property(String.class);
-      websiteUrl.set(project.provider(new Callable<String>() {
+      /*
+       * WORKAROUND:
+       * We can't use lambda expressions since they are not supported by Groovydoc yet
+       * https://issues.apache.org/jira/browse/GROOVY-7013
+       * <grv87 2018-08-01>
+       */
+      isRelease = project.provider(new Callable<Boolean>() {
+        @Override
+        public Boolean call() {
+          return !project.getVersion().toString().endsWith("-SNAPSHOT");
+        }
+      });
+
+      changeLog = project.provider(new Callable<Writable>() {
+        @Override
+        public Writable call() {
+          SemanticReleaseChangeLogService changeLogService = project.getExtensions().getByType(SemanticReleasePluginExtension.class).getChangeLog();
+          Object version = project.getVersion();
+          ReleaseVersion inferredVersion = ((ReleasePluginExtension.DelayedVersion) version).getInferredVersion();
+          return changeLogService.getChangeLog().call(changeLogService.commits(Version.valueOf(inferredVersion.getPreviousVersion())), inferredVersion);
+        }
+      });
+      changeLogTxt = project.provider(new Callable<Writable>() {
+        @Override
+        public Writable call() {
+          SemanticReleaseChangeLogService changeLogService = project.getExtensions().getByType(SemanticReleasePluginExtension.class).getChangeLog();
+          Object version = project.getVersion();
+          ReleaseVersion inferredVersion = ((ReleasePluginExtension.DelayedVersion) version).getInferredVersion();
+          return changeLogService.getChangeLogTxt().call(changeLogService.commits(Version.valueOf(inferredVersion.getPreviousVersion())), inferredVersion);
+        }
+      });
+
+      vcsUrl = project.provider(new Callable<String>() {
         @Override
         public String call() {
-          return "https://github.com/FIDATA/" + project.getRootProject().getName();
+          return "https://github.com/FIDATA/" + project.getName();
         }
-      }));
+      });
+      websiteUrl = project.getObjects().property(String.class);
+      websiteUrl.set(vcsUrl);
+      issuesUrl = project.getObjects().property(String.class);
+      issuesUrl.set(websiteUrl + "/issues");
     } else {
+      isRelease = null;
+
+      changeLog = null;
+      changeLogTxt = null;
+
+      vcsUrl = null;
       websiteUrl = null;
+      issuesUrl = null;
     }
 
-    reportsDir = new File(project.getRootProject().getBuildDir(), "reports");
-    htmlReportsDir = getReportsDirForFormat(project, "html");
-    xmlReportsDir = getReportsDirForFormat(project, "xml");
-    jsonReportsDir = getReportsDirForFormat(project, "json");
-    txtReportsDir = getReportsDirForFormat(project, "txt");
+    reportsDir = new File(project.getBuildDir(), "reports");
+    htmlReportsDir = new File(reportsDir, "html");
+    xmlReportsDir  = new File(reportsDir, "xml");
+    jsonReportsDir = new File(reportsDir, "json");
+    txtReportsDir  = new File(reportsDir, "txt");
   }
 
   /**

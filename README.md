@@ -394,37 +394,6 @@ Should be provided in [standard Gradle ways
 All properties except `gpgKeyPassphrase` are required. The plugin
 won't work if they are not set.
 
-# Multi-project Builds (a.k.a Monorepo)
-These plugins supports multi-project builds
-in the following configuration:
-
-1.  All child projects have the same version as the root one.
-    This is the limitation
-    imposed by `de.gliderpilot.semantic-release` plugin.
-
-2.  `org.fidata.project` should be applied to root. It applies itself
-    to each subproject
-
-3.  `de.gliderpilot.semantic-release` and `org.ajoberstar.git-publish`
-    plugins are applied to root only.
-
-4.  The following properties are available for root project only:
-    *   `isBuildSrc`
-    *   `isRelease`
-    *   `changeLog`
-    *   `changeLogTxt`
-    *   `issuesUrl`
-    *   `vcsUrl`
-
-    Except these, all other is configurable per project.
-
-    Note that subprojects can have different licenses,
-    and license file(s) (being included in JARs) are per project.
-
-5.  Reports for all subprojects are redirected
-    to `build/reports/<format>/<subproject>` directory.
-    This is made for convenient usage under CI (Jenkins)
-
 # Development
 
 This is self-applying plugin. That means that build script requires

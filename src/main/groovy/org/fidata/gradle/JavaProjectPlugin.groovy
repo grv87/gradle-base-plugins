@@ -47,7 +47,7 @@ final class JavaProjectPlugin extends AbstractProjectPlugin {
 
     project.pluginManager.apply JVMBasePlugin
 
-    boolean isBuildSrc = project.rootProject.convention.getPlugin(RootProjectConvention).isBuildSrc
+    boolean isBuildSrc = project.project.convention.getPlugin(ProjectConvention).isBuildSrc
 
     PluginDependeesUtils.applyPlugins project, isBuildSrc, JavaProjectPluginDependees.PLUGIN_DEPENDEES
 
@@ -111,7 +111,7 @@ final class JavaProjectPlugin extends AbstractProjectPlugin {
   private void configureDocumentation() {
     configureDelombok()
 
-    project.rootProject.extensions.getByType(GitPublishExtension).contents.from(project.tasks.named(JAVADOC_TASK_NAME)).into "$project.version/javadoc"
+    project.extensions.getByType(GitPublishExtension).contents.from(project.tasks.named(JAVADOC_TASK_NAME)).into "$project.version/javadoc"
   }
 
   /**
