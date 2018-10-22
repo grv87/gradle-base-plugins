@@ -30,9 +30,6 @@ final class PluginDependeesUtils {
   /**
    * Apply list of plugin dependees to the project
    * @param project project
-   * @param isBuildSrc whether this project is buildSrc project.
-   *        This method doesn't contain algorithm to determine it
-   *        and relies on the information from the caller
    * @param pluginDependees list of plugin dependees
    */
   static final void applyPlugins(Project project, boolean isBuildSrc, Map<String, PluginDependee> pluginDependees) {
