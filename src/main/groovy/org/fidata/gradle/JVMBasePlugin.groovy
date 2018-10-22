@@ -20,8 +20,6 @@
 package org.fidata.gradle
 
 import static java.nio.charset.StandardCharsets.UTF_8
-import static org.gradle.api.plugins.JavaPlugin.COMPILE_CONFIGURATION_NAME
-import static org.gradle.api.plugins.JavaPlugin.API_CONFIGURATION_NAME
 import static org.gradle.api.plugins.JavaPlugin.TEST_TASK_NAME
 import static org.gradle.api.tasks.SourceSet.TEST_SOURCE_SET_NAME
 import static org.gradle.api.plugins.JavaPlugin.JAVADOC_TASK_NAME
@@ -31,7 +29,6 @@ import static ProjectPlugin.LICENSE_FILE_NAMES
 import static org.gradle.language.base.plugins.LifecycleBasePlugin.VERIFICATION_GROUP
 import static org.jfrog.gradle.plugin.artifactory.task.ArtifactoryTask.ARTIFACTORY_PUBLISH_TASK_NAME
 import static org.gradle.initialization.IGradlePropertiesLoader.ENV_PROJECT_PROPERTIES_PREFIX
-import org.gradle.api.artifacts.Configuration
 import org.gradle.api.plugins.quality.FindBugs
 import org.gradle.api.plugins.quality.JDepend
 import org.gradle.api.Namer
@@ -448,12 +445,6 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
   }
 
   private void configureDocumentation() {
-    if ([project.configurations[COMPILE_CONFIGURATION_NAME], project.configurations[API_CONFIGURATION_NAME]].any { Configuration configuration ->
-      configuration.dependencies.contains(project.dependencies.gradleApi())
-    }) {
-      project.extensions.getByType(JVMBaseExtension).javadocLinks['org.gradle'] = project.uri("https://docs.gradle.org/${ project.gradle.gradleVersion }/javadoc/index.html?")
-    }
-
     project.tasks.withType(Javadoc).configureEach { Javadoc javadoc ->
       javadoc.with {
         options.encoding = UTF_8.name()

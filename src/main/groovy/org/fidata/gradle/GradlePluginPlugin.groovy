@@ -70,6 +70,8 @@ final class GradlePluginPlugin extends AbstractProjectPlugin implements Property
 
     if (!isBuildSrc) {
       configurePublicReleases()
+
+      configureDocumentation()
     }
 
     configureTesting()
@@ -182,6 +184,10 @@ final class GradlePluginPlugin extends AbstractProjectPlugin implements Property
     project.tasks.matching { Task task -> task.name.startsWith('compatTest') || task.name == 'gradleTest' }.configureEach { Task task ->
       task.shouldRunAfter project.tasks.named(FUNCTIONAL_TEST_TASK_NAME)
     }
+  }
+
+  private void configureDocumentation() {
+    project.extensions.getByType(JVMBaseExtension).javadocLinks['org.gradle'] = project.uri("https://docs.gradle.org/${ project.gradle.gradleVersion }/javadoc/index.html?")
   }
 
   private void configureArtifactsPublishing() {
