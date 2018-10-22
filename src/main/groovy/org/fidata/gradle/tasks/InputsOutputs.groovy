@@ -52,7 +52,7 @@ class InputsOutputs extends DefaultTask {
     outputFile.get().asFile.withPrintWriter(UTF_8.name()) { PrintWriter writer ->
       for (Task t in project.tasks) {
         if (t.inputs.hasInputs) {
-          for (File f in t.inputs.files) {
+          for (File f in t.inputs.sourceFiles) {
             writer.printf('%s input:\t%s\n', t.path, f.path)
           }
         }
