@@ -21,7 +21,6 @@
 plugins {
   id 'java-library'
   id 'java-gradle-plugin'
-  id 'org.fidata.dependencies'
 }
 apply plugin: 'io.franzbecker.gradle-lombok'
 
@@ -48,12 +47,8 @@ sourceSets {
     groovy.srcDirs = [new File(project.ext.rootDir,  'src/exceptions/groovy')]
   }
   main {
-    java.srcDirs = [
-      new File(project.ext.rootDir, 'src/dependencyUtils/java'),
-      new File(project.ext.rootDir, 'src/main/java'),
-    ]
+    java.srcDirs = [new File(project.ext.rootDir, 'src/main/java')]
     groovy.srcDirs = [
-      new File(project.ext.rootDir, 'src/dependencyUtils/groovy'),
       new File(project.ext.rootDir, 'src/plugin-dependees/groovy'),
       new File(project.ext.rootDir, 'src/main/groovy'),
     ]

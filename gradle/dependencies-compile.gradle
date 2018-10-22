@@ -20,8 +20,6 @@
 import org.fidata.gradle.utils.PluginDependee
 import org.fidata.gradle.utils.PluginDependeeExclusion
 
-apply from: new File(ext.rootDir, 'gradle/dependencies-dependencyUtils-compile.gradle')
-
 dependencies {
   exceptionsImplementation/*exceptionsApi*/ localGroovy()
   implementation sourceSets.exceptions.output
@@ -29,7 +27,7 @@ dependencies {
   Closure addDependencies = { Map<String, PluginDependee> pluginDependees ->
     pluginDependees.findAll { !it.key.startsWith('org.gradle.') }.each { Map.Entry<String, PluginDependee> entry ->
       entry.value.with {
-        Dependency dependency = add(
+        add(
           configurationName, [
             group  : group ?: entry.key,
             name   : module ?: "${ entry.key }.gradle.plugin",
@@ -42,9 +40,6 @@ dependencies {
               module: exclusion.module
             )
           }
-        }
-        if (status) {
-          dependency.status = status
         }
       }
     }
@@ -68,6 +63,9 @@ dependencies {
     exclude(group: 'org.apache.logging.log4j', module: 'log4j-core')
   }
   implementation(group: 'com.github.cliftonlabs', name: 'json-simple', version: '[2, 3[')
+
+  implementation(group: 'com.github.zafarkhaja', name: 'java-semver', version: '[0, 1[')
+  implementation(group: 'com.google.guava', name: 'guava', version: '26.0-jre')
 
   /*
    * CAVEAT:

@@ -17,8 +17,6 @@
  * implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-apply from: new File(ext.rootDir, 'gradle/gradle-plugin-markers-dependencyUtils.gradle')
-
 gradlePlugin {
   plugins {
     projectPlugin {

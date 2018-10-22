@@ -60,24 +60,6 @@ plugin](https://github.com/FIDATA/gradle-semantic-release-plugin).
     from `release` to `milestone` for artifacts
     having pre-release labels in version
 
-*   Adds property `status` to each `ExternalModuleDependency` instance.
-    It should be used to configure desired status of dependency.
-    By default all dependencies are resolved to `release`s, even
-    if you use version ranges.
-    If you want to get bleeding edge `SNAPSHOT` version you could use
-    this property, like this:
-    ```
-    dependencies {
-      compile('com.example:next-generation-library:[1, 2[').status = 'integration'
-    }
-    ```
-
-    Of course, if there is more recent `release`
-    with appropriate version then it will be used
-    instead of old `SNAPSHOT`.
-
-    Custom status schemes are not supported.
-
 ### Documentation
 
 *	Applies and configures [`org.ajoberstar.git-publish` plugin

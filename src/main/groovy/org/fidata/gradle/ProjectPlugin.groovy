@@ -55,6 +55,7 @@ import org.fidata.gradle.tasks.NoJekyll
 import org.fidata.gradle.tasks.ResignGitCommit
 import org.gradle.api.plugins.quality.CodeNarc
 import org.fidata.gradle.utils.PluginDependeesUtils
+import org.gradle.api.artifacts.Configuration
 import org.gradle.api.plugins.quality.CodeNarcExtension
 import org.gradle.util.GradleVersion
 import org.gradle.api.plugins.ProjectReportsPluginConvention
@@ -69,6 +70,7 @@ import org.gradle.api.tasks.diagnostics.PropertyReportTask
 import org.gradle.api.reporting.dependencies.HtmlDependencyReportTask
 import org.gradle.api.tasks.diagnostics.TaskReportTask
 import org.fidata.gradle.tasks.InputsOutputs
+import org.gradle.api.artifacts.ComponentMetadataDetails
 import org.gradle.api.artifacts.ComponentSelection
 import org.gradle.api.file.FileTreeElement
 import groovy.text.StreamingTemplateEngine
@@ -154,7 +156,6 @@ final class ProjectPlugin extends AbstractProjectPlugin {
     boolean isBuildSrc = rootProjectConvention.isBuildSrc
 
     PluginDependeesUtils.applyPlugins project, isBuildSrc, ProjectPluginDependees.PLUGIN_DEPENDEES
-    project.pluginManager.apply 'org.fidata.dependencies'
 
     project.convention.plugins.put FIDATA_CONVENTION_NAME, new ProjectConvention(project)
 
@@ -313,6 +314,18 @@ final class ProjectPlugin extends AbstractProjectPlugin {
         url = project.uri("$ARTIFACTORY_URL/libs-${ !rootProjectConvention.isBuildSrc && rootProjectConvention.isRelease.get() ? 'release' : 'snapshot' }/")
         credentials.username = project.rootProject.extensions.extraProperties['artifactoryUser'].toString()
         credentials.password = project.rootProject.extensions.extraProperties['artifactoryPassword'].toString()
+      }
+    }
+
+    project.configurations.all { Configuration configuration ->
+      configuration.resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+    }
+
+    project.dependencies.components.all { ComponentMetadataDetails metadata ->
+      metadata.with {
+        if (status == 'release' && isPreReleaseVersion(id.version)) {
+          status = 'milestone'
+        }
       }
     }
   }

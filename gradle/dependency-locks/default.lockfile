@@ -133,7 +133,7 @@ org.eclipse.jgit:org.eclipse.jgit.ui:4.11.0.201803080745-r
 org.eclipse.jgit:org.eclipse.jgit:4.11.0.201803080745-r
 org.fidata.gradle.semantic-release:gradle-semantic-release-plugin:2.1.0
 org.fidata.gradle:gradle-prerequisites-plugin:1.1.1
-org.fidata.prerequisites:org.fidata.prerequisites.gradle.plugin:1.1.1
+org.fidata.prerequisites:org.fidata.prerequisites.gradle.plugin:1.1.2-various-SNAPSHOT
 org.glassfish.hk2.external:aopalliance-repackaged:2.4.0-b10
 org.glassfish.hk2.external:javax.inject:2.4.0-b10
 org.glassfish.hk2:hk2-api:2.4.0-b10
