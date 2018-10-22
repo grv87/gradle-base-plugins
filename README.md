@@ -187,10 +187,6 @@ However, buildSrc projects can't have releases and documentation,
 so all related features are turned off.
 They also don't publish build info to Artifactory.
 
-They could have code quality and diagnostic tasks, but usage of them
-is discouraged. Note that all buildSrc's Gradle and Groovy scripts
-are already covered by `codenarcBuildSrc` task.
-
 ### Supported tools versions:
 
 *	Requires Gradle >= 4.9
