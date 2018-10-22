@@ -154,11 +154,11 @@ final class GradlePluginPlugin extends AbstractProjectPlugin implements Property
     SourceSetContainer sourceSets = project.convention.getPlugin(JavaPluginConvention).sourceSets
 
     project.afterEvaluate {
-      project.plugins.getPlugin(JVMBasePlugin).addSpockDependency sourceSets.named(TestSet.baseName(/* WORKAROUND: org.ysb33r.gradle.gradletest.Names.DEFAULT_TASK has package scope <> */ 'gradleTest'))
+      project.plugins.getPlugin(JVMBasePlugin).addSpockDependency sourceSets.getByName(TestSet.baseName(/* WORKAROUND: org.ysb33r.gradle.gradletest.Names.DEFAULT_TASK has package scope <> */ 'gradleTest'))
     }
 
     project.plugins.getPlugin(JVMBasePlugin).addSpockDependency(
-      sourceSets.named('compatTest'),
+      sourceSets.getByName('compatTest'),
       /*
        * TOTEST:
        * Looks like there is no built-in way to get collection of TaskProvider.

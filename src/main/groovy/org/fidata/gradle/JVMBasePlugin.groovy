@@ -30,7 +30,6 @@ import static ProjectPlugin.LICENSE_FILE_NAMES
 import static org.gradle.language.base.plugins.LifecycleBasePlugin.VERIFICATION_GROUP
 import static org.jfrog.gradle.plugin.artifactory.task.ArtifactoryTask.ARTIFACTORY_PUBLISH_TASK_NAME
 import static org.gradle.initialization.IGradlePropertiesLoader.ENV_PROJECT_PROPERTIES_PREFIX
-import org.gradle.api.NamedDomainObjectProvider
 import org.gradle.external.javadoc.StandardJavadocDocletOptions
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.plugins.quality.FindBugs
@@ -154,14 +153,12 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
    * Adds JUnit dependency to specified source set configuration
    * @param sourceSet source set
    */
-  void addJUnitDependency(NamedDomainObjectProvider<SourceSet> sourceSetProvider) {
-    sourceSetProvider.configure { SourceSet sourceSet ->
-      project.dependencies.add(sourceSet.implementationConfigurationName, [
-        group: 'junit',
-        name: 'junit',
-        version: '[4, 5['
-      ])
-    }
+  void addJUnitDependency(SourceSet sourceSet) {
+    project.dependencies.add(sourceSet.implementationConfigurationName, [
+      group: 'junit',
+      name: 'junit',
+      version: '[4, 5['
+    ])
   }
 
   /**
@@ -170,8 +167,8 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
    * @param task test task.
    *        If null, task with the same name as source set is used
    */
-  void addSpockDependency(NamedDomainObjectProvider<SourceSet> sourceSetProvider, TaskProvider<Test> task = null) {
-    addSpockDependency sourceSetProvider, [task ?: project.tasks.withType(Test).named(sourceSetProvider.name)], new PathDirector<TaskProvider<Test>>() {
+  void addSpockDependency(SourceSet sourceSet, TaskProvider<Test> task = null) {
+    addSpockDependency sourceSet, [task ?: project.tasks.withType(Test).named(sourceSet.name)], new PathDirector<TaskProvider<Test>>() {
       @Override
       @SuppressWarnings('CatchException')
       Path determinePath(TaskProvider<Test> object) throws ReportPathDirectorException {
@@ -187,14 +184,14 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
   /**
    * Namer of codenarc task for source sets
    */
-  static final Namer<NamedDomainObjectProvider<SourceSet>> CODENARC_NAMER = new Namer<NamedDomainObjectProvider<SourceSet>>() {
+  static final Namer<SourceSet> CODENARC_NAMER = new Namer<SourceSet>() {
     @Override
     @SuppressWarnings('CatchException')
-    String determineName(NamedDomainObjectProvider<SourceSet> sourceSetProvider) throws TaskNamerException {
+    String determineName(SourceSet sourceSet) throws TaskNamerException {
       try {
-        "codenarc${ sourceSetProvider.name.capitalize() }"
+        "codenarc${ sourceSet.name.capitalize() }"
       } catch (Exception e) {
-        throw new TaskNamerException('codenarc', 'source set provider', sourceSetProvider, e)
+        throw new TaskNamerException('codenarc', 'source set', sourceSet, e)
       }
     }
   }
@@ -213,34 +210,32 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
    * <grv87 2018-06-26>
    */
   @SuppressWarnings('UnnecessarySetter')
-  void addSpockDependency(NamedDomainObjectProvider<SourceSet> sourceSetProvider, Iterable<TaskProvider<Test>> tasks, PathDirector<TaskProvider<Test>> reportDirector) {
-    addJUnitDependency sourceSetProvider
+  void addSpockDependency(SourceSet sourceSet, Iterable<TaskProvider<Test>> tasks, PathDirector<TaskProvider<Test>> reportDirector) {
+    addJUnitDependency sourceSet
 
     project.pluginManager.apply GroovyBasePlugin
 
-    sourceSetProvider.configure { SourceSet sourceSet ->
-      project.dependencies.with {
-        add(sourceSet.implementationConfigurationName, [
-          group: 'org.spockframework',
-          name: 'spock-core',
-          version: "1.2-groovy-${ (GroovySystem.version =~ /^\d+\.\d+/)[0] }"
-        ]) { ModuleDependency dependency ->
-          dependency.exclude(
-            group: 'org.codehaus.groovy',
-            module: 'groovy-all'
-          )
-        }
-        add(sourceSet.runtimeOnlyConfigurationName, [
-          group: 'com.athaydes',
-          name: 'spock-reports',
-          version: '[1, 2['
-        ]) { ModuleDependency dependency ->
-          dependency.transitive = false
-        }
+    project.dependencies.with {
+      add(sourceSet.implementationConfigurationName, [
+        group  : 'org.spockframework',
+        name   : 'spock-core',
+        version: "1.2-groovy-${ (GroovySystem.version =~ /^\d+\.\d+/)[0] }"
+      ]) { ModuleDependency dependency ->
+        dependency.exclude(
+          group: 'org.codehaus.groovy',
+          module: 'groovy-all'
+        )
       }
-      project.plugins.withType(GroovyBasePlugin).configureEach { GroovyBasePlugin plugin ->
-        plugin.addGroovyDependency project.configurations.named(sourceSet.implementationConfigurationName)
+      add(sourceSet.runtimeOnlyConfigurationName, [
+        group  : 'com.athaydes',
+        name   : 'spock-reports',
+        version: '[1, 2['
+      ]) { ModuleDependency dependency ->
+        dependency.transitive = false
       }
+    }
+    project.plugins.withType(GroovyBasePlugin).configureEach { GroovyBasePlugin plugin ->
+      plugin.addGroovyDependency project.configurations.getByName(sourceSet.implementationConfigurationName)
     }
 
     ProjectConvention projectConvention = project.convention.getPlugin(ProjectConvention)
@@ -270,7 +265,7 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
     }
 
     project.plugins.withType(GroovyBasePlugin).configureEach { GroovyBasePlugin plugin -> // TODO: 4.9
-      project.tasks.withType(CodeNarc).named(CODENARC_NAMER.determineName(sourceSetProvider)).configure { CodeNarc codenarc ->
+      project.tasks.withType(CodeNarc).named(CODENARC_NAMER.determineName(sourceSet)).configure { CodeNarc codenarc ->
         codenarc.convention.getPlugin(CodeNarcTaskConvention).disabledRules.addAll 'MethodName', 'FactoryMethodName', 'JUnitPublicProperty', 'JUnitPublicNonTestMethod'
       }
     }
@@ -288,12 +283,8 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
     sourceSet.compileClasspath += mainSourceSet.output
     sourceSet.runtimeClasspath += sourceSet.output + mainSourceSet.output // TOTEST
 
-    project.configurations.named(sourceSet.implementationConfigurationName).configure { Configuration configuration ->
-      configuration.extendsFrom project.configurations.getByName(mainSourceSet.implementationConfigurationName)
-    }
-    project.configurations.named(sourceSet.runtimeOnlyConfigurationName).configure { Configuration configuration ->
-      configuration.extendsFrom project.configurations.getByName(mainSourceSet.runtimeOnlyConfigurationName)
-    }
+    project.configurations.getByName(sourceSet.implementationConfigurationName).extendsFrom project.configurations.getByName(mainSourceSet.implementationConfigurationName)
+    project.configurations.getByName(sourceSet.runtimeOnlyConfigurationName).extendsFrom project.configurations.getByName(mainSourceSet.runtimeOnlyConfigurationName)
   }
 
   /**
@@ -327,7 +318,7 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
    */
   @SuppressWarnings('UnnecessarySetter')
   private void configureFunctionalTests() {
-    NamedDomainObjectProvider<SourceSet> functionalTestSourceSetProvider = project.convention.getPlugin(JavaPluginConvention).sourceSets.register(FUNCTIONAL_TEST_SOURCE_SET_NAME) { SourceSet sourceSet ->
+    SourceSet functionalTestSourceSet = project.convention.getPlugin(JavaPluginConvention).sourceSets.create(FUNCTIONAL_TEST_SOURCE_SET_NAME) { SourceSet sourceSet ->
       sourceSet.java.srcDir project.file("src/$FUNCTIONAL_TEST_SRC_DIR_NAME/java")
       sourceSet.resources.srcDir project.file("src/$FUNCTIONAL_TEST_SRC_DIR_NAME/resources")
 
@@ -335,7 +326,6 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
     }
 
     TaskProvider<Test> functionalTestProvider = project.tasks.register(FUNCTIONAL_TEST_TASK_NAME, Test) { Test test ->
-      SourceSet functionalTestSourceSet = functionalTestSourceSetProvider.get()
       test.with {
         group = VERIFICATION_GROUP
         description = 'Runs functional tests'
@@ -345,7 +335,7 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
       }
     }
 
-    addSpockDependency functionalTestSourceSetProvider, functionalTestProvider
+    addSpockDependency functionalTestSourceSet, functionalTestProvider
   }
 
   private void configureTesting() {
@@ -362,7 +352,7 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
       }
     }
 
-    addJUnitDependency project.convention.getPlugin(JavaPluginConvention).sourceSets.named(TEST_SOURCE_SET_NAME)
+    addJUnitDependency project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(TEST_SOURCE_SET_NAME)
 
     configureFunctionalTests()
   }
@@ -420,7 +410,7 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
   private void configureArtifactsPublishing() {
     project.afterEvaluate {
       if (createMavenJavaPublication) {
-        project.extensions.getByType(PublishingExtension).publications.register(MAVEN_JAVA_PUBICATION_NAME, MavenPublication) { MavenPublication publication ->
+        project.extensions.getByType(PublishingExtension).publications.create(MAVEN_JAVA_PUBICATION_NAME, MavenPublication) { MavenPublication publication ->
           publication.from project.components.getByName('java' /* TODO */)
         }
       }
@@ -462,7 +452,7 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
   }
 
   private void configureDocumentation() {
-    if ([project.configurations.getByName(COMPILE_CONFIGURATION_NAME), project.configurations.getByName(API_CONFIGURATION_NAME)].any { Configuration configuration ->
+    if ([project.configurations[COMPILE_CONFIGURATION_NAME], project.configurations[API_CONFIGURATION_NAME]].any { Configuration configuration ->
       configuration.dependencies.contains(project.dependencies.gradleApi())
     }) {
       project.extensions.getByType(JVMBaseExtension).javadocLinks['org.gradle'] = project.uri("https://docs.gradle.org/${ project.gradle.gradleVersion }/javadoc/index.html?")

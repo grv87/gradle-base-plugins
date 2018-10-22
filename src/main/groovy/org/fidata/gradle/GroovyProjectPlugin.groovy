@@ -23,8 +23,6 @@ import static org.gradle.api.plugins.JavaPlugin.API_CONFIGURATION_NAME
 import static org.gradle.api.plugins.JavaPlugin.API_ELEMENTS_CONFIGURATION_NAME
 import static org.gradle.api.plugins.JavaPlugin.JAVADOC_TASK_NAME
 import static org.gradle.api.plugins.GroovyPlugin.GROOVYDOC_TASK_NAME
-import org.gradle.api.artifacts.ConfigurationVariant
-import org.gradle.api.artifacts.Configuration
 import org.gradle.api.tasks.TaskProvider
 import org.fidata.gradle.utils.PluginDependeesUtils
 import groovy.transform.CompileStatic
@@ -51,7 +49,7 @@ final class GroovyProjectPlugin extends AbstractProjectPlugin {
 
     PluginDependeesUtils.applyPlugins project, isBuildSrc, GroovyProjectPluginDependees.PLUGIN_DEPENDEES
 
-    project.plugins.getPlugin(GroovyBasePlugin).addGroovyDependency project.configurations.named(API_CONFIGURATION_NAME)
+    project.plugins.getPlugin(GroovyBasePlugin).addGroovyDependency project.configurations.getByName(API_CONFIGURATION_NAME)
 
     /*
      * CAVEAT:
@@ -59,16 +57,11 @@ final class GroovyProjectPlugin extends AbstractProjectPlugin {
      * https://docs.gradle.org/current/userguide/java_library_plugin.html#sec:java_library_known_issues_compat
      * <>
      */
-    project.configurations.named(API_ELEMENTS_CONFIGURATION_NAME).configure { Configuration configuration ->
-      configuration.outgoing.variants.named('classes').configure { ConfigurationVariant configurationVariant ->
-        GroovyCompile compileGroovy = project.tasks.withType(GroovyCompile)['compileGroovy']
-        configurationVariant.artifact(
-          file: compileGroovy.destinationDir, // TODO
-          type: ArtifactTypeDefinition.JVM_CLASS_DIRECTORY,
-          builtBy: compileGroovy
-        )
-      }
-    }
+    project.configurations.getByName(API_ELEMENTS_CONFIGURATION_NAME).outgoing.variants.getByName('classes').artifact(
+      file: project.tasks.withType(GroovyCompile).getByName('compileGroovy').destinationDir, // TODO
+      type: ArtifactTypeDefinition.JVM_CLASS_DIRECTORY,
+      builtBy: project.tasks.withType(GroovyCompile).getByName('compileGroovy')
+    )
 
     if (!isBuildSrc) {
       configureDocumentation()
