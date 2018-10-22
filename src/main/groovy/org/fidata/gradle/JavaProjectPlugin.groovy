@@ -23,7 +23,6 @@ import static java.nio.charset.StandardCharsets.UTF_8
 import static org.gradle.api.plugins.JavaPlugin.COMPILE_JAVA_TASK_NAME
 import static org.gradle.api.plugins.JavaPlugin.JAVADOC_TASK_NAME
 import static org.gradle.api.tasks.SourceSet.MAIN_SOURCE_SET_NAME
-import org.gradle.api.plugins.quality.Checkstyle
 import io.franzbecker.gradle.lombok.LombokPluginExtension
 import org.gradle.api.tasks.SourceSet
 import groovy.transform.CompileStatic
@@ -57,8 +56,6 @@ final class JavaProjectPlugin extends AbstractProjectPlugin {
     if (!isBuildSrc) {
       configureDocumentation()
     }
-
-    configureCodeQuality()
   }
 
   private void configureLombok() {
@@ -125,12 +122,4 @@ final class JavaProjectPlugin extends AbstractProjectPlugin {
     project.extensions.getByType(GitPublishExtension).contents.from(project.tasks.named(JAVADOC_TASK_NAME)).into "$project.version/javadoc"
   }
 
-  /**
-   * Name of Checkstyle common task
-   */
-  public static final String CHECKSTYLE_TASK_NAME = 'checkstyle'
-
-  private void configureCodeQuality() {
-    project.plugins.getPlugin(ProjectPlugin).addCodeQualityCommonTask 'Checkstyle', CHECKSTYLE_TASK_NAME, Checkstyle
-  }
 }

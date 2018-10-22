@@ -30,7 +30,6 @@ import static org.fidata.gradle.utils.VersionUtils.isPreReleaseVersion
 import static org.gradle.language.base.plugins.LifecycleBasePlugin.VERIFICATION_GROUP
 import static com.dorongold.gradle.tasktree.TaskTreePlugin.TASK_TREE_TASK_NAME
 import static org.fidata.gpg.GpgUtils.getGpgHome
-import org.gradle.api.plugins.quality.Pmd
 import org.gradle.api.plugins.quality.internal.AbstractCodeQualityPlugin
 import java.util.concurrent.Callable
 import org.gradle.tooling.UnsupportedVersionException
@@ -441,11 +440,6 @@ final class ProjectPlugin extends AbstractProjectPlugin {
   public static final String LINT_TASK_NAME = 'lint'
 
   /**
-   * Name of PMD common task
-   */
-  public static final String PMD_TASK_NAME = 'pmd'
-
-  /**
    * Name of CodeNarc common task
    */
   public static final String CODENARC_TASK_NAME = 'codenarc'
@@ -470,22 +464,6 @@ final class ProjectPlugin extends AbstractProjectPlugin {
     }
   }
 
-  @PackageScope
-  void addCodeQualityCommonTask(String toolName, String commonTaskName, Class<? extends Task> taskClass) {
-    TaskCollection<? extends Task> tasks = project.tasks.withType(taskClass)
-
-    TaskProvider<Task> commonTaskProvider = project.tasks.register(commonTaskName) { Task commonTask ->
-      commonTask.with {
-        group = 'Verification'
-        description = "Runs $toolName analysis for all source sets"
-        dependsOn tasks
-      }
-    }
-    project.tasks.named(LINT_TASK_NAME).configure { Task lint ->
-      lint.dependsOn commonTaskProvider
-    }
-  }
-
   /*
    * WORKAROUND:
    * Groovy bug. Usage of `destination =` instead of setDestination leads to error:
@@ -505,16 +483,19 @@ final class ProjectPlugin extends AbstractProjectPlugin {
     checkProvider.configure { Task check ->
       check.dependsOn lintProvider
     }
-    project.afterEvaluate { Project project ->
-      checkProvider.configure { Task check ->
-        check.dependsOn.removeAll { Object dependency ->
-          Callable.isInstance(dependency) && ((Callable)dependency).class.enclosingMethod.declaringClass.enclosingMethod.declaringClass == AbstractCodeQualityPlugin
-        }
+
+    TaskCollection<CodeNarc> codenarcTasks = project.tasks.withType(CodeNarc)
+
+    TaskProvider<Task> codenarcProvider = project.tasks.register(CODENARC_TASK_NAME) { Task codenarc ->
+      codenarc.with {
+        group = 'Verification'
+        description = 'Runs CodeNarc analysis for each source set'
+        dependsOn codenarcTasks
       }
     }
-
-    addCodeQualityCommonTask 'CodeNarc', CODENARC_TASK_NAME, CodeNarc
-    addCodeQualityCommonTask 'PMD', PMD_TASK_NAME, Pmd
+    lintProvider.configure { Task lint ->
+      lint.dependsOn codenarcProvider
+    }
 
     project.extensions.configure(CodeNarcExtension) { CodeNarcExtension extension ->
       extension.reportFormat = 'console'
@@ -526,8 +507,16 @@ final class ProjectPlugin extends AbstractProjectPlugin {
       version: '[1, 2['
     ])
 
+    project.afterEvaluate { Project project ->
+      checkProvider.configure { Task check ->
+        check.dependsOn.removeAll { Object dependency ->
+          Callable.isInstance(dependency) && ((Callable)dependency).class.enclosingMethod.declaringClass.enclosingMethod.declaringClass == AbstractCodeQualityPlugin
+        }
+      }
+    }
+
     ProjectConvention projectConvention = project.convention.getPlugin(ProjectConvention)
-    project.tasks.withType(CodeNarc).configureEach { CodeNarc codenarc ->
+    codenarcTasks.configureEach { CodeNarc codenarc ->
       codenarc.with {
         convention.plugins.put CODENARC_DISABLED_RULES_CONVENTION_NAME, new CodeNarcTaskConvention(codenarc)
         Path reportSubpath = Paths.get('codenarc')
