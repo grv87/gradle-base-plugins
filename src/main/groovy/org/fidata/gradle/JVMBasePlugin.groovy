@@ -283,7 +283,6 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
    */
   void configureIntegrationTestSourceSetClasspath(SourceSet sourceSet) {
     // https://docs.gradle.org/current/userguide/java_testing.html#sec:configuring_java_integration_tests
-    // https://docs.gradle.org/current/userguide/test_kit.html#sub:test-kit-automatic-classpath-injection
     // +
     SourceSet mainSourceSet = project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(MAIN_SOURCE_SET_NAME)
     sourceSet.compileClasspath += mainSourceSet.output
