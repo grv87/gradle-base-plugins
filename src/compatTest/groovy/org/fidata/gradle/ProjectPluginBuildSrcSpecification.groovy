@@ -43,8 +43,8 @@ class ProjectPluginBuildSrcSpecification extends Specification {
   File buildSrcPropertiesFile = new File(buildSrcTestProjectDir, 'gradle.properties')
 
   static final Map<String, String> EXTRA_PROPERTIES = [
-    'artifactoryUser'    : System.getProperty('org.fidata.compatTest.artifactoryUser'),
-    'artifactoryPassword': System.getProperty('org.fidata.compatTest.artifactoryPassword'),
+    'artifactoryUser'    : 'dummyArtifactoryUser',
+    'artifactoryPassword': 'dummyArtifactoryPassword',
     'gitUsername': 'dummyGitUser',
     'gitPassword': 'dummyGitPassword',
     'ghToken': 'dummyGhToken',
