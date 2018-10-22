@@ -25,8 +25,9 @@ import static org.gradle.api.plugins.JavaPlugin.JAVADOC_TASK_NAME
 import static org.gradle.api.tasks.SourceSet.MAIN_SOURCE_SET_NAME
 import org.gradle.api.plugins.quality.Checkstyle
 import io.franzbecker.gradle.lombok.LombokPluginExtension
+import org.gradle.api.tasks.SourceSet
 import groovy.transform.CompileStatic
-import org.fidata.gradle.tasks.DelombokExtended
+import io.franzbecker.gradle.lombok.task.DelombokTask
 import org.ajoberstar.gradle.git.publish.GitPublishExtension
 import org.fidata.gradle.internal.AbstractProjectPlugin
 import org.fidata.gradle.utils.PluginDependeesUtils
@@ -86,16 +87,24 @@ final class JavaProjectPlugin extends AbstractProjectPlugin {
   @SuppressWarnings('UnnecessarySetter')
   private void configureDelombok() {
     project.tasks.withType(Javadoc).named(JAVADOC_TASK_NAME).configure { Javadoc javadoc ->
-      TaskProvider<DelombokExtended> delombokProvider = project.tasks.register(DELOMBOK_TASK_NAME, DelombokExtended) { DelombokExtended delombok ->
+      TaskProvider<DelombokTask> delombokProvider = project.tasks.register(DELOMBOK_TASK_NAME, DelombokTask) { DelombokTask delombok ->
         delombok.with {
-          encoding.set UTF_8.toString()
-          sourceSet project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(MAIN_SOURCE_SET_NAME)
+          args '--encoding', UTF_8
+
+          SourceSet mainSourceSet = project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(MAIN_SOURCE_SET_NAME)
 
           dependsOn project.tasks.named(COMPILE_JAVA_TASK_NAME)
-
-          outputDir.set new File(project.buildDir, 'delombok')
+          File outputDir = new File(project.buildDir, 'delombok')
+          outputs.dir outputDir
+          mainSourceSet.java.srcDirs.each { File dir ->
+            inputs.dir dir
+            args dir, '--target', outputDir
+          }
+          classpath mainSourceSet.compileClasspath
+          doFirst {
+            outputDir.deleteDir()
+          }
         }
-        null
       }
       javadoc.with {
         dependsOn delombokProvider
