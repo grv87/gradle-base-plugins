@@ -55,11 +55,9 @@ sourceSets {
 
 apply from: new File(ext.rootDir, 'gradle/dependencies-compile.gradle')
 
-tasks.named('groovydoc').configure {
-  source sourceSets.exceptions.groovy
-}
+groovydoc.source sourceSets.exceptions.groovy
 
-tasks.named('jar').configure {
+jar {
   from sourceSets.exceptions.output
   dependsOn exceptionsClasses
 }
