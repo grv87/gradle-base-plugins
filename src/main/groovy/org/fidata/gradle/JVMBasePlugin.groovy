@@ -26,7 +26,6 @@ import static org.gradle.api.plugins.JavaPlugin.JAVADOC_TASK_NAME
 import static org.gradle.api.tasks.SourceSet.MAIN_SOURCE_SET_NAME
 import static org.ajoberstar.gradle.git.release.base.BaseReleasePlugin.RELEASE_TASK_NAME
 import static ProjectPlugin.LICENSE_FILE_NAMES
-import static org.gradle.language.base.plugins.LifecycleBasePlugin.VERIFICATION_GROUP
 import static org.jfrog.gradle.plugin.artifactory.task.ArtifactoryTask.ARTIFACTORY_PUBLISH_TASK_NAME
 import static org.gradle.initialization.IGradlePropertiesLoader.ENV_PROJECT_PROPERTIES_PREFIX
 import org.gradle.api.plugins.quality.FindBugs
@@ -324,7 +323,7 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
 
     TaskProvider<Test> functionalTestProvider = project.tasks.register(FUNCTIONAL_TEST_TASK_NAME, Test) { Test test ->
       test.with {
-        group = VERIFICATION_GROUP
+        group = 'Verification'
         description = 'Runs functional tests'
         shouldRunAfter project.tasks.named(TEST_TASK_NAME)
         testClassesDirs = functionalTestSourceSet.output.classesDirs

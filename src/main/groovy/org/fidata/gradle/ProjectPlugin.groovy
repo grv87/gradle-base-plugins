@@ -473,7 +473,7 @@ final class ProjectPlugin extends AbstractProjectPlugin {
 
     TaskProvider<Task> commonTaskProvider = project.tasks.register(commonTaskName) { Task commonTask ->
       commonTask.with {
-        group = VERIFICATION_GROUP
+        group = 'Verification'
         description = "Runs $toolName analysis for all source sets"
         dependsOn tasks
       }
