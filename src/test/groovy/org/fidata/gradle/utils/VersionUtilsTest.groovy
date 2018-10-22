@@ -64,29 +64,6 @@ class VersionUtilsTest {
       ['2.0.0.CR1'            , true],
       // com.google.guava:guava
       ['23.5-jre'             , false],
-      // Maven Version Order Specifications
-      // See http://maven.apache.org/pom.html#Version_Order_Specification
-      ['1-beta'               , true],
-      ['1-milestone'          , true],
-      ['1-rc'                 , true],
-      ['1-cr'                 , true],
-      ['1-snapshot'           , true],
-      ['1'                    , false],
-      ['1.final'              , false],
-      ['1.ga'                 , false],
-      ['1-ga.1'               , false],
-      ['1-sp'                 , false],
-      ['1-sp-1'               , false],
-      ['1-a1'                 , true],
-      ['1-alpha-1'            , true],
-      ['1-b2'                 , true],
-      ['1-m13'                , true],
-      // The same, but with Semver versions
-      ['1.0.0-final'          , false],
-      ['1.0.0-ga'             , false],
-      ['1.0.0-sp1'            , false],
-      // Service Release
-      ['1.0.0-SR-4'           , false],
     ]*.toArray().toArray()
   }
 }
