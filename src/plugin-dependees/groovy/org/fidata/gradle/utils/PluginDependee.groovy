@@ -41,9 +41,9 @@ final class PluginDependee {
   String module
   /**
    * Version.
-   * Should be specified for non-built-in plugins
+   * latest.release by default
    */
-  String version
+  String version = 'latest.release'
   /**
    * List of exclusions
    */

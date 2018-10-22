@@ -63,12 +63,7 @@ final class JavaProjectPlugin extends AbstractProjectPlugin {
   private void configureLombok() {
     project.extensions.configure(LombokPluginExtension) { LombokPluginExtension extension ->
       extension.with {
-        /*
-         * CAVEAT:
-         * Lombok should be 1.18.1+.
-         * See https://github.com/rzwitserloot/lombok/issues/1782
-         */
-        version = '[1.18.1, 2['
+        version = 'latest.release'
         sha256 = ''
       }
     }

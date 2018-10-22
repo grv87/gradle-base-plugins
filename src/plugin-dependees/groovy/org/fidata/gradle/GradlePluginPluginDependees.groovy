@@ -35,19 +35,16 @@ final class GradlePluginPluginDependees {
     'org.ajoberstar.stutter': new PluginDependee(
       group: 'org.ajoberstar',
       module: 'gradle-stutter',
-      version: '[0, 1[',
     ),
     'org.ysb33r.gradletest': new PluginDependee(
       configurationName: 'implementation',
       group: 'gradle.plugin.org.ysb33r.gradle',
       module: 'gradletest',
-      version: '[2, 3[',
     ),
     'com.gradle.plugin-publish': new PluginDependee(
       configurationName: 'implementation',
       group: 'com.gradle.publish',
       module: 'plugin-publish-plugin',
-      version: '[0, 1[',
       enabled: false,
     ),
   ]

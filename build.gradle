@@ -69,7 +69,7 @@ afterEvaluate {
 apply from: new File(ext.rootDir, 'gradle/gradle-plugin-markers.gradle')
 
 dependencies {
-  testImplementation group: 'pl.pragmatists', name: 'JUnitParams', version: '[1, 2['
+  testImplementation group: 'pl.pragmatists', name: 'JUnitParams', version: 'latest.release'
 }
 
 sourceSets {

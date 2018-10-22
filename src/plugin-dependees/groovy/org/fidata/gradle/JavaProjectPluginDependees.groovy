@@ -36,7 +36,6 @@ final class JavaProjectPluginDependees {
       configurationName: 'implementation',
       group: 'io.franzbecker',
       module: 'gradle-lombok',
-      version: '[1, 2[',
     ),
   ]
 

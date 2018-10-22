@@ -51,7 +51,7 @@ dependencies {
   addDependencies org.fidata.gradle.GroovyBaseProjectPluginDependees.PLUGIN_DEPENDEES
   addDependencies org.fidata.gradle.GradlePluginPluginDependees.PLUGIN_DEPENDEES
 
-  api(group: 'org.spdx', name: 'spdx-tools', version: '[2, 3[') {
+  api(group: 'org.spdx', name: 'spdx-tools', version: 'latest.release') {
     /*
      * WORKAROUND:
      * https://github.com/spdx/tools/issues/163
@@ -62,9 +62,9 @@ dependencies {
     exclude(group: 'org.apache.logging.log4j', module: 'log4j-slf4j-impl')
     exclude(group: 'org.apache.logging.log4j', module: 'log4j-core')
   }
-  implementation(group: 'com.github.cliftonlabs', name: 'json-simple', version: '[2, 3[')
+  implementation(group: 'com.github.cliftonlabs', name: 'json-simple', version: '[2, 3)')
 
-  implementation(group: 'com.github.zafarkhaja', name: 'java-semver', version: '[0, 1[')
+  implementation(group: 'com.github.zafarkhaja', name: 'java-semver', version: 'latest.release')
   implementation(group: 'com.google.guava', name: 'guava', version: '26.0-jre')
 
   /*
@@ -73,14 +73,14 @@ dependencies {
    * See https://github.com/gradle/gradle/issues/4979
    * So, we have to use direct dependency instead of constraints
    */
-  implementation(group: 'xerces', name: 'xercesImpl', version: '[2.12.0, 3[')
+  implementation(group: 'xerces', name: 'xercesImpl', version: '2.12.0')
 
   /*
    * WORKAROUND:
    * org.apache.maven:maven-ant-tasks has old plexus dependency which have undesired JUnit dependency
    * <grv87 2018-06-24>
    */
-  implementation(group: 'org.codehaus.plexus', name: 'plexus-container-default', version: '[1, 2[') {
+  implementation(group: 'org.codehaus.plexus', name: 'plexus-container-default', version: 'latest.release') {
     /*
      * WORKAROUND:
      * org.codehaus.plexus:plexus-container-default still has google-collections dependency
