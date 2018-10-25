@@ -71,9 +71,11 @@ final class GradlePluginPlugin extends AbstractProjectPlugin implements Property
       configurePublicReleases()
     }
 
-    configureTesting()
+    configureTaskPropertiesValidation()
 
     if (!isBuildSrc) {
+      configureTesting()
+
       configureArtifactsPublishing()
     }
   }
@@ -143,14 +145,16 @@ final class GradlePluginPlugin extends AbstractProjectPlugin implements Property
     }
   }
 
-  private void configureTesting() {
+  private void configureTaskPropertiesValidation() {
     project.tasks.withType(ValidateTaskProperties).configureEach { ValidateTaskProperties validateTaskProperties ->
       validateTaskProperties.with {
         outputFile.set project.convention.getPlugin(ProjectConvention).getTxtReportFile(VALIDATE_TASK_PROPERTIES_REPORT_DIRECTOR, validateTaskProperties)
         failOnWarning = true
       }
     }
+  }
 
+  private void configureTesting() {
     SourceSetContainer sourceSets = project.convention.getPlugin(JavaPluginConvention).sourceSets
 
     project.afterEvaluate {

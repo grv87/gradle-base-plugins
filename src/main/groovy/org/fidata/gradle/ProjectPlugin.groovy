@@ -216,11 +216,14 @@ final class ProjectPlugin extends AbstractProjectPlugin {
           dependsOn project.tasks.named(CHECK_TASK_NAME)
         }
       }
+      project.tasks.named(CHECK_TASK_NAME).configure { Task check ->
+        check.dependsOn check.project.tasks.withType(Test)
+      }
+    } else {
+      project.tasks.named(CHECK_TASK_NAME).configure { Task check ->
+        check.dependsOn check.project.tasks.withType(Test)
+      }
     }
-    project.tasks.named(CHECK_TASK_NAME).configure { Task check ->
-      check.dependsOn check.project.tasks.withType(Test)
-    }
-
     if (!isBuildSrc && project == project.rootProject) {
       project.extensions.getByType(SemanticReleasePluginExtension).branchNames.with {
         replace 'develop', ''
@@ -498,16 +501,21 @@ final class ProjectPlugin extends AbstractProjectPlugin {
    */
   @SuppressWarnings('UnnecessarySetter')
   private void configureCodeQuality() {
-    TaskProvider<Task> lintProvider = project.tasks.register(LINT_TASK_NAME) { Task lint ->
-      lint.with {
-        group = VERIFICATION_GROUP
-        description = 'Runs all static code analyses'
+    TaskProvider<Task> checkProvider = project.tasks.named(CHECK_TASK_NAME)
+    boolean isBuildSrc = project.rootProject.convention.getPlugin(RootProjectConvention).isBuildSrc
+
+    if (!isBuildSrc) {
+      TaskProvider<Task> lintProvider = project.tasks.register(LINT_TASK_NAME) { Task lint ->
+        lint.with {
+          group = VERIFICATION_GROUP
+          description = 'Runs all static code analyses'
+        }
+      }
+      checkProvider.configure { Task check ->
+        check.dependsOn lintProvider
       }
     }
-    TaskProvider<Task> checkProvider = project.tasks.named(CHECK_TASK_NAME)
-    checkProvider.configure { Task check ->
-      check.dependsOn lintProvider
-    }
+
     project.afterEvaluate { Project project ->
       checkProvider.configure { Task check ->
         check.dependsOn.removeAll { Object dependency ->
@@ -516,59 +524,63 @@ final class ProjectPlugin extends AbstractProjectPlugin {
       }
     }
 
-    addCodeQualityCommonTask 'CodeNarc', CODENARC_TASK_NAME, CodeNarc
-    addCodeQualityCommonTask 'PMD', PMD_TASK_NAME, Pmd
+    if (!isBuildSrc) {
+      addCodeQualityCommonTask 'CodeNarc', CODENARC_TASK_NAME, CodeNarc
+      addCodeQualityCommonTask 'PMD', PMD_TASK_NAME, Pmd
 
-    project.extensions.configure(CodeNarcExtension) { CodeNarcExtension extension ->
-      extension.reportFormat = 'console'
-    }
-
-    project.dependencies.add(/* WORKAROUND: CodeNarcPlugin.getConfigurationName has protected scope <grv87 2018-08-23> */ 'codenarc', [
-      group: 'org.codenarc',
-      name: 'CodeNarc',
-      version: '[1, 2['
-    ])
-
-    ProjectConvention projectConvention = project.convention.getPlugin(ProjectConvention)
-    project.tasks.withType(CodeNarc).configureEach { CodeNarc codenarc ->
-      codenarc.with {
-        convention.plugins.put CODENARC_DISABLED_RULES_CONVENTION_NAME, new CodeNarcTaskConvention(codenarc)
-        Path reportSubpath = Paths.get('codenarc')
-        reports.xml.enabled = true
-        reports.xml.setDestination projectConvention.getXmlReportFile(reportSubpath, CODENARC_REPORT_DIRECTOR, codenarc)
-        reports.html.enabled = true
-        reports.html.setDestination projectConvention.getHtmlReportFile(reportSubpath, CODENARC_REPORT_DIRECTOR, codenarc)
+      project.extensions.configure(CodeNarcExtension) { CodeNarcExtension extension ->
+        extension.reportFormat = 'console'
       }
-    }
 
-    project.tasks.register("${ /* WORKAROUND: CodeNarcPlugin.getTaskBaseName has protected scope <grv87 2018-06-23> */ 'codenarc' }${ DEFAULT_BUILD_SRC_DIR.capitalize() }", CodeNarc) { CodeNarc codenarc ->
-      codenarc.with {
-        source project.fileTree(dir: project.projectDir, includes: ['*.gradle'])
-        source project.fileTree(dir: project.projectDir, includes: ['*.groovy'])
-        source project.fileTree(dir: project.file('gradle'), includes: ['**/*.gradle'])
-        source project.fileTree(dir: project.file('gradle'), includes: ['**/*.groovy'])
-        source project.fileTree(dir: project.file('config'), includes: ['**/*.groovy'])
-        if (project == project.rootProject) {
-          Closure buildDirMatcher = { FileTreeElement fte ->
-            String[] p = fte.relativePath.segments
-            int i = 0
-            while (i < p.length && p[i] == DEFAULT_BUILD_SRC_DIR) { i++ }
-            i < p.length && p[i] == DEFAULT_BUILD_DIR_NAME
+      project.dependencies.add(/* WORKAROUND: CodeNarcPlugin.getConfigurationName has protected scope <grv87 2018-08-23> */ 'codenarc', [
+        group: 'org.codenarc',
+        name: 'CodeNarc',
+        version: '[1, 2['
+      ])
+
+      ProjectConvention projectConvention = project.convention.getPlugin(ProjectConvention)
+      project.tasks.withType(CodeNarc).configureEach { CodeNarc codenarc ->
+        codenarc.with {
+          convention.plugins.put CODENARC_DISABLED_RULES_CONVENTION_NAME, new CodeNarcTaskConvention(codenarc)
+          Path reportSubpath = Paths.get('codenarc')
+          reports.xml.enabled = true
+          reports.xml.setDestination projectConvention.getXmlReportFile(reportSubpath, CODENARC_REPORT_DIRECTOR, codenarc)
+          reports.html.enabled = true
+          reports.html.setDestination projectConvention.getHtmlReportFile(reportSubpath, CODENARC_REPORT_DIRECTOR, codenarc)
+        }
+      }
+
+      project.tasks.register("${ /* WORKAROUND: CodeNarcPlugin.getTaskBaseName has protected scope <grv87 2018-06-23> */ 'codenarc' }${ DEFAULT_BUILD_SRC_DIR.capitalize() }", CodeNarc) { CodeNarc codenarc ->
+        codenarc.with {
+          source project.fileTree(dir: project.projectDir, includes: ['*.gradle'])
+          source project.fileTree(dir: project.projectDir, includes: ['*.groovy'])
+          source project.fileTree(dir: project.file('gradle'), includes: ['**/*.gradle'])
+          source project.fileTree(dir: project.file('gradle'), includes: ['**/*.groovy'])
+          source project.fileTree(dir: project.file('config'), includes: ['**/*.groovy'])
+          if (project == project.rootProject) {
+            Closure buildDirMatcher = { FileTreeElement fte ->
+              String[] p = fte.relativePath.segments
+              int i = 0
+              while (i < p.length && p[i] == DEFAULT_BUILD_SRC_DIR) {
+                i++
+              }
+              i < p.length && p[i] == DEFAULT_BUILD_DIR_NAME
+            }
+            /*
+             * WORKAROUND:
+             * We have to pass to CodeNarc resolved fileTree, otherwise we get the following error:
+             * Cannot add include/exclude specs to Ant node. Only include/exclude patterns are currently supported.
+             * This is not a problem since build sources can't change at build time,
+             * and also this code is executed only when codenarcBuildSrc task is actually created (i.e. run)
+             * <grv87 2018-08-22>
+             */
+            source project.fileTree(DEFAULT_BUILD_SRC_DIR) { ConfigurableFileTree fileTree ->
+              fileTree.include '**/*.gradle'
+              fileTree.include '**/*.groovy'
+              fileTree.exclude buildDirMatcher
+            }.files
+            source 'Jenkinsfile'
           }
-          /*
-           * WORKAROUND:
-           * We have to pass to CodeNarc resolved fileTree, otherwise we get the following error:
-           * Cannot add include/exclude specs to Ant node. Only include/exclude patterns are currently supported.
-           * This is not a problem since build sources can't change at build time,
-           * and also this code is executed only when codenarcBuildSrc task is actually created (i.e. run)
-           * <grv87 2018-08-22>
-           */
-          source project.fileTree(DEFAULT_BUILD_SRC_DIR) { ConfigurableFileTree fileTree ->
-            fileTree.include '**/*.gradle'
-            fileTree.include '**/*.groovy'
-            fileTree.exclude buildDirMatcher
-          }.files
-          source 'Jenkinsfile'
         }
       }
     }

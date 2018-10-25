@@ -1,0 +1,17 @@
+# This is a Gradle generated file for dependency locking.
+# Manual edits can break the build and are not advised.
+# This file is expected to be part of source control.
+com.apple:AppleJavaExtensions:1.4
+com.google.code.findbugs:bcel-findbugs:6.0
+com.google.code.findbugs:findbugs:3.0.1
+com.google.code.findbugs:jFormatString:2.0.1
+com.google.code.findbugs:jsr305:2.0.1
+commons-lang:commons-lang:2.6
+dom4j:dom4j:1.6.1
+jaxen:jaxen:1.1.6
+net.jcip:jcip-annotations:1.0
+org.ow2.asm:asm-commons:5.0.2
+org.ow2.asm:asm-debug-all:5.0.2
+org.ow2.asm:asm-tree:5.0.2
+org.ow2.asm:asm:5.0.2
+xml-apis:xml-apis:1.0.b2

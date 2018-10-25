@@ -44,6 +44,7 @@ sourceSets {
     java.srcDirs = [new File(project.ext.rootDir, 'src/exceptions/java')]
     groovy.srcDirs = [new File(project.ext.rootDir, 'src/exceptions/groovy')]
   }
+<<<<<<< HEAD
   main {
     java.srcDirs new File(project.ext.rootDir, 'src/dependencyUtils/java')
     groovy.srcDirs += [
@@ -51,6 +52,9 @@ sourceSets {
       new File(project.ext.rootDir, 'src/pluginDependees/groovy'),
     ]
   }
+=======
+  main.groovy.srcDirs new File(project.ext.rootDir, 'src/plugin-dependees/groovy')
+>>>>>>> 013170de... WIP
 }
 
 apply from: new File(ext.rootDir, 'gradle/dependencies-compile.gradle')

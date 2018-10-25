@@ -1,0 +1,13 @@
+# This is a Gradle generated file for dependency locking.
+# Manual edits can break the build and are not advised.
+# This file is expected to be part of source control.
+com.beust:jcommander:1.48
+com.google.code.gson:gson:2.5
+commons-io:commons-io:2.4
+jaxen:jaxen:1.1.6
+net.java.dev.javacc:javacc:5.0
+net.sourceforge.pmd:pmd-core:5.6.1
+net.sourceforge.pmd:pmd-java:5.6.1
+net.sourceforge.saxon:saxon:9.1.0.8
+org.apache.commons:commons-lang3:3.4
+org.ow2.asm:asm:5.0.4
