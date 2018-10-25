@@ -33,9 +33,23 @@ final class TestFixtures {
    * <grv87 2018-08-23>
    */
   static void initEmptyGitRepository(File dir) {
+    new File(dir, '.gitignore').text = '''\
+      # Gradle
+      .gradle/
+      gradle.properties
+      build/
+    '''.stripIndent()
     [
       ['git', 'init'],
-      ['git', 'commit', '--message', 'Initial commit', '--allow-empty', '--no-gpg-sign'],
+      ['git', 'add', '.gitignore'],
+      ['git', 'commit', '--message', 'feat: initial version', '--no-gpg-sign'],
+      /*
+       * Without that we got:
+       *   java.lang.NullPointerException: Cannot get property 'url' on null object
+       *       at de.gliderpilot.gradle.semanticrelease.GithubRepo.memoizedMethodPriv$getMnemo(GithubRepo.groovy:71)
+       * Maybe that should be fixed in semantic-release
+       */
+      ['git', 'remote', 'add', 'origin', 'https://github.com/FIDATA/gradle-base-plugins.compatTest'],
     ].each { List<String> it -> it.execute((List)null, dir).waitFor() }
   }
 
