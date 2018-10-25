@@ -23,6 +23,7 @@ import static org.fidata.testfixtures.TestFixtures.initEmptyGitRepository
 import com.google.common.collect.ImmutableMap
 import org.gradle.testkit.runner.GradleRunner
 import spock.lang.Specification
+import spock.lang.Unroll
 
 /**
  * Specification for {@link ProjectPlugin} class
@@ -117,6 +118,66 @@ class ProjectPluginSpecification extends Specification {
     new File(testProjectDir, 'build/changelog/CHANGELOG.txt').exists()
 
     (success = true) != null
+  }
+
+  @Unroll
+  void '#verb a new version when we are #masterBranchAdverb and shouldRelease property #shouldReleaseState'() {
+    given: 'clean repository on #branch branch'
+    /*
+     * WORKAROUND:
+     * gitPublishCommit and gitPublishPush tasks don't have correct properties if gitPublishReset was not run.
+     * See https://github.com/ajoberstar/gradle-git-publish/issues/60
+     * <grv87 2018-10-27>
+     */
+    buildFile << """\
+      file(${ versionFileName.inspect() }).text = version
+
+      import org.ajoberstar.grgit.Grgit
+
+      afterEvaluate {
+        tasks*.enabled = false
+
+        Grgit dummyGrgit = Grgit.init(dir: file('build/gitPublish'))
+        tasks.gitPublishCommit.grgit = dummyGrgit
+        tasks.gitPublishPush.grgit = dummyGrgit
+      }
+    """.stripIndent()
+    [
+      ['git', 'checkout', '-b', branch],
+      ['git', 'add', buildFile.name],
+      ['git', 'commit', '--message', 'feat: initial version', '--no-gpg-sign'],
+    ].each { List<String> it -> it.execute((List)null, testProjectDir).waitFor() }
+
+    when: 'shouldRelease property #shouldReleaseState and release task is run'
+    List<String> gradleArguments = ['release', '--info', '--full-stacktrace', '--offline']
+    if (shouldRelease != null) {
+      gradleArguments << "-PshouldRelease=$shouldRelease".toString()
+    }
+    GradleRunner.create()
+      .withGradleVersion(System.getProperty('compat.gradle.version'))
+      .withProjectDir(testProjectDir)
+      .withArguments(gradleArguments)
+      .withPluginClasspath()
+      .forwardOutput()
+      .build()
+
+    then: 'version is #expectedVersion'
+    new File(testProjectDir, versionFileName).text == expectedVersion
+
+    where:
+    versionFileName = 'VERSION'
+
+    branch | shouldRelease | expectedVersion
+    'master' | true  | '1.0.0'
+    'master' | false | '1.0.0-SNAPSHOT'
+    'master' | null  | '1.0.0-SNAPSHOT'
+    'feature/super-cool' | true  | '1.0.0-super-cool-SNAPSHOT'
+    'feature/super-cool' | false | '1.0.0-super-cool-SNAPSHOT'
+    'feature/super-cool' | null  | '1.0.0-super-cool-SNAPSHOT'
+
+    verb = expectedVersion.endsWith('-SNAPSHOT') ? 'doesn\' release' : 'releases'
+    masterBranchAdverb = branch == 'master' ? 'on the master branch' : 'not on the master branch'
+    shouldReleaseState = shouldRelease == null ? 'is not provided' : "is set to $shouldRelease"
   }
 
   // helper methods
