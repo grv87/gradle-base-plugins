@@ -109,6 +109,7 @@ class ProjectPluginSpecification extends Specification {
       .withProjectDir(testProjectDir)
       .withArguments('generateChangelogTxt', '--full-stacktrace')
       .withPluginClasspath()
+      .forwardOutput()
       .build()
 
     then: 'CHANGELOG.txt is generated inside build/changelog directory'
