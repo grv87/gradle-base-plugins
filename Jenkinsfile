@@ -25,6 +25,12 @@ import org.jfrog.hudson.pipeline.types.buildInfo.BuildInfo
 @SuppressWarnings(['UnusedVariable', 'NoDef', 'VariableTypeRequired'])
 @Library('jenkins-pipeline-shared-library@v1.2.1') dummy
 
+properties([
+  parameters([
+    booleanParam(defaultValue: false, description: 'Whether to release a new version', name: 'shouldRelease'),
+  ])
+])
+
 node {
   ansiColor {
     GradleBuild rtGradle
@@ -78,6 +84,7 @@ node {
 
     withGpgScope("${ pwd() }/.scoped-gpg", 'GPG', 'GPG_KEY_PASSWORD') { String fingerprint ->
       withEnv([
+        "ORG_GRADLE_PROJECT_shouldRelease=$params.shouldRelease",
         "ORG_GRADLE_PROJECT_gpgKeyId=$fingerprint",
       ]) {
         withCredentials([
@@ -118,7 +125,7 @@ node {
                 reportFiles: 'CHANGELOG.html',
                 allowMissing: false,
                 keepAll: true,
-                alwaysLinkToLastBuild: env.BRANCH_NAME == 'develop' && !env.CHANGE_ID
+                alwaysLinkToLastBuild: env.BRANCH_NAME == 'master' && !env.CHANGE_ID
               ])
             }
             stage('Assemble') {
@@ -162,7 +169,7 @@ node {
                   ].collect { "${ it }.html" }.join(', '), // TODO: read from directory ?
                   allowMissing: true,
                   keepAll: true,
-                  alwaysLinkToLastBuild: env.BRANCH_NAME == 'develop' && !env.CHANGE_ID
+                  alwaysLinkToLastBuild: env.BRANCH_NAME == 'master' && !env.CHANGE_ID
                 ])
                 junit(
                   testResults: 'build/reports/xml/**/*.xml',
@@ -175,7 +182,7 @@ node {
                   reportFiles: 'index.html',
                   allowMissing: true,
                   keepAll: true,
-                  alwaysLinkToLastBuild: env.BRANCH_NAME == 'develop' && !env.CHANGE_ID
+                  alwaysLinkToLastBuild: env.BRANCH_NAME == 'master' && !env.CHANGE_ID
                 ])
                 publishHTML(target: [
                   reportName: 'FunctionalTest',
@@ -183,7 +190,7 @@ node {
                   reportFiles: 'index.html',
                   allowMissing: true,
                   keepAll: true,
-                  alwaysLinkToLastBuild: env.BRANCH_NAME == 'develop' && !env.CHANGE_ID
+                  alwaysLinkToLastBuild: env.BRANCH_NAME == 'master' && !env.CHANGE_ID
                 ])
                 publishHTML(target: [
                   reportName: 'CompatTest',
@@ -197,7 +204,7 @@ node {
                       .join(', '),
                   allowMissing: true,
                   keepAll: true,
-                  alwaysLinkToLastBuild: env.BRANCH_NAME == 'develop' && !env.CHANGE_ID
+                  alwaysLinkToLastBuild: env.BRANCH_NAME == 'master' && !env.CHANGE_ID
                 ])
               }
             }

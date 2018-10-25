@@ -41,6 +41,7 @@ final class TestFixtures {
     '''.stripIndent()
     [
       ['git', 'init'],
+      ['git', 'checkout', '-b', 'master'],
       ['git', 'add', '.gitignore'],
       ['git', 'commit', '--message', 'feat: initial version', '--no-gpg-sign'],
       /*

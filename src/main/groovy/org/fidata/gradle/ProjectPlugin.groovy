@@ -202,6 +202,13 @@ final class ProjectPlugin extends AbstractProjectPlugin {
    */
   public static final String RELEASE_TASK_GROUP_NAME = 'Release'
 
+  /**
+   * Name of property determining whether to release a new version
+   */
+  public static final String SHOULD_RELEASE_PROPERTY_NAME = 'shouldRelease'
+
+  private static final String MASTER_BRANCH_PATTERN = /^master$/
+
   private void configureLifecycle() {
     boolean isBuildSrc = project.rootProject.convention.getPlugin(RootProjectConvention).isBuildSrc
     if (!isBuildSrc) {
@@ -222,11 +229,25 @@ final class ProjectPlugin extends AbstractProjectPlugin {
     }
 
     if (!isBuildSrc && project == project.rootProject) {
-      project.extensions.getByType(SemanticReleasePluginExtension).branchNames.with {
-        replace 'develop', ''
-        // TODO: Support other CIs
-        if (System.getenv('CHANGE_ID') != null) {
-          replace 'HEAD', System.getenv('BRANCH_NAME')
+      project.extensions.getByType(SemanticReleasePluginExtension).with {
+        if (!project.rootProject.extensions.extraProperties.has(SHOULD_RELEASE_PROPERTY_NAME) || !project.rootProject.extensions.extraProperties[SHOULD_RELEASE_PROPERTY_NAME].toString().toBoolean()) {
+          releaseBranches.with {
+            /*
+             * WORKAROUND:
+             * semantic-release plugin handles excludes in twisted way.
+             * See https://github.com/FIDATA/gradle-semantic-release-plugin/issues/28
+             * <grv87 2018-10-27>
+             */
+            includes = [null].toSet()
+            exclude MASTER_BRANCH_PATTERN
+          }
+        }
+        branchNames.with {
+          replace MASTER_BRANCH_PATTERN, ''
+          // TODO: Support other CIs
+          if (System.getenv('CHANGE_ID') != null) {
+            replace(/^HEAD$/, System.getenv('BRANCH_NAME'))
+          }
         }
       }
 

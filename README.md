@@ -206,6 +206,42 @@ All these tasks are put into `Diagnostics` group.
 
 	Provides `contacts` extension.
 
+### Git Workflow
+
+[Earlier in the history](
+https://github.com/FIDATA/gradle-base-plugins/network)
+we tried to use GitFlow. But it didn't work out well.
+GitHub doesn't support fast-forward merges. So, there was a big mess
+each time we merged from `develop` to `master`.
+Also, this led to unnecessary rebuilds on Jenkins.
+
+Our current workflow resembles [GitHub workflow](
+https://guides.github.com/introduction/flow/)
+and [OneFlow](
+https://www.endoflineblog.com/oneflow-a-git-branching-model-and-workflow).
+
+*   We make all development in `feature/…` and `hotfix/…` branches,
+    and maybe branches with some other prefixes
+
+*   All work is merged to `master` via PRs with merge commits
+
+*   `master` should be release-able any time.
+    But actual releases are manually triggered.
+    Gradle's `release` task will make a release
+    only when `shouldRelease` project property is passed
+    and set to true.
+    This could be done from command line,
+    like `./gradlew release -PshouldRelease=true`,
+    of manually via parameter of Jenkins build.
+
+*   We don't have `develop` branch with the same purpose as in GitFlow.
+    But we can use `develop` branch for general/various improvements
+    when there is no unique `feature` or `hotfix` to describe changes.
+    In this case we merge PR with rebase merging
+
+*   We don't use `release` branches
+    and don't support several major/minor releases simultaneously
+
 ### buildSrc projects
 
 Plugin can be applied to buildSrc projects.
