@@ -19,22 +19,22 @@
  */
 //noinspection GroovyUnusedAssignment
 @SuppressWarnings(['UnusedVariable', 'NoDef', 'VariableTypeRequired'])
-@Library('jenkins-pipeline-shared-library@v2.0.0') dummy
+@Library('jenkins-pipeline-shared-library@develop') dummy
 
 defaultJVMPipeline(
-  false,
-  [
+  publicReleases: false,
+  timeouts: [
     Test: 10,
   ],
-  [
+  tests: [
     'test',
     'functionalTest',
   ].toSet(),
-  true,
-  [
+  compatTest: true,
+  customCodenarcReports: [
     'exceptions',
     'mainResources',
     'testFixtures',
   ].toSet(),
-  true
+  gradlePlugin: true
 )
