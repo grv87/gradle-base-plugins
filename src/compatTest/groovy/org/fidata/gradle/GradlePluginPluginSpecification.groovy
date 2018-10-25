@@ -199,6 +199,7 @@ class GradlePluginPluginSpecification extends Specification {
       .withProjectDir(testProjectDir)
       .withArguments([*arguments, '--full-stacktrace', '--refresh-dependencies'])
       .withPluginClasspath()
+      .forwardOutput()
       .build()
   }
 }

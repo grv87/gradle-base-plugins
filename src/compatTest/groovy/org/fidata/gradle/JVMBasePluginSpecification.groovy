@@ -107,6 +107,7 @@ class JVMBasePluginSpecification extends Specification {
       .withProjectDir(testProjectDir)
       .withArguments('compileJava', '-Dfile.encoding=Windows-1251', '--full-stacktrace')
       .withPluginClasspath()
+      .forwardOutput()
       .build()
 
     then:
@@ -131,6 +132,7 @@ class JVMBasePluginSpecification extends Specification {
       .withProjectDir(testProjectDir)
       .withArguments('processResources', '--full-stacktrace')
       .withPluginClasspath()
+      .forwardOutput()
       .build()
 
     then: 'resources META-INF directory contains license file'

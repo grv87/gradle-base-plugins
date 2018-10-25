@@ -103,6 +103,7 @@ class ProjectPluginBuildSrcSpecification extends Specification {
       .withProjectDir(testProjectDir)
       .withArguments('--full-stacktrace')
       .withPluginClasspath()
+      .forwardOutput()
       .build()
 
     then: 'no exception is thrown'
