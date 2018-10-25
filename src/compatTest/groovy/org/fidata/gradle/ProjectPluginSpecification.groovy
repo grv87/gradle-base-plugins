@@ -85,14 +85,7 @@ class ProjectPluginSpecification extends Specification {
   // feature methods
 
   void 'can generate changelog'() {
-    /*
-     * Without that we got NullPointerException
-     * Maybe that should be fixed in semantic-release
-     */
-    given: 'git remote origin is configured'
-    ['git', 'remote', 'add', 'origin', 'https://github.com/FIDATA/gradle-base-plugins.compatTest'].execute((List)null, testProjectDir).waitFor()
-
-    and: 'some git history'
+    given: 'some git history'
     [
       ['git', 'commit', '--message', 'feat: cool feature', '--allow-empty', '--no-gpg-sign'],
       ['git', 'commit', '--message', 'feat: another super feature', '--allow-empty', '--no-gpg-sign'],
