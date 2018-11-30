@@ -23,7 +23,7 @@ import org.jfrog.hudson.pipeline.types.buildInfo.BuildInfo
 
 //noinspection GroovyUnusedAssignment
 @SuppressWarnings(['UnusedVariable', 'NoDef', 'VariableTypeRequired'])
-@Library('jenkins-pipeline-shared-library@v1.2.0') dummy
+@Library('jenkins-pipeline-shared-library@v1.2.1') dummy
 
 node {
   ansiColor {
