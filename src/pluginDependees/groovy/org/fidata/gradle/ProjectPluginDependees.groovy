@@ -35,7 +35,7 @@ final class ProjectPluginDependees {
     'org.gradle.idea': new PluginDependee(),
     'org.gradle.lifecycle-base': new PluginDependee(),
     'org.fidata.prerequisites': new PluginDependee(
-      version: '[1, 2[',
+      version: '[1.1.2, 2[',
     ),
     'nebula.contacts': new PluginDependee(
       version: '[4, 5[',
