@@ -31,6 +31,6 @@ class TaskNamerException extends RuntimeException {
    * @param throwable Original exception
    */
   TaskNamerException(String taskName, String sourceType, Object object, Throwable throwable) {
-    super(sprintf('Unable to determine %s task name for %s %s', taskName, sourceType, object), throwable)
+    super(String.format('Unable to determine %s task name for %s %s', taskName, sourceType, object), throwable)
   }
 }
