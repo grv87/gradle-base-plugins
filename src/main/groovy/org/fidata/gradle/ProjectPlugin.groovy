@@ -381,47 +381,47 @@ final class ProjectPlugin extends AbstractProjectPlugin {
       boolean repoClean = ((Grgit) project./*rootProject.*/extensions.extraProperties.get('grgit')).status().clean
 
       TaskProvider<Task> gitPublishCommitProvider = project.tasks.named(/* WORKAROUND: GitPublishPlugin.COMMIT_TASK has package scope <grv87 2018-06-23> */ 'gitPublishCommit')
-      gitPublishCommitProvider.configure { Task gitPublishCommit ->
-        TaskProvider<NoJekyll> noJekyllProvider = project.tasks.register(NO_JEKYLL_TASK_NAME, NoJekyll) { NoJekyll noJekyll ->
-          noJekyll.with {
-            description = 'Generates .nojekyll file in gitPublish repository'
-            destinationDir.set project.extensions.getByType(GitPublishExtension).repoDir
-          }
-          /*
-           * WORKAROUND:
-           * Without that we get error:
-           * [Static type checking] - Cannot call <T extends org.gradle.api.Task>
-           * org.gradle.api.tasks.TaskContainer#register(java.lang.String, java.lang.Class <T>, org.gradle.api.Action
-           * <java.lang.Object extends java.lang.Object>) with arguments [java.lang.String, java.lang.Class
-           * <org.fidata.gradle.tasks.NoJekyll>, groovy.lang.Closure <java.io.File>]
-           * <grv87 2018-07-31>
-           */
-          null
+      TaskProvider<NoJekyll> noJekyllProvider = project.tasks.register(NO_JEKYLL_TASK_NAME, NoJekyll) { NoJekyll noJekyll ->
+        noJekyll.with {
+          description = 'Generates .nojekyll file in gitPublish repository'
+          destinationDir.set project.extensions.getByType(GitPublishExtension).repoDir
         }
         /*
          * WORKAROUND:
-         * JGit doesn't support signed commits yet.
-         * See https://bugs.eclipse.org/bugs/show_bug.cgi?id=382212
-         * <grv87 2018-06-22>
+         * Without that we get error:
+         * [Static type checking] - Cannot call <T extends org.gradle.api.Task>
+         * org.gradle.api.tasks.TaskContainer#register(java.lang.String, java.lang.Class <T>, org.gradle.api.Action
+         * <java.lang.Object extends java.lang.Object>) with arguments [java.lang.String, java.lang.Class
+         * <org.fidata.gradle.tasks.NoJekyll>, groovy.lang.Closure <java.io.File>]
+         * <grv87 2018-07-31>
          */
-        ResignGitCommit.registerTask(project, gitPublishCommitProvider) { ResignGitCommit resignGitPublishCommit ->
-          resignGitPublishCommit.with {
-            enabled = repoClean
-            description = 'Amend git publish commit adding sign to it'
-            workingDir.set project.extensions.getByType(GitPublishExtension).repoDir
-            onlyIf { gitPublishCommitProvider.get().didWork }
-          }
-          /*
-           * WORKAROUND:
-           * Without that we get error:
-           * [Static type checking] - Cannot call <T extends org.gradle.api.Task>
-           * org.gradle.api.tasks.TaskContainer#register(java.lang.String, java.lang.Class <T>, org.gradle.api.Action
-           * <java.lang.Object extends java.lang.Object>) with arguments [groovy.lang.GString, java.lang.Class
-           * <org.fidata.gradle.tasks.ResignGitCommit>, groovy.lang.Closure <java.lang.Void>]
-           * <grv87 2018-07-31>
-           */
-          null
+        null
+      }
+      /*
+       * WORKAROUND:
+       * JGit doesn't support signed commits yet.
+       * See https://bugs.eclipse.org/bugs/show_bug.cgi?id=382212
+       * <grv87 2018-06-22>
+       */
+      ResignGitCommit.registerTask(project, gitPublishCommitProvider) { ResignGitCommit resignGitPublishCommit ->
+        resignGitPublishCommit.with {
+          enabled = repoClean
+          description = 'Amend git publish commit adding sign to it'
+          workingDir.set project.extensions.getByType(GitPublishExtension).repoDir
+          onlyIf { gitPublishCommitProvider.get().didWork }
         }
+        /*
+         * WORKAROUND:
+         * Without that we get error:
+         * [Static type checking] - Cannot call <T extends org.gradle.api.Task>
+         * org.gradle.api.tasks.TaskContainer#register(java.lang.String, java.lang.Class <T>, org.gradle.api.Action
+         * <java.lang.Object extends java.lang.Object>) with arguments [groovy.lang.GString, java.lang.Class
+         * <org.fidata.gradle.tasks.ResignGitCommit>, groovy.lang.Closure <java.lang.Void>]
+         * <grv87 2018-07-31>
+         */
+        null
+      }
+      gitPublishCommitProvider.configure { Task gitPublishCommit ->
         gitPublishCommit.with {
           enabled = repoClean
           dependsOn noJekyllProvider

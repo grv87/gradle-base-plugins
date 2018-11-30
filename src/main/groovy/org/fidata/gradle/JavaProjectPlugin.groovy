@@ -85,18 +85,18 @@ final class JavaProjectPlugin extends AbstractProjectPlugin {
    */
   @SuppressWarnings('UnnecessarySetter')
   private void configureDelombok() {
-    project.tasks.withType(Javadoc).named(JAVADOC_TASK_NAME).configure { Javadoc javadoc ->
-      TaskProvider<DelombokExtended> delombokProvider = project.tasks.register(DELOMBOK_TASK_NAME, DelombokExtended) { DelombokExtended delombok ->
-        delombok.with {
-          encoding.set UTF_8.toString()
-          sourceSet project.convention.getPlugin(JavaPluginConvention).sourceSets.named(MAIN_SOURCE_SET_NAME)
+    TaskProvider<DelombokExtended> delombokProvider = project.tasks.register(DELOMBOK_TASK_NAME, DelombokExtended) { DelombokExtended delombok ->
+      delombok.with {
+        encoding.set UTF_8.toString()
+        sourceSet project.convention.getPlugin(JavaPluginConvention).sourceSets.named(MAIN_SOURCE_SET_NAME)
 
-          dependsOn project.tasks.named(COMPILE_JAVA_TASK_NAME)
+        dependsOn project.tasks.named(COMPILE_JAVA_TASK_NAME)
 
-          outputDir.set new File(project.buildDir, 'delombok')
-        }
-        null
+        outputDir.set new File(project.buildDir, 'delombok')
       }
+      null
+    }
+    project.tasks.withType(Javadoc).named(JAVADOC_TASK_NAME).configure { Javadoc javadoc ->
       javadoc.with {
         dependsOn delombokProvider
         setSource delombokProvider.get().outputs
