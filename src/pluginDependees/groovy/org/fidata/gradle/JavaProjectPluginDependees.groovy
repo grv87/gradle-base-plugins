@@ -19,6 +19,7 @@
  */
 package org.fidata.gradle
 
+import com.google.common.collect.ImmutableMap
 import groovy.transform.CompileStatic
 import org.fidata.gradle.utils.PluginDependee
 
@@ -30,13 +31,13 @@ final class JavaProjectPluginDependees {
   /**
    * List of plugin dependees with IDs
    */
-  static final Map<String, PluginDependee> PLUGIN_DEPENDEES = [
+  static final Map<String, PluginDependee> PLUGIN_DEPENDEES = ImmutableMap.copyOf([
     'org.gradle.java': new PluginDependee(),
     'io.franzbecker.gradle-lombok': new PluginDependee(
       configurationName: 'implementation',
       version: '[1, 2[',
     ),
-  ]
+  ])
 
   // Suppress default constructor for noninstantiability
   private JavaProjectPluginDependees() {

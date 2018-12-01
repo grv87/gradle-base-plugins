@@ -19,6 +19,7 @@
  */
 package org.fidata.gradle
 
+import com.google.common.collect.ImmutableMap
 import groovy.transform.CompileStatic
 import org.fidata.gradle.utils.PluginDependee
 
@@ -30,9 +31,9 @@ final class GroovyBaseProjectPluginDependees {
   /**
    * List of plugin dependees with IDs
    */
-  static final Map<String, PluginDependee> PLUGIN_DEPENDEES = [
+  static final Map<String, PluginDependee> PLUGIN_DEPENDEES = ImmutableMap.copyOf([
     'org.gradle.groovy-base': new PluginDependee(),
-  ]
+  ])
 
   // Suppress default constructor for noninstantiability
   private GroovyBaseProjectPluginDependees() {

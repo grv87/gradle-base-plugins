@@ -21,6 +21,7 @@
 package org.fidata.gradle
 
 import static org.fidata.testfixtures.TestFixtures.initEmptyGitRepository
+import com.google.common.collect.ImmutableMap
 import org.gradle.testkit.runner.GradleRunner
 import spock.lang.Specification
 
@@ -42,14 +43,14 @@ class ProjectPluginBuildSrcSpecification extends Specification {
 
   File buildSrcPropertiesFile = new File(buildSrcTestProjectDir, 'gradle.properties')
 
-  static final Map<String, String> EXTRA_PROPERTIES = [
+  static final Map<String, String> EXTRA_PROPERTIES = ImmutableMap.copyOf([
     'artifactoryUser'    : System.getProperty('org.fidata.compatTest.artifactoryUser'),
     'artifactoryPassword': System.getProperty('org.fidata.compatTest.artifactoryPassword'),
     'gitUsername': 'dummyGitUser',
     'gitPassword': 'dummyGitPassword',
     'ghToken': 'dummyGhToken',
     'gpgKeyId': 'ABCD1234',
-  ]
+  ])
 
   // fixture methods
 
