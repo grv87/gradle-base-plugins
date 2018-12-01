@@ -74,12 +74,6 @@ final class GroovyBasePlugin extends AbstractProjectPlugin {
 
     project.tasks.withType(Groovydoc).configureEach { Groovydoc groovydoc ->
       groovydoc.doFirst {
-        /*
-         * WORKAROUND:
-         * https://github.com/gradle/gradle/issues/6168
-         * <grv87 2018-10-15>
-         */
-        groovydoc.destinationDir.deleteDir()
         groovydoc.project.extensions.getByType(JVMBaseExtension).javadocLinks.each { String key, URI value ->
           groovydoc.link value.toString(), "$key."
         }

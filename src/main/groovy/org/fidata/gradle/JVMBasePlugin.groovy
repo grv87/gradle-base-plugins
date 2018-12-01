@@ -476,12 +476,6 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
     project.tasks.withType(Javadoc).configureEach { Javadoc javadoc ->
       javadoc.options.encoding = UTF_8.name()
       javadoc.doFirst {
-        /*
-         * WORKAROUND:
-         * https://github.com/gradle/gradle/issues/6168
-         * <grv87 2018-08-01>
-         */
-        javadoc.destinationDir.deleteDir()
         javadoc.options { StandardJavadocDocletOptions options ->
           javadoc.project.extensions.getByType(JVMBaseExtension).javadocLinks.values().each { URI link ->
             options.links link.toString()
