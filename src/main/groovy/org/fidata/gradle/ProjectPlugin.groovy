@@ -76,8 +76,14 @@ import org.gradle.api.artifacts.ComponentSelection
 import org.gradle.api.file.FileTreeElement
 import groovy.text.StreamingTemplateEngine
 import groovy.text.Template
-import org.gradle.api.logging.LogLevel
-import cz.malohlava.VisTegPluginExtension
+/*
+ * WORKAROUND:
+ * cz.malohlava plugin doesn't work with Gradle 5
+ * https://github.com/mmalohlava/gradle-visteg/issues/12
+ * <grv87 2018-12-01>
+ */
+// import cz.malohlava.VisTegPluginExtension
+// import org.gradle.api.logging.LogLevel
 import org.gradle.api.tasks.wrapper.Wrapper
 import org.gradle.api.reporting.ReportingExtension
 import org.ajoberstar.gradle.git.publish.GitPublishExtension
@@ -651,7 +657,13 @@ final class ProjectPlugin extends AbstractProjectPlugin {
       taskTree.group = DIAGNOSTICS_TASK_GROUP_NAME
     }
 
-    project.extensions.configure(VisTegPluginExtension) { VisTegPluginExtension extension ->
+    /*
+     * WORKAROUND:
+     * cz.malohlava plugin doesn't work with Gradle 5
+     * https://github.com/mmalohlava/gradle-visteg/issues/12
+     * <grv87 2018-12-01>
+     */
+    /*project.extensions.configure(VisTegPluginExtension) { VisTegPluginExtension extension ->
       extension.with {
         enabled        = (project.logging.level ?: project.gradle.startParameter.logLevel) <= LogLevel.INFO
         colouredNodes  = true
@@ -663,7 +675,7 @@ final class ProjectPlugin extends AbstractProjectPlugin {
         startNodeShape = 'hexagon'
         endNodeShape   = 'doubleoctagon'
       }
-    }
+    }*/
   }
 
   /**

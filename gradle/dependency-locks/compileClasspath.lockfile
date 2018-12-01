@@ -50,8 +50,6 @@ commons-collections:commons-collections:3.2.1
 commons-io:commons-io:2.6
 commons-lang:commons-lang:2.4
 commons-logging:commons-logging:1.2
-cz.malohlava:cz.malohlava.gradle.plugin:1.0.3
-cz.malohlava:visteg:1.0.3
 gradle.plugin.com.dorongold.plugins:task-tree:1.3.1
 gradle.plugin.org.ysb33r.gradle:gradletest:2.0-beta.3
 io.franzbecker.gradle-lombok:io.franzbecker.gradle-lombok.gradle.plugin:1.14

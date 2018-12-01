@@ -88,10 +88,16 @@ final class ProjectPluginDependees {
       configurationName: 'implementation',
       version: '[1, 2[',
     ),
-    'cz.malohlava': new PluginDependee(
+    /*
+     * WORKAROUND:
+     * cz.malohlava plugin doesn't work with Gradle 5
+     * https://github.com/mmalohlava/gradle-visteg/issues/12
+     * <grv87 2018-12-01>
+     */
+    /*'cz.malohlava': new PluginDependee(
       configurationName: 'implementation',
       version: '[1, 2[',
-    ),
+    ),*/
   ])
 
   // Suppress default constructor for noninstantiability
