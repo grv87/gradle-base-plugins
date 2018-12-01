@@ -24,6 +24,7 @@ import static ProjectPlugin.ARTIFACTORY_URL
 import static JVMBasePlugin.FUNCTIONAL_TEST_SOURCE_SET_NAME
 import static JVMBasePlugin.FUNCTIONAL_TEST_TASK_NAME
 import static org.gradle.internal.FileUtils.toSafeFileName
+import com.gradle.publish.PublishTask
 import org.fidata.gradle.utils.PathDirector
 import java.nio.file.InvalidPathException
 import org.fidata.gradle.utils.ReportPathDirectorException
@@ -101,6 +102,8 @@ final class GradlePluginPlugin extends AbstractProjectPlugin implements Property
     ProjectConvention projectConvention = project.convention.getPlugin(ProjectConvention)
     if (projectConvention.publicReleases) {
       project.pluginManager.apply 'com.gradle.plugin-publish'
+      project.extensions.extraProperties[PublishTask.GRADLE_PUBLISH_KEY] = project.extensions.extraProperties['gradlePluginsKey']
+      project.extensions.extraProperties[PublishTask.GRADLE_PUBLISH_SECRET] = project.extensions.extraProperties['gradlePluginsSecret']
       project.extensions.configure(PluginBundleExtension) { PluginBundleExtension extension ->
         extension.with {
           description = project.version.toString() == '1.0.0' ? project.description : rootProjectConvention.changeLogTxt.get().toString()
