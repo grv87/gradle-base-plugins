@@ -413,7 +413,13 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
   /**
    * Name of maven java publication
    */
-  public static final String MAVEN_JAVA_PUBICATION_NAME = 'mavenJava'
+  public static final String MAVEN_JAVA_PUBLICATION_NAME = 'mavenJava'
+  /**
+   * Name of maven java publication
+   * @deprecated Typo in the name. Use {@link #MAVEN_JAVA_PUBLICATION_NAME} instead
+   */
+  @Deprecated
+  public static final String MAVEN_JAVA_PUBICATION_NAME = MAVEN_JAVA_PUBLICATION_NAME
 
   @PackageScope
   boolean createMavenJavaPublication = true
@@ -421,7 +427,7 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
   private void configureArtifactsPublishing() {
     project.afterEvaluate {
       if (createMavenJavaPublication) {
-        project.extensions.getByType(PublishingExtension).publications.register(MAVEN_JAVA_PUBICATION_NAME, MavenPublication) { MavenPublication publication ->
+        project.extensions.getByType(PublishingExtension).publications.register(MAVEN_JAVA_PUBLICATION_NAME, MavenPublication) { MavenPublication publication ->
           publication.from project.components.getByName('java' /* TODO */)
         }
       }
