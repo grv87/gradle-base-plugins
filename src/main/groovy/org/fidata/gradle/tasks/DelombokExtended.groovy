@@ -73,7 +73,7 @@ class DelombokExtended extends DelombokTask {
    */
   @Internal
   @SkipWhenEmpty
-  final ListProperty<? extends SourceSet> sourceSets = project.objects.listProperty(SourceSet)
+  final ListProperty<? extends SourceSet> sourceSets = project.objects.listProperty(SourceSet).empty()
 
   /**
    * Adds specified source set to {@link #sourceSets}.
