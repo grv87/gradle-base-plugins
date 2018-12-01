@@ -135,7 +135,7 @@ public class ProjectConvention extends AbstractExtension {
   public ProjectConvention(final Project project) {
     super();
 
-    tags = project.getObjects().listProperty(String.class);
+    tags = project.getObjects().listProperty(String.class).empty();
 
     isBuildSrc = project.getRootProject().getConvention().getPlugin(RootProjectConvention.class).getIsBuildSrc();
 
