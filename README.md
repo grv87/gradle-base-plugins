@@ -414,6 +414,8 @@ Should be provided in [standard Gradle ways
     <tr><td><code>gpgKeyPassphrase</code></td>                                                                                                                    <td>Not required. Assumes no passphrase if not provided</td>
     <tr><td><code>bintrayUser</code>  </td><td rowspan="2"><code>org.fidata.base.jvm</code> for public releases</td><td rowspan="2">Release to Bintray</td><td>&nbsp;</td>
     <tr><td><code>bintrayAPIKey</code></td>                                                                                                                <td>&nbsp;</td>
+    <tr><td><code>gradlePluginsKey</code>   </td><td rowspan="2"><code>org.fidata.plugin</code> for public releases</td><td rowspan="2">Release to Gradle Plugins portal</td><td>&nbsp;</td>
+    <tr><td><code>gradlePluginsSecret</code></td>                                                                                                                            <td>&nbsp;</td>
 </tbody>
 </table>
 
