@@ -129,6 +129,14 @@ org.aspectj:aspectjrt:1.8.7
 org.checkerframework:checker-qual:2.5.2
 org.codehaus.gpars:gpars:1.2.1
 org.codehaus.groovy.modules.http-builder:http-builder:0.7.2
+org.codehaus.groovy:groovy-json:2.5.2
+org.codehaus.groovy:groovy-macro:2.5.2
+org.codehaus.groovy:groovy-nio:2.5.2
+org.codehaus.groovy:groovy-sql:2.5.2
+org.codehaus.groovy:groovy-templates:2.5.2
+org.codehaus.groovy:groovy-test:2.5.2
+org.codehaus.groovy:groovy-xml:2.5.2
+org.codehaus.groovy:groovy:2.5.2
 org.codehaus.jsr166-mirror:jsr166y:1.7.0
 org.codehaus.mojo:animal-sniffer-annotations:1.14
 org.codehaus.plexus:plexus-classworlds:2.5.1
@@ -163,7 +171,7 @@ org.jsoup:jsoup:1.7.2
 org.multiverse:multiverse-core:0.7.0
 org.slf4j:jcl-over-slf4j:1.7.25
 org.spdx:spdx-tools:2.1.15
-org.spockframework:spock-core:1.2-groovy-2.4
+org.spockframework:spock-core:1.2-groovy-2.5
 org.tukaani:xz:1.6
 org.ysb33r.gradle:grolifant:0.9
 org.ysb33r.gradletest:org.ysb33r.gradletest.gradle.plugin:2.0-beta.3
