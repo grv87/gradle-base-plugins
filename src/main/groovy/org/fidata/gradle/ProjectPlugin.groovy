@@ -30,6 +30,8 @@ import static org.fidata.gradle.utils.VersionUtils.isPreReleaseVersion
 import static org.gradle.language.base.plugins.LifecycleBasePlugin.VERIFICATION_GROUP
 import static com.dorongold.gradle.tasktree.TaskTreePlugin.TASK_TREE_TASK_NAME
 import static org.fidata.gpg.GpgUtils.getGpgHome
+import com.github.zafarkhaja.semver.ParseException
+import java.nio.file.InvalidPathException
 import org.gradle.api.plugins.quality.Pmd
 import org.gradle.api.plugins.quality.internal.AbstractCodeQualityPlugin
 import java.util.concurrent.Callable
@@ -366,7 +368,11 @@ final class ProjectPlugin extends AbstractProjectPlugin {
             String projectVersion = project.version.toString() - snapshotSuffix
             try {
               return Version.valueOf(dirVersion).preReleaseVersion == Version.valueOf(projectVersion).preReleaseVersion
-            } catch (ignored) {
+            } catch (IllegalArgumentException | ParseException e) {
+              /*
+               * These exceptions caught mean that the directory name is not a valid semver version.
+               * So, we don't exclude such directory from preserves (in other words, it is preserved)
+               */
               return false
             }
           }
@@ -463,11 +469,10 @@ final class ProjectPlugin extends AbstractProjectPlugin {
    */
   static final PathDirector<CodeNarc> CODENARC_REPORT_DIRECTOR = new PathDirector<CodeNarc>() {
     @Override
-    @SuppressWarnings('CatchException')
-    Path determinePath(CodeNarc object) throws ReportPathDirectorException {
+    Path determinePath(CodeNarc object)  {
       try {
         Paths.get(toSafeFileName((object.name - ~/^codenarc/ /* WORKAROUND: CodeNarcPlugin.getTaskBaseName has protected scope <grv87 2018-06-23> */).uncapitalize()))
-      } catch (Exception e) {
+      } catch (InvalidPathException e) {
         throw new ReportPathDirectorException(object, e)
       }
     }

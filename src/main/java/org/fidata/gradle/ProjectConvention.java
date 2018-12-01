@@ -212,9 +212,8 @@ public class ProjectConvention extends AbstractExtension {
    * @param object The object to determine path for. It is passed to {@code pathDirector}
    * @param <T> Type of object
    * @return Directory resolved to the root of standard directory
-   * @throws RuntimeException If {@code pathDirector} could not determine path
    */
-  public <T> File getHtmlReportDir(Path subpath, PathDirector<T> pathDirector, T object) throws RuntimeException {
+  public <T> File getHtmlReportDir(Path subpath, PathDirector<T> pathDirector, T object) {
     return htmlReportsDir.toPath().resolve(subpath).resolve(pathDirector.determinePath(object)).toFile();
   }
 
@@ -228,9 +227,8 @@ public class ProjectConvention extends AbstractExtension {
    * @param object The object to determine path for. It is passed to {@code pathDirector}
    * @param <T> Type of object
    * @return Directory resolved to the root of standard directory
-   * @throws RuntimeException If {@code pathDirector} could not determine path
    */
-  public <T> File getXmlReportDir(Path subpath, PathDirector<T> pathDirector, T object) throws RuntimeException {
+  public <T> File getXmlReportDir(Path subpath, PathDirector<T> pathDirector, T object) {
     return xmlReportsDir.toPath().resolve(subpath).resolve(pathDirector.determinePath(object)).toFile();
   }
 
@@ -244,9 +242,8 @@ public class ProjectConvention extends AbstractExtension {
    * @param object The object to determine path for. It is passed to {@code pathDirector}
    * @param <T> Type of object
    * @return Directory resolved to the root of standard directory
-   * @throws RuntimeException If {@code pathDirector} could not determine path
    */
-  public <T> File getJsonReportDir(Path subpath, PathDirector<T> pathDirector, T object) throws RuntimeException {
+  public <T> File getJsonReportDir(Path subpath, PathDirector<T> pathDirector, T object) {
     return jsonReportsDir.toPath().resolve(subpath).resolve(pathDirector.determinePath(object)).toFile();
   }
 
@@ -260,9 +257,8 @@ public class ProjectConvention extends AbstractExtension {
    * @param object The object to determine path for. It is passed to {@code pathDirector}
    * @param <T> Type of object
    * @return Directory resolved to the root of standard directory
-   * @throws RuntimeException If {@code pathDirector} could not determine path
    */
-  public <T> File getTxtReportDir(Path subpath, PathDirector<T> pathDirector, T object) throws RuntimeException {
+  public <T> File getTxtReportDir(Path subpath, PathDirector<T> pathDirector, T object) {
     return txtReportsDir.toPath().resolve(subpath).resolve(pathDirector.determinePath(object)).toFile();
   }
 
@@ -275,9 +271,8 @@ public class ProjectConvention extends AbstractExtension {
    * @param object The object to determine path for. It is passed to {@code pathDirector}
    * @param <T> Type of object
    * @return Directory resolved to the root of standard directory
-   * @throws RuntimeException If {@code pathDirector} could not determine path
    */
-  public <T> File getHtmlReportDir(PathDirector<T> pathDirector, T object) throws RuntimeException {
+  public <T> File getHtmlReportDir(PathDirector<T> pathDirector, T object) {
     return htmlReportsDir.toPath().resolve(pathDirector.determinePath(object)).toFile();
   }
 
@@ -290,9 +285,8 @@ public class ProjectConvention extends AbstractExtension {
    * @param object The object to determine path for. It is passed to {@code pathDirector}
    * @param <T> Type of object
    * @return Directory resolved to the root of standard directory
-   * @throws RuntimeException If {@code pathDirector} could not determine path
    */
-  public <T> File getXmlReportDir(PathDirector<T> pathDirector, T object) throws RuntimeException {
+  public <T> File getXmlReportDir(PathDirector<T> pathDirector, T object) {
     return xmlReportsDir.toPath().resolve(pathDirector.determinePath(object)).toFile();
   }
 
@@ -305,9 +299,8 @@ public class ProjectConvention extends AbstractExtension {
    * @param object The object to determine path for. It is passed to {@code pathDirector}
    * @param <T> Type of object
    * @return Directory resolved to the root of standard directory
-   * @throws RuntimeException If {@code pathDirector} could not determine path
    */
-  public <T> File getJsonReportDir(PathDirector<T> pathDirector, T object) throws RuntimeException {
+  public <T> File getJsonReportDir(PathDirector<T> pathDirector, T object) {
     return jsonReportsDir.toPath().resolve(pathDirector.determinePath(object)).toFile();
   }
 
@@ -320,9 +313,8 @@ public class ProjectConvention extends AbstractExtension {
    * @param object The object to determine path for. It is passed to {@code pathDirector}
    * @param <T> Type of object
    * @return Directory resolved to the root of standard directory
-   * @throws RuntimeException If {@code pathDirector} could not determine path
    */
-  public <T> File getTxtReportDir(PathDirector<T> pathDirector, T object) throws RuntimeException {
+  public <T> File getTxtReportDir(PathDirector<T> pathDirector, T object) {
     return txtReportsDir.toPath().resolve(pathDirector.determinePath(object)).toFile();
   }
 
@@ -338,9 +330,8 @@ public class ProjectConvention extends AbstractExtension {
    * @param object The object to determine path for. It is passed to {@code pathDirector}
    * @param <T> Type of object
    * @return File resolved to the root of standard directory
-   * @throws RuntimeException If {@code pathDirector} could not determine path
    */
-  public <T> File getHtmlReportFile(Path subpath, PathDirector<T> pathDirector, T object) throws RuntimeException {
+  public <T> File getHtmlReportFile(Path subpath, PathDirector<T> pathDirector, T object) {
     return htmlReportsDir.toPath().resolve(subpath).resolve(getFileNameWithExtension(pathDirector, object, "html")).toFile();
   }
 
@@ -356,9 +347,8 @@ public class ProjectConvention extends AbstractExtension {
    * @param object The object to determine path for. It is passed to {@code pathDirector}
    * @param <T> Type of object
    * @return File resolved to the root of standard directory
-   * @throws RuntimeException If {@code pathDirector} could not determine path
    */
-  public <T> File getXmlReportFile(Path subpath, PathDirector<T> pathDirector, T object) throws RuntimeException {
+  public <T> File getXmlReportFile(Path subpath, PathDirector<T> pathDirector, T object) {
     return xmlReportsDir.toPath().resolve(subpath).resolve(getFileNameWithExtension(pathDirector, object, "xml")).toFile();
   }
 
@@ -374,9 +364,8 @@ public class ProjectConvention extends AbstractExtension {
    * @param object The object to determine path for. It is passed to {@code pathDirector}
    * @param <T> Type of object
    * @return File resolved to the root of standard directory
-   * @throws RuntimeException If {@code pathDirector} could not determine path
    */
-  public <T> File getJsonReportFile(Path subpath, PathDirector<T> pathDirector, T object) throws RuntimeException {
+  public <T> File getJsonReportFile(Path subpath, PathDirector<T> pathDirector, T object) {
     return jsonReportsDir.toPath().resolve(subpath).resolve(getFileNameWithExtension(pathDirector, object, "json")).toFile();
   }
 
@@ -392,9 +381,8 @@ public class ProjectConvention extends AbstractExtension {
    * @param object The object to determine path for. It is passed to {@code pathDirector}
    * @param <T> Type of object
    * @return File resolved to the root of standard directory
-   * @throws RuntimeException If {@code pathDirector} could not determine path
    */
-  public <T> File getTxtReportFile(Path subpath, PathDirector<T> pathDirector, T object) throws RuntimeException {
+  public <T> File getTxtReportFile(Path subpath, PathDirector<T> pathDirector, T object) {
     return txtReportsDir.toPath().resolve(subpath).resolve(getFileNameWithExtension(pathDirector, object, "txt")).toFile();
   }
 
@@ -409,9 +397,8 @@ public class ProjectConvention extends AbstractExtension {
    * @param object The object to determine path for. It is passed to {@code pathDirector}
    * @param <T> Type of object
    * @return File resolved to the root of standard directory
-   * @throws RuntimeException If {@code pathDirector} could not determine path
    */
-  public <T> File getHtmlReportFile(PathDirector<T> pathDirector, T object) throws RuntimeException {
+  public <T> File getHtmlReportFile(PathDirector<T> pathDirector, T object) {
     return htmlReportsDir.toPath().resolve(getFileNameWithExtension(pathDirector, object, "html")).toFile();
   }
 
@@ -426,9 +413,8 @@ public class ProjectConvention extends AbstractExtension {
    * @param object The object to determine path for. It is passed to {@code pathDirector}
    * @param <T> Type of object
    * @return File resolved to the root of standard directory
-   * @throws RuntimeException If {@code pathDirector} could not determine path
    */
-  public <T> File getXmlReportFile(PathDirector<T> pathDirector, T object) throws RuntimeException {
+  public <T> File getXmlReportFile(PathDirector<T> pathDirector, T object) {
     return xmlReportsDir.toPath().resolve(getFileNameWithExtension(pathDirector, object, "xml")).toFile();
   }
 
@@ -443,9 +429,8 @@ public class ProjectConvention extends AbstractExtension {
    * @param object The object to determine path for. It is passed to {@code pathDirector}
    * @param <T> Type of object
    * @return File resolved to the root of standard directory
-   * @throws RuntimeException If {@code pathDirector} could not determine path
    */
-  public <T> File getJsonReportFile(PathDirector<T> pathDirector, T object) throws RuntimeException {
+  public <T> File getJsonReportFile(PathDirector<T> pathDirector, T object) {
     return jsonReportsDir.toPath().resolve(getFileNameWithExtension(pathDirector, object, "json")).toFile();
   }
 
@@ -460,13 +445,12 @@ public class ProjectConvention extends AbstractExtension {
    * @param object The object to determine path for. It is passed to {@code pathDirector}
    * @param <T> Type of object
    * @return File resolved to the root of standard directory
-   * @throws RuntimeException If {@code pathDirector} could not determine path
    */
-  public <T> File getTxtReportFile(PathDirector<T> pathDirector, T object) throws RuntimeException {
+  public <T> File getTxtReportFile(PathDirector<T> pathDirector, T object) {
     return txtReportsDir.toPath().resolve(getFileNameWithExtension(pathDirector, object, "txt")).toFile();
   }
 
-  private <T> Path getFileNameWithExtension(PathDirector<T> pathDirector, T object, String extension) throws RuntimeException {
+  private <T> Path getFileNameWithExtension(PathDirector<T> pathDirector, T object, String extension) {
     Path filenameWithoutExtension = pathDirector.determinePath(object);
     return filenameWithoutExtension.resolveSibling(filenameWithoutExtension.getFileName().toString() + "." + extension);
   }

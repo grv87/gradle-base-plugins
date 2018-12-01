@@ -25,6 +25,7 @@ import static JVMBasePlugin.FUNCTIONAL_TEST_SOURCE_SET_NAME
 import static JVMBasePlugin.FUNCTIONAL_TEST_TASK_NAME
 import static org.gradle.internal.FileUtils.toSafeFileName
 import org.fidata.gradle.utils.PathDirector
+import java.nio.file.InvalidPathException
 import org.fidata.gradle.utils.ReportPathDirectorException
 import java.nio.file.Path
 import org.gradle.api.tasks.SourceSetContainer
@@ -119,11 +120,10 @@ final class GradlePluginPlugin extends AbstractProjectPlugin implements Property
 
   static final PathDirector<ValidateTaskProperties> VALIDATE_TASK_PROPERTIES_REPORT_DIRECTOR = new PathDirector<ValidateTaskProperties>() {
     @Override
-    @SuppressWarnings('CatchException')
-    Path determinePath(ValidateTaskProperties object) throws ReportPathDirectorException {
+    Path determinePath(ValidateTaskProperties object)  {
       try {
         Paths.get(toSafeFileName(object.name))
-      } catch (Exception e) {
+      } catch (InvalidPathException e) {
         throw new ReportPathDirectorException(object, e)
       }
     }
@@ -132,12 +132,12 @@ final class GradlePluginPlugin extends AbstractProjectPlugin implements Property
   private static final Pattern COMPAT_TEST_TASK_NAME_PATTERN = ~/^compatTest(.+)/
 
   static final PathDirector<TaskProvider<Test>> COMPAT_TEST_REPORT_DIRECTOR = new PathDirector<TaskProvider<Test>>() {
+    @SuppressWarnings('CatchIndexOutOfBoundsException')
     @Override
-    @SuppressWarnings('CatchException')
-    Path determinePath(TaskProvider<Test> object) throws ReportPathDirectorException {
+    Path determinePath(TaskProvider<Test> object)  {
       try {
         Paths.get('compatTest', toSafeFileName(((List<String>)(object.name =~ COMPAT_TEST_TASK_NAME_PATTERN)[0])[1].uncapitalize()))
-      } catch (Exception e) {
+      } catch (InvalidPathException | IndexOutOfBoundsException | IllegalStateException e) {
         throw new ReportPathDirectorException(object, e)
       }
     }

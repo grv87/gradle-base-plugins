@@ -30,13 +30,13 @@ import static ProjectPlugin.LICENSE_FILE_NAMES
 import static org.gradle.language.base.plugins.LifecycleBasePlugin.VERIFICATION_GROUP
 import static org.jfrog.gradle.plugin.artifactory.task.ArtifactoryTask.ARTIFACTORY_PUBLISH_TASK_NAME
 import static org.gradle.initialization.IGradlePropertiesLoader.ENV_PROJECT_PROPERTIES_PREFIX
+import java.nio.file.InvalidPathException
 import org.gradle.api.NamedDomainObjectProvider
 import org.gradle.external.javadoc.StandardJavadocDocletOptions
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.plugins.quality.FindBugs
 import org.gradle.api.plugins.quality.JDepend
 import org.gradle.api.Namer
-import org.fidata.gradle.utils.TaskNamerException
 import org.fidata.gradle.utils.PathDirector
 import org.fidata.gradle.utils.ReportPathDirectorException
 import org.gradle.api.Task
@@ -173,11 +173,10 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
   void addSpockDependency(NamedDomainObjectProvider<SourceSet> sourceSetProvider, TaskProvider<Test> task = null) {
     addSpockDependency sourceSetProvider, [task ?: project.tasks.withType(Test).named(sourceSetProvider.name)], new PathDirector<TaskProvider<Test>>() {
       @Override
-      @SuppressWarnings('CatchException')
-      Path determinePath(TaskProvider<Test> object) throws ReportPathDirectorException {
+      Path determinePath(TaskProvider<Test> object)  {
         try {
           Paths.get(object.name)
-        } catch (Exception e) {
+        } catch (InvalidPathException e) {
           throw new ReportPathDirectorException(object, e)
         }
       }
@@ -189,13 +188,8 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
    */
   static final Namer<NamedDomainObjectProvider<SourceSet>> CODENARC_NAMER = new Namer<NamedDomainObjectProvider<SourceSet>>() {
     @Override
-    @SuppressWarnings('CatchException')
-    String determineName(NamedDomainObjectProvider<SourceSet> sourceSetProvider) throws TaskNamerException {
-      try {
-        "codenarc${ sourceSetProvider.name.capitalize() }"
-      } catch (Exception e) {
-        throw new TaskNamerException('codenarc', 'source set provider', sourceSetProvider, e)
-      }
+    String determineName(NamedDomainObjectProvider<SourceSet> sourceSetProvider)  {
+      "codenarc${ sourceSetProvider.name.capitalize() }"
     }
   }
 
@@ -373,13 +367,8 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
    */
   static final Namer<MavenPublication> SIGN_MAVEN_PUBLICATION_NAMER = new Namer<MavenPublication>() {
     @Override
-    @SuppressWarnings('CatchException')
-    String determineName(MavenPublication mavenPublication) throws TaskNamerException {
-      try {
-        "sign${ mavenPublication.name.capitalize() }Publication"
-      } catch (Exception e) {
-        throw new TaskNamerException('sign', 'maven publication', mavenPublication, e)
-      }
+    String determineName(MavenPublication mavenPublication)  {
+      "sign${ mavenPublication.name.capitalize() }Publication"
     }
   }
 
