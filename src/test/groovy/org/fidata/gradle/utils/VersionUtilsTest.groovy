@@ -87,6 +87,12 @@ class VersionUtilsTest {
       ['1.0.0-sp1'            , false],
       // Service Release
       ['1.0.0-SR-4'           , false],
+      // Gradle
+      // See https://github.com/gradle/gradle/commit/489524e3693b542abc4280a4e70a0e5467dd831c
+      ['1.0.0-dev'            , true],
+      ['1.0-dev'              , true],
+      ['1.0.0-release'        , false],
+      ['1.0-release'          , false],
     ]*.toArray().toArray()
   }
 }

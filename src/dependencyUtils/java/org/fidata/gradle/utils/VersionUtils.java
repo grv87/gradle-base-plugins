@@ -51,7 +51,14 @@ public final class VersionUtils {
       return !Iterables.all(Splitter.on(CharMatcher.anyOf("-\\._")).split(preReleaseVersion), new Predicate<String>() {
         public boolean apply(String label) {
           label = label.toUpperCase();
-          return label.startsWith("FINAL") || label.startsWith("GA") || label.startsWith("SP") || label.startsWith("SR") || label.matches("^\\d+$");
+          return
+            label.startsWith("GA") ||
+            label.startsWith("RELEASE") ||
+            label.startsWith("SP") ||
+            label.startsWith("SR") ||
+            label.startsWith("FINAL") ||
+            label.matches("^\\d+$")
+          ;
         }
       });
     }
@@ -59,7 +66,16 @@ public final class VersionUtils {
       return Iterables.any(Splitter.on(CharMatcher.anyOf("-\\._")).split(version), new Predicate<String>() {
         public boolean apply(String label) {
           label = label.toUpperCase();
-          return label.startsWith("ALPHA") || label.startsWith("BETA") || label.startsWith("MILESTONE") || label.startsWith("RC") || label.startsWith("CR") || label.startsWith("SNAPSHOT") || label.matches("^[ABM]\\d+$");
+          return
+            label.startsWith("DEV") ||
+            label.startsWith("SNAPSHOT") ||
+            label.startsWith("ALPHA") ||
+            label.startsWith("BETA") ||
+            label.startsWith("MILESTONE") ||
+            label.matches("^[ABM]\\d+$") ||
+            label.startsWith("RC") ||
+            label.startsWith("CR")
+          ;
         }
       });
     }
