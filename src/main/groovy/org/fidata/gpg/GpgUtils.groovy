@@ -59,7 +59,14 @@ final class GpgUtils {
         if (path) {
           return Paths.get(path)
         }
-      } catch (Win32Exception ignored) { } // TODO: check error codes and ignore non-existence only
+      } catch (Win32Exception ignored) {
+        /*
+         * TODO:
+         * We just assume that exception means that required registry key or value doesn't exist.
+         * However, this could mean a lot of other problems.
+         * We should check error codes and ignore non-existence only
+         */
+      }
 
       Path path = Paths.get(System.getenv('APPDATA'), 'GnuPg')
       if (!path.toFile().exists()) {
@@ -85,7 +92,7 @@ final class GpgUtils {
    * @throws IllegalStateException when there was other error parsing GPG output
    */
   @SuppressWarnings('DuplicateNumberLiteral')
-  static final String getKeyGrip(Project project, String keyId) throws InvalidKeyException, IllegalStateException {
+  static final String getKeyGrip(Project project, String keyId) throws InvalidKeyException {
     String canonicalKeyId = keyId.toUpperCase()
     new ByteArrayOutputStream().withStream { os ->
       project.exec { ExecSpec execSpec ->

@@ -21,7 +21,11 @@ package org.fidata.gradle.utils
 
 /**
  * Exception thrown by {@link org.gradle.api.Namer} when it is unable to determine task name based on some other object
+ *
+ * @deprecated This exception is not used.
+ * It will be removed in future versions.
  */
+@Deprecated
 class TaskNamerException extends RuntimeException {
   /**
    * Default constuctor

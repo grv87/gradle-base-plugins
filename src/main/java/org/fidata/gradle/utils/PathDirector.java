@@ -35,7 +35,6 @@ public interface PathDirector<T> {
    *
    * @param object The object to determine the path for
    * @return The path for the object. Never null
-   * @throws RuntimeException If the path cannot be determined or is null
    */
-  Path determinePath(T object) throws RuntimeException;
+  Path determinePath(T object);
 }

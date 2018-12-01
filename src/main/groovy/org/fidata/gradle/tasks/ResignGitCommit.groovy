@@ -20,7 +20,6 @@ package org.fidata.gradle.tasks
 
 import groovy.transform.CompileStatic
 import org.fidata.gpg.GpgUtils
-import org.fidata.gradle.utils.TaskNamerException
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -88,13 +87,8 @@ class ResignGitCommit extends DefaultTask {
 
   static final org.gradle.api.Namer<TaskProvider<Task>> RESIGN_GIT_COMMIT_TASK_NAMER = new org.gradle.api.Namer<TaskProvider<Task>>() {
     @Override
-    @SuppressWarnings('CatchException')
-    String determineName(TaskProvider<Task> commitTaskProvider) throws TaskNamerException {
-      try {
-        "resign${ commitTaskProvider.name.capitalize() }"
-      } catch (Exception e) {
-        throw new TaskNamerException('resignGitCommit', 'commit task', commitTaskProvider, e)
-      }
+    String determineName(TaskProvider<Task> commitTaskProvider)  {
+      "resign${ commitTaskProvider.name.capitalize() }"
     }
   }
 

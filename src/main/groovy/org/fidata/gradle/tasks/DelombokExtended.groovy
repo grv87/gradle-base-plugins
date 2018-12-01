@@ -82,7 +82,7 @@ class DelombokExtended extends DelombokTask {
    * @return sourceSets after addition
    * @throws IllegalArgumentException When argument of unsupported type is passed
    */
-  ListProperty<? extends SourceSet> sourceSet(Object sourceSet) throws IllegalArgumentException {
+  ListProperty<? extends SourceSet> sourceSet(Object sourceSet) {
     if (Provider.isInstance(sourceSet)) {
       /*
        * TODO:
@@ -110,7 +110,7 @@ class DelombokExtended extends DelombokTask {
    * @throws IllegalArgumentException When argument of unsupported type is encountered
    */
   @SuppressWarnings('ConfusingMethodName')
-  ListProperty<? extends SourceSet> sourceSets(Object... sourceSets) throws IllegalArgumentException {
+  ListProperty<? extends SourceSet> sourceSets(Object... sourceSets) {
     sourceSets.each { Object sourceSet ->
       if (Iterable.isInstance(sourceSet)) {
         (Iterable)sourceSet.each { Object innerSourceSet ->
