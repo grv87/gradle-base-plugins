@@ -389,7 +389,16 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
       }
 
       artifactoryPublish.dependsOn project.tasks.withType(Sign).matching { Sign sign -> // TODO
-        publications.withType(MavenPublication).any { MavenPublication mavenPublication ->
+        /*
+         * WORKAROUND:
+         * Without that cast we got compilation error with Groovy 2.5.2:
+         * [Static type checking] - Reference to method is ambiguous.
+         * Cannot choose between
+         * [boolean java.lang.Iterable <T>#any(groovy.lang.Closure),
+         * boolean java.lang.Object#any(groovy.lang.Closure)]
+         * <grv87 2018-12-01>
+         */
+        ((Iterable<MavenPublication>)publications.withType(MavenPublication)).any { MavenPublication mavenPublication ->
           sign.name == SIGN_MAVEN_PUBLICATION_NAMER.determineName(mavenPublication)
         }
       }
