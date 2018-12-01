@@ -21,6 +21,7 @@ package org.fidata.gradle
 
 import static org.fidata.testfixtures.gradle.GradleRunnerUtils.skippedTaskPathsGradleBugWorkaround
 import static org.fidata.testfixtures.TestFixtures.initEmptyGitRepository
+import com.google.common.collect.ImmutableMap
 import spock.lang.Specification
 import spock.lang.Unroll
 import org.gradle.testkit.runner.GradleRunner
@@ -39,14 +40,14 @@ class GradlePluginPluginSpecification extends Specification {
   File settingsFile = new File(testProjectDir, 'settings.gradle')
   File propertiesFile = new File(testProjectDir, 'gradle.properties')
 
-  static final Map<String, String> EXTRA_PROPERTIES = [
+  static final Map<String, String> EXTRA_PROPERTIES = ImmutableMap.copyOf([
     'artifactoryUser'    : 'dummyArtifactoryUser',
     'artifactoryPassword': 'dummyArtifactoryPassword',
     'gitUsername': 'dummyGitUser',
     'gitPassword': 'dummyGitPassword',
     'ghToken': 'dummyGhToken',
     'gpgKeyId': 'ABCD1234',
-  ]
+  ])
 
   // fixture methods
 

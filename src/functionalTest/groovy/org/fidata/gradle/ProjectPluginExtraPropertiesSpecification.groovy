@@ -21,6 +21,7 @@
 package org.fidata.gradle
 
 import static org.fidata.testfixtures.TestFixtures.initEmptyGitRepository
+import com.google.common.collect.ImmutableMap
 import org.gradle.api.Project
 import org.gradle.api.internal.plugins.PluginApplicationException
 import org.gradle.testfixtures.ProjectBuilder
@@ -40,14 +41,14 @@ class ProjectPluginExtraPropertiesSpecification extends Specification {
 
   Project project
 
-  static final Map<String, String> EXTRA_PROPERTIES = [
+  static final Map<String, String> EXTRA_PROPERTIES = ImmutableMap.copyOf([
     'artifactoryUser'    : 'dummyArtifactoryUser',
     'artifactoryPassword': 'dummyArtifactoryPassword',
     'gitUsername': 'dummyGitUser',
     'gitPassword': 'dummyGitPassword',
     'ghToken': 'dummyGhToken',
     'gpgKeyId': 'ABCD1234',
-  ]
+  ])
 
   // fixture methods
 

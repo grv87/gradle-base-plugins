@@ -19,6 +19,7 @@
  */
 package org.fidata.gradle
 
+import com.google.common.collect.ImmutableMap
 import groovy.transform.CompileStatic
 import org.fidata.gradle.utils.PluginDependee
 import org.fidata.gradle.utils.PluginDependeeExclusion
@@ -31,7 +32,7 @@ final class ProjectPluginDependees {
   /**
    * List of plugin dependees with IDs
    */
-  static final Map<String, PluginDependee> PLUGIN_DEPENDEES = [
+  static final Map<String, PluginDependee> PLUGIN_DEPENDEES = ImmutableMap.copyOf([
     'org.gradle.idea': new PluginDependee(),
     'org.gradle.lifecycle-base': new PluginDependee(),
     'org.fidata.prerequisites': new PluginDependee(
@@ -91,7 +92,7 @@ final class ProjectPluginDependees {
       configurationName: 'implementation',
       version: '[1, 2[',
     ),
-  ]
+  ])
 
   // Suppress default constructor for noninstantiability
   private ProjectPluginDependees() {

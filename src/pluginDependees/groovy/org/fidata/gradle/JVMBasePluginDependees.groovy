@@ -19,6 +19,7 @@
  */
 package org.fidata.gradle
 
+import com.google.common.collect.ImmutableMap
 import groovy.transform.CompileStatic
 import org.fidata.gradle.utils.PluginDependee
 import org.fidata.gradle.utils.PluginDependeeExclusion
@@ -31,7 +32,7 @@ final class JVMBasePluginDependees {
   /**
    * List of plugin dependees with IDs
    */
-  static final Map<String, PluginDependee> PLUGIN_DEPENDEES = [
+  static final Map<String, PluginDependee> PLUGIN_DEPENDEES = ImmutableMap.copyOf([
     'org.gradle.java-base': new PluginDependee(),
     'org.gradle.java-library': new PluginDependee(),
     'org.gradle.maven-publish': new PluginDependee(
@@ -53,7 +54,7 @@ final class JVMBasePluginDependees {
       ],
       enabled: false,
     ),
-  ]
+  ])
 
   // Suppress default constructor for noninstantiability
   private JVMBasePluginDependees() {

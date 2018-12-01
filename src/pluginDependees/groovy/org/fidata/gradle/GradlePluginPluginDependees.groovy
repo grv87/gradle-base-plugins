@@ -19,6 +19,7 @@
  */
 package org.fidata.gradle
 
+import com.google.common.collect.ImmutableMap
 import groovy.transform.CompileStatic
 import org.fidata.gradle.utils.PluginDependee
 
@@ -30,7 +31,7 @@ final class GradlePluginPluginDependees {
   /**
    * List of plugin dependees with IDs
    */
-  static final Map<String, PluginDependee> PLUGIN_DEPENDEES = [
+  static final Map<String, PluginDependee> PLUGIN_DEPENDEES = ImmutableMap.copyOf([
     'org.gradle.java-gradle-plugin': new PluginDependee(),
     'org.ajoberstar.stutter': new PluginDependee(
       version: '[0, 1[',
@@ -45,7 +46,7 @@ final class GradlePluginPluginDependees {
       version: '[0, 1[',
       enabled: false,
     ),
-  ]
+  ])
 
   // Suppress default constructor for noninstantiability
   private GradlePluginPluginDependees() {
