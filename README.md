@@ -405,14 +405,14 @@ Should be provided in [standard Gradle ways
 <table>
 <thead><tr><th>Property</th><th>Requiring Plugin</th><th>Usage</th><th>Notes</th></tr></thead>
 <tbody>
-    <tr><td><code>artifactoryUser</code>    </td><td rowspan="8"><code>org.fidata.project</code></td><td rowspan="2">Getting build tools and dependencies from Artifactory; use Gradle cache</td><td>&nbsp;                </td>
+    <tr><td><code>artifactoryUser</code>    </td><td rowspan="7"><code>org.fidata.project</code></td><td rowspan="2">Getting build tools and dependencies from Artifactory; use Gradle cache</td><td>&nbsp;                </td>
     <tr><td><code>artifactoryPassword</code></td>                                                                                                                                                <td>It is actually API key</td>
-    <tr><td><code>gitUsername</code></td><td rowspan="2">Git push during release</td><td>&nbsp;</td>
-    <tr><td><code>gitPassword</code></td>                                            <td>&nbsp;</td>
-    <tr><td><code>ghToken</code></td><td>Create release on GitHub</td><td>&nbsp;</td>
-    <tr><td><code>gpgKeyId</code>        </td><td rowspan="3">Sign artifacts, git commits and git tags</td><td>&nbsp;                                             </td>
-    <tr><td><code>gpgKeyPassphrase</code></td>                                                             <td>Not required. Assumes no passphrase if not provided</td>
-    <tr><td><code>bintrayUser</code>  </td><td rowspan="8"><code>org.fidata.base.jvm</code> for public releases</td><td rowspan="2">Release to Bintray</td><td>&nbsp;</td>
+    <tr><td><code>gitUsername</code></td>                                                            <td rowspan="2">Git push during release</td><td>&nbsp;</td>
+    <tr><td><code>gitPassword</code></td>                                                                                                        <td>&nbsp;</td>
+    <tr><td><code>ghToken</code></td>                                                                <td>Create release on GitHub</td><td>&nbsp;</td>
+    <tr><td><code>gpgKeyId</code>        </td>                                                       <td rowspan="2">Sign artifacts, git commits and git tags</td><td>&nbsp;                                             </td>
+    <tr><td><code>gpgKeyPassphrase</code></td>                                                                                                                    <td>Not required. Assumes no passphrase if not provided</td>
+    <tr><td><code>bintrayUser</code>  </td><td rowspan="2"><code>org.fidata.base.jvm</code> for public releases</td><td rowspan="2">Release to Bintray</td><td>&nbsp;</td>
     <tr><td><code>bintrayAPIKey</code></td>                                                                                                                <td>&nbsp;</td>
 </tbody>
 </table>
