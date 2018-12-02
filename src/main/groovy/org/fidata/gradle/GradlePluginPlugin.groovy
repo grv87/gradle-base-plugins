@@ -105,12 +105,17 @@ final class GradlePluginPlugin extends AbstractProjectPlugin implements Property
       project.extensions.extraProperties[PublishTask.GRADLE_PUBLISH_KEY] = project.extensions.extraProperties['gradlePluginsKey']
       project.extensions.extraProperties[PublishTask.GRADLE_PUBLISH_SECRET] = project.extensions.extraProperties['gradlePluginsSecret']
       project.extensions.configure(PluginBundleExtension) { PluginBundleExtension extension ->
-        extension.with {
-          description = project.version.toString() == '1.0.0' ? project.description : rootProjectConvention.changeLogTxt.get().toString()
-          tags = (Collection<String>)projectConvention.tags.get()
-          website = projectConvention.websiteUrl.get()
-          vcsUrl = rootProjectConvention.vcsUrl.get()
-        }
+        /*
+         * WORKAROUND:
+         * Groovy 2.5 don't let us use `with` here. Got error:
+         * java.lang.ClassCastException: com.gradle.publish.PluginBundleExtension cannot be cast to groovy.lang.GroovyObject
+         * Must be a bug in Groovy
+         * <grv87 2018-12-02>
+         */
+        extension.description = project.version.toString() == '1.0.0' ? project.description : rootProjectConvention.changeLogTxt.get().toString()
+        extension.tags = (Collection<String>)projectConvention.tags.get()
+        extension.website = projectConvention.websiteUrl.get()
+        extension.vcsUrl = rootProjectConvention.vcsUrl.get()
       }
       project.tasks.named(/* WORKAROUND: PublishPlugin.BASE_TASK_NAME has private scope <grv87 2018-06-23> */ 'publishPlugins').configure { Task publishPlugins ->
         publishPlugins.onlyIf { rootProjectConvention.isRelease.get() }
