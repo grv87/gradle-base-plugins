@@ -32,7 +32,7 @@ import org.gradle.api.plugins.quality.CodeNarc
 import spock.lang.Unroll
 
 /**
- * Specification for {@link org.fidata.gradle.ProjectPlugin} class
+ * Specification for {@link ProjectPlugin} class
  */
 class ProjectPluginSpecification extends Specification {
   // fields
