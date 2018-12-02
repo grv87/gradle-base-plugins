@@ -28,7 +28,7 @@ import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
 
 /**
- * Specification for {@link org.fidata.gradle.GroovyProjectPlugin} class
+ * Specification for {@link GroovyProjectPlugin} class
  */
 class GroovyProjectPluginSpecification extends Specification {
   // fields

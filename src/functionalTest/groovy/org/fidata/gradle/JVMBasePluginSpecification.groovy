@@ -29,7 +29,7 @@ import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
 
 /**
- * Specification for {@link org.fidata.gradle.JVMBasePlugin} class
+ * Specification for {@link JVMBasePlugin} class
  */
 class JVMBasePluginSpecification extends Specification {
   // fields

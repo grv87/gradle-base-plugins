@@ -28,7 +28,7 @@ import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.BuildResult
 
 /**
- * Specification for {@link org.fidata.gradle.GradlePluginPlugin} class
+ * Specification for {@link GradlePluginPlugin} class
  */
 class GradlePluginPluginSpecification extends Specification {
   // fields

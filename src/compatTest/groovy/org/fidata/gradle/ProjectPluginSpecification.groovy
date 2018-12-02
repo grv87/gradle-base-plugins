@@ -25,7 +25,7 @@ import org.gradle.testkit.runner.GradleRunner
 import spock.lang.Specification
 
 /**
- * Specification for {@link org.fidata.gradle.ProjectPlugin} class
+ * Specification for {@link ProjectPlugin} class
  */
 class ProjectPluginSpecification extends Specification {
   // fields

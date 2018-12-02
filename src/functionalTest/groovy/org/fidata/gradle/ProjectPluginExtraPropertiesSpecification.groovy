@@ -31,7 +31,7 @@ import spock.lang.Specification
 import spock.lang.Unroll
 
 /**
- * Specification for {@link org.fidata.gradle.ProjectPlugin} class
+ * Specification for {@link ProjectPlugin} class
  * for extra properties
  */
 class ProjectPluginExtraPropertiesSpecification extends Specification {
