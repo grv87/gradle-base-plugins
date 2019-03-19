@@ -143,6 +143,8 @@ final class ProjectPlugin extends AbstractProjectPlugin {
   @PackageScope
   String defaultProjectGroup = 'org.fidata'
 
+  private boolean isBuildSrc
+
   @Override
   @SuppressWarnings('CouldBeElvis')
   void apply(Project project) {
@@ -159,7 +161,7 @@ final class ProjectPlugin extends AbstractProjectPlugin {
     } else {
       rootProjectConvention = project.rootProject.convention.getPlugin(RootProjectConvention)
     }
-    boolean isBuildSrc = rootProjectConvention.isBuildSrc
+    isBuildSrc = rootProjectConvention.isBuildSrc
 
     PluginDependeesUtils.applyPlugins project, isBuildSrc, ProjectPluginDependees.PLUGIN_DEPENDEES
     project.pluginManager.apply 'org.fidata.dependencies'
@@ -574,34 +576,38 @@ final class ProjectPlugin extends AbstractProjectPlugin {
       }
     }
 
-    project.tasks.register("${ /* WORKAROUND: CodeNarcPlugin.getTaskBaseName has protected scope <grv87 2018-06-23> */ 'codenarc' }${ DEFAULT_BUILD_SRC_DIR.capitalize() }", CodeNarc) { CodeNarc codenarc ->
-      codenarc.with {
-        source project.fileTree(dir: project.projectDir, includes: ['*.gradle'])
-        source project.fileTree(dir: project.projectDir, includes: ['*.groovy'])
-        source project.fileTree(dir: project.file('gradle'), includes: ['**/*.gradle'])
-        source project.fileTree(dir: project.file('gradle'), includes: ['**/*.groovy'])
-        source project.fileTree(dir: project.file('config'), includes: ['**/*.groovy'])
-        if (project == project.rootProject) {
-          Closure buildDirMatcher = { FileTreeElement fte ->
-            String[] p = fte.relativePath.segments
-            int i = 0
-            while (i < p.length && p[i] == DEFAULT_BUILD_SRC_DIR) { i++ }
-            i < p.length && p[i] == DEFAULT_BUILD_DIR_NAME
+    if (!isBuildSrc) {
+      project.tasks.register("${ /* WORKAROUND: CodeNarcPlugin.getTaskBaseName has protected scope <grv87 2018-06-23> */ 'codenarc' }${ DEFAULT_BUILD_SRC_DIR.capitalize() }", CodeNarc) { CodeNarc codenarc ->
+        codenarc.with {
+          source project.fileTree(dir: project.projectDir, includes: ['*.gradle'])
+          source project.fileTree(dir: project.projectDir, includes: ['*.groovy'])
+          source project.fileTree(dir: project.file('gradle'), includes: ['**/*.gradle'])
+          source project.fileTree(dir: project.file('gradle'), includes: ['**/*.groovy'])
+          source project.fileTree(dir: project.file('config'), includes: ['**/*.groovy'])
+          if (project == project.rootProject) {
+            Closure buildDirMatcher = { FileTreeElement fte ->
+              String[] p = fte.relativePath.segments
+              int i = 0
+              while (i < p.length && p[i] == DEFAULT_BUILD_SRC_DIR) {
+                i++
+              }
+              i < p.length && p[i] == DEFAULT_BUILD_DIR_NAME
+            }
+            /*
+             * WORKAROUND:
+             * We have to pass to CodeNarc resolved fileTree, otherwise we get the following error:
+             * Cannot add include/exclude specs to Ant node. Only include/exclude patterns are currently supported.
+             * This is not a problem since build sources can't change at build time,
+             * and also this code is executed only when codenarcBuildSrc task is actually created (i.e. run)
+             * <grv87 2018-08-22>
+             */
+            source project.fileTree(DEFAULT_BUILD_SRC_DIR) { ConfigurableFileTree fileTree ->
+              fileTree.include '**/*.gradle'
+              fileTree.include '**/*.groovy'
+              fileTree.exclude buildDirMatcher
+            }.files
+            source 'Jenkinsfile'
           }
-          /*
-           * WORKAROUND:
-           * We have to pass to CodeNarc resolved fileTree, otherwise we get the following error:
-           * Cannot add include/exclude specs to Ant node. Only include/exclude patterns are currently supported.
-           * This is not a problem since build sources can't change at build time,
-           * and also this code is executed only when codenarcBuildSrc task is actually created (i.e. run)
-           * <grv87 2018-08-22>
-           */
-          source project.fileTree(DEFAULT_BUILD_SRC_DIR) { ConfigurableFileTree fileTree ->
-            fileTree.include '**/*.gradle'
-            fileTree.include '**/*.groovy'
-            fileTree.exclude buildDirMatcher
-          }.files
-          source 'Jenkinsfile'
         }
       }
     }
