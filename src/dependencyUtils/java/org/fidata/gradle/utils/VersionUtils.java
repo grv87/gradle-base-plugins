@@ -25,6 +25,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.base.Splitter;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Predicate;
+import java.util.Locale;
 
 /**
  * Utilities to work with version strings and objects
@@ -50,7 +51,7 @@ public final class VersionUtils {
       }
       return !Iterables.all(Splitter.on(CharMatcher.anyOf("-\\._")).split(preReleaseVersion), new Predicate<String>() {
         public boolean apply(String label) {
-          label = label.toUpperCase();
+          label = label.toUpperCase(Locale.ROOT);
           return
             label.startsWith("GA") ||
             label.startsWith("RELEASE") ||
@@ -66,7 +67,7 @@ public final class VersionUtils {
     catch (ParseException e) {
       return Iterables.any(Splitter.on(CharMatcher.anyOf("-\\._")).split(version), new Predicate<String>() {
         public boolean apply(String label) {
-          label = label.toUpperCase();
+          label = label.toUpperCase(Locale.ROOT);
           return
             label.startsWith("DEV") ||
             label.startsWith("SNAPSHOT") ||
