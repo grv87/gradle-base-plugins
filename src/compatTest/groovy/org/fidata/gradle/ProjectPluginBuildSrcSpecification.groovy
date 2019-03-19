@@ -68,6 +68,10 @@ class ProjectPluginBuildSrcSpecification extends Specification {
       plugins {
         id 'org.fidata.project'
       }
+
+      afterEvaluate {
+        assert tasks.findByName('codenarcBuildSrc') == null
+      }
     '''.stripIndent()
 
     buildSrcPropertiesFile.withPrintWriter { PrintWriter printWriter ->
