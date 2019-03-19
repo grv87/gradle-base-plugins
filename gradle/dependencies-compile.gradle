@@ -56,18 +56,10 @@ dependencies {
   addDependencies org.fidata.gradle.GroovyBaseProjectPluginDependees.PLUGIN_DEPENDEES
   addDependencies org.fidata.gradle.GradlePluginPluginDependees.PLUGIN_DEPENDEES
 
-  api(group: 'org.spdx', name: 'spdx-tools', version: '[2, 3[') {
-    /*
-     * WORKAROUND:
-     * https://github.com/spdx/tools/issues/163
-     * spdx-tools uses old json-simple dependency which includes JUnit dependency and has a lot of other issues
-     * <grv87 2018-06-24>
-     */
-    exclude(group: 'com.googlecode.json-simple', module: 'json-simple')
+  api(group: 'org.spdx', name: 'spdx-tools', version: '[2.1.15, 3[') {
     exclude(group: 'org.apache.logging.log4j', module: 'log4j-slf4j-impl')
     exclude(group: 'org.apache.logging.log4j', module: 'log4j-core')
   }
-  implementation(group: 'com.github.cliftonlabs', name: 'json-simple', version: '[2, 3[')
 
   /*
    * CAVEAT:
