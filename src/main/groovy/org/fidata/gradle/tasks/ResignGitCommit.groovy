@@ -48,7 +48,7 @@ class ResignGitCommit extends DefaultTask {
    */
   @Optional
   @InputDirectory
-  final DirectoryProperty workingDir = newInputDirectory()
+  final DirectoryProperty workingDir = project.objects.directoryProperty()
 
   /**
    * Resigns previous git commit

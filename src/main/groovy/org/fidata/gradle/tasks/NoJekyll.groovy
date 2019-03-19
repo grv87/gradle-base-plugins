@@ -39,7 +39,7 @@ class NoJekyll extends DefaultTask {
    */
   public static final String FILE_NAME = '.nojekyll'
 
-  private final DirectoryProperty destinationDir = project.layout.directoryProperty()
+  private final DirectoryProperty destinationDir = project.objects.directoryProperty()
 
   /**
    * @return a dir where to generate a file

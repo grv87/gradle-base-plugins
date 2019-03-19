@@ -42,7 +42,7 @@ class InputsOutputs extends DefaultTask {
    * By default it is <code>${ reporting.baseDir }/inputsOutputs.txt</code>
    */
   @OutputFile
-  final RegularFileProperty outputFile = newOutputFile()
+  final RegularFileProperty outputFile = project.objects.fileProperty()
 
   /**
    * Generates a report
