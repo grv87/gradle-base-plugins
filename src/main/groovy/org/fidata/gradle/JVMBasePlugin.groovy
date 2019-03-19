@@ -30,6 +30,7 @@ import static ProjectPlugin.LICENSE_FILE_NAMES
 import static org.gradle.language.base.plugins.LifecycleBasePlugin.VERIFICATION_GROUP
 import static org.jfrog.gradle.plugin.artifactory.task.ArtifactoryTask.ARTIFACTORY_PUBLISH_TASK_NAME
 import static org.gradle.initialization.IGradlePropertiesLoader.ENV_PROJECT_PROPERTIES_PREFIX
+import groovy.transform.Internal
 import com.google.common.collect.ImmutableList
 import java.nio.file.InvalidPathException
 import org.gradle.api.NamedDomainObjectProvider
@@ -151,6 +152,19 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
     }
   }
 
+  /*
+   * WORKAROUND:
+   * Static fields annotated with @PackageScope are not accessible
+   * for inner classes (incl. closures)
+   * https://issues.apache.org/jira/browse/GROOVY-9043
+   * <grv87 2019-03-19>
+   */
+  @Internal
+  static final String JUNIT_GROUP = 'junit'
+
+  @Internal
+  static final String JUNIT_MODULE = 'junit'
+
   /**
    * Adds JUnit dependency to specified source set configuration
    * @param sourceSet source set
@@ -158,8 +172,8 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
   void addJUnitDependency(NamedDomainObjectProvider<SourceSet> sourceSetProvider) {
     sourceSetProvider.configure { SourceSet sourceSet ->
       project.dependencies.add(sourceSet.implementationConfigurationName, [
-        group: 'junit',
-        name: 'junit',
+        group: JUNIT_GROUP,
+        name: JUNIT_MODULE,
         version: '[4, 5['
       ])
     }
@@ -193,6 +207,19 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
       "codenarc${ sourceSetProvider.name.capitalize() }"
     }
   }
+
+  /*
+   * WORKAROUND:
+   * Static fields annotated with @PackageScope are not accessible
+   * for inner classes (incl. closures)
+   * https://issues.apache.org/jira/browse/GROOVY-9043
+   * <grv87 2019-03-19>
+   */
+  @Internal
+  static final String SPOCK_GROUP = 'org.spockframework'
+
+  @Internal
+  static final String SPOCK_MODULE = 'spock-core'
 
   private static final List<String> SPOCK_GROOVY_MODULES = ImmutableList.of(
     'groovy-all',
@@ -228,8 +255,8 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
     sourceSetProvider.configure { SourceSet sourceSet ->
       project.dependencies.with {
         add(sourceSet.implementationConfigurationName, [
-          group: 'org.spockframework',
-          name: 'spock-core',
+          group: SPOCK_GROUP,
+          name: SPOCK_MODULE,
           version: "1.3-groovy-${ (GroovySystem.version =~ /^\d+\.\d+/)[0] }"
         ]) { ModuleDependency dependency ->
           SPOCK_GROOVY_MODULES.each { String spockGroovyModule ->

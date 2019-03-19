@@ -23,7 +23,14 @@ import static org.ajoberstar.gradle.git.release.base.BaseReleasePlugin.RELEASE_T
 import static ProjectPlugin.ARTIFACTORY_URL
 import static JVMBasePlugin.FUNCTIONAL_TEST_SOURCE_SET_NAME
 import static JVMBasePlugin.FUNCTIONAL_TEST_TASK_NAME
+import static JVMBasePlugin.JUNIT_GROUP
+import static JVMBasePlugin.JUNIT_MODULE
+import static JVMBasePlugin.SPOCK_GROUP
+import static JVMBasePlugin.SPOCK_MODULE
 import static org.gradle.internal.FileUtils.toSafeFileName
+import org.gradle.api.NamedDomainObjectProvider
+import org.gradle.api.artifacts.Dependency
+import org.gradle.api.artifacts.ExternalModuleDependency
 import com.gradle.publish.PublishTask
 import org.fidata.gradle.utils.PathDirector
 import java.nio.file.InvalidPathException
@@ -162,7 +169,20 @@ final class GradlePluginPlugin extends AbstractProjectPlugin implements Property
     SourceSetContainer sourceSets = project.convention.getPlugin(JavaPluginConvention).sourceSets
 
     project.afterEvaluate {
-      project.plugins.getPlugin(JVMBasePlugin).addSpockDependency sourceSets.named(TestSet.baseName(/* WORKAROUND: org.ysb33r.gradle.gradletest.Names.DEFAULT_TASK has package scope <> */ 'gradleTest'))
+      NamedDomainObjectProvider<SourceSet> gradleTestSourceSetProvider = sourceSets.named(TestSet.baseName(/* WORKAROUND: org.ysb33r.gradle.gradletest.Names.DEFAULT_TASK has package scope <> */ 'gradleTest'))
+      gradleTestSourceSetProvider.configure { SourceSet gradleTestSourceSet ->
+        // Clean up default dependencies provided by gradleTest
+        project.configurations[gradleTestSourceSet.compileConfigurationName].dependencies.removeAll { Dependency dependency ->
+          ExternalModuleDependency.isInstance(dependency) && (
+            dependency.group == JUNIT_GROUP && dependency.name == JUNIT_MODULE ||
+            dependency.group == SPOCK_GROUP && dependency.name == SPOCK_MODULE ||
+          dependency.group == 'org.hamcrest' && dependency.name == 'hamcrest-core'
+          )
+        }
+        null
+      }
+      project.plugins.getPlugin(JVMBasePlugin).addJUnitDependency gradleTestSourceSetProvider
+      project.plugins.getPlugin(JVMBasePlugin).addSpockDependency gradleTestSourceSetProvider
     }
 
     project.plugins.getPlugin(JVMBasePlugin).addSpockDependency(
