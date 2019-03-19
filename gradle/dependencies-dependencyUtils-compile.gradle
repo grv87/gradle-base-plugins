@@ -19,5 +19,5 @@
  */
 dependencies {
   implementation(group: 'com.github.zafarkhaja', name: 'java-semver', version: '[0, 1[')
-  implementation(group: 'com.google.guava', name: 'guava', version: '26.0-jre')
+  implementation(group: 'com.google.guava', name: 'guava', version: '27.1-jre')
 }

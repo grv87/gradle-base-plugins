@@ -39,7 +39,7 @@ final class ProjectPluginDependees {
       version: '[1.1.2, 2[',
     ),
     'nebula.contacts': new PluginDependee(
-      version: '[4, 5[',
+      version: '[4, 6[',
       enabledForBuildSrc: false,
     ),
     'com.github.ben-manes.versions': new PluginDependee(

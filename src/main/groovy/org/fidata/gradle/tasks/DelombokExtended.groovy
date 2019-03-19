@@ -48,12 +48,6 @@ import org.gradle.api.tasks.SourceSet
 @CompileStatic
 class DelombokExtended extends DelombokTask {
   @Override
-  @Input
-  String getMainClass() {
-    super.mainClass
-  }
-
-  @Override
   @Internal
   // We don't actually use this and get compile classpath from sourceSet instead
   String getCompileConfigurationName() {
