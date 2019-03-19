@@ -93,6 +93,8 @@ class VersionUtilsTest {
       ['1.0-dev'              , true],
       ['1.0.0-release'        , false],
       ['1.0-release'          , false],
+      // Android
+      ['HONEYCOMB_MR1'        , false],
     ]*.toArray().toArray()
   }
 }

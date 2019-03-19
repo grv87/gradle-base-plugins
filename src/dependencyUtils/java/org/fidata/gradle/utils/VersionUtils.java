@@ -54,6 +54,7 @@ public final class VersionUtils {
           return
             label.startsWith("GA") ||
             label.startsWith("RELEASE") ||
+            label.startsWith("MR") ||
             label.startsWith("SP") ||
             label.startsWith("SR") ||
             label.startsWith("FINAL") ||
