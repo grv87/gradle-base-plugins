@@ -93,7 +93,7 @@ final class GpgUtils {
    */
   @SuppressWarnings('DuplicateNumberLiteral')
   static final String getKeyGrip(Project project, String keyId) throws InvalidKeyException {
-    String canonicalKeyId = keyId.toUpperCase()
+    String canonicalKeyId = keyId.toUpperCase(Locale.ROOT)
     new ByteArrayOutputStream().withStream { os ->
       project.exec { ExecSpec execSpec ->
         execSpec.commandLine 'gpg', '--list-keys', '--with-colons', '--with-keygrip', keyId
