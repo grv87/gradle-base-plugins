@@ -22,6 +22,7 @@ package org.fidata.gradle.tasks.config.codenarc
 ruleset {
   ruleset('rulesets/basic.xml')
   ruleset('rulesets/braces.xml')
+  ruleset('rulesets/comments.xml')
   ruleset('rulesets/concurrency.xml')
   ruleset('rulesets/convention.xml') {
     PublicMethodsBeforeNonPublicMethods(enabled: false)
@@ -39,6 +40,8 @@ ruleset {
   }
   ruleset('rulesets/exceptions.xml')
   ruleset('rulesets/formatting.xml') {
+    ClassStartsWithBlankLine(blankLineRequired: false)
+    ClassEndsWithBlankLine(blankLineRequired: false)
     Indentation(spacesPerIndentLevel: 2)
     LineLength(enabled: false)
     SpaceAroundMapEntryColon(enabled: false)
