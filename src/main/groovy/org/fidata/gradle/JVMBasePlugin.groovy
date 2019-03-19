@@ -30,6 +30,7 @@ import static ProjectPlugin.LICENSE_FILE_NAMES
 import static org.gradle.language.base.plugins.LifecycleBasePlugin.VERIFICATION_GROUP
 import static org.jfrog.gradle.plugin.artifactory.task.ArtifactoryTask.ARTIFACTORY_PUBLISH_TASK_NAME
 import static org.gradle.initialization.IGradlePropertiesLoader.ENV_PROJECT_PROPERTIES_PREFIX
+import com.google.common.collect.ImmutableList
 import java.nio.file.InvalidPathException
 import org.gradle.api.NamedDomainObjectProvider
 import org.gradle.external.javadoc.StandardJavadocDocletOptions
@@ -193,6 +194,18 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
     }
   }
 
+  private static final List<String> SPOCK_GROOVY_MODULES = ImmutableList.of(
+    'groovy-all',
+    'groovy-json',
+    'groovy-macro',
+    'groovy-nio',
+    'groovy-sql',
+    'groovy-templates',
+    'groovy-test',
+    'groovy-xml',
+    'groovy',
+  )
+
   /**
    * Adds Spock to specified source set and tasks
    * @param sourceSet source set
@@ -219,10 +232,12 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
           name: 'spock-core',
           version: "1.3-groovy-${ (GroovySystem.version =~ /^\d+\.\d+/)[0] }"
         ]) { ModuleDependency dependency ->
-          dependency.exclude(
-            group: 'org.codehaus.groovy',
-            module: 'groovy-all'
-          )
+          SPOCK_GROOVY_MODULES.each { String spockGroovyModule ->
+            dependency.exclude(
+              group: 'org.codehaus.groovy',
+              module: spockGroovyModule
+            )
+          }
         }
         add(sourceSet.runtimeOnlyConfigurationName, [
           group: 'com.athaydes',

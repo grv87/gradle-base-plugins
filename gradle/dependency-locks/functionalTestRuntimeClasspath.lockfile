@@ -130,14 +130,6 @@ org.apache.xmlbeans:xmlbeans:2.6.0
 org.aspectj:aspectjrt:1.8.7
 org.checkerframework:checker-qual:2.5.2
 org.codehaus.groovy.modules.http-builder:http-builder:0.7.2
-org.codehaus.groovy:groovy-json:2.5.4
-org.codehaus.groovy:groovy-macro:2.5.4
-org.codehaus.groovy:groovy-nio:2.5.4
-org.codehaus.groovy:groovy-sql:2.5.4
-org.codehaus.groovy:groovy-templates:2.5.4
-org.codehaus.groovy:groovy-test:2.5.4
-org.codehaus.groovy:groovy-xml:2.5.4
-org.codehaus.groovy:groovy:2.5.4
 org.codehaus.mojo:animal-sniffer-annotations:1.17
 org.codehaus.plexus:plexus-classworlds:2.5.1
 org.codehaus.plexus:plexus-container-default:1.7.1
