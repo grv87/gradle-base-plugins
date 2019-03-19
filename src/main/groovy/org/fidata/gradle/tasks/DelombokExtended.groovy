@@ -139,7 +139,7 @@ class DelombokExtended extends DelombokTask {
    * Output directory
    */
   @OutputDirectory
-  final DirectoryProperty outputDir = newOutputDirectory()
+  final DirectoryProperty outputDir = project.objects.directoryProperty()
 
   @Override
   void exec() {
