@@ -554,7 +554,10 @@ final class ProjectPlugin extends AbstractProjectPlugin {
     addCodeQualityCommonTask 'PMD', PMD_TASK_NAME, Pmd
 
     project.extensions.configure(CodeNarcExtension) { CodeNarcExtension extension ->
-      extension.reportFormat = 'console'
+      extension.with {
+        toolVersion = '[1.3, 2['
+        reportFormat = 'console'
+      }
     }
 
     project.dependencies.add(/* WORKAROUND: CodeNarcPlugin.getConfigurationName has protected scope <grv87 2018-08-23> */ 'codenarc', [
