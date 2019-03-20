@@ -22,7 +22,7 @@
 @Library('jenkins-pipeline-shared-library@develop') dummy
 
 defaultJVMPipeline(
-  publicReleases: false,
+  publicReleases: Boolean.FALSE,
   timeouts: [
     Test: 10,
   ],
@@ -30,11 +30,11 @@ defaultJVMPipeline(
     'test',
     'functionalTest',
   ].toSet(),
-  compatTest: true,
+  compatTest: Boolean.TRUE,
   customCodenarcReports: [
     'exceptions',
     'mainResources',
     'testFixtures',
   ].toSet(),
-  gradlePlugin: true
+  gradlePlugin: Boolean.TRUE
 )

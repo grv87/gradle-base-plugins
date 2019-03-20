@@ -25,26 +25,26 @@ ruleset {
   ruleset('rulesets/comments.xml')
   ruleset('rulesets/concurrency.xml')
   ruleset('rulesets/convention.xml') {
-    PublicMethodsBeforeNonPublicMethods(enabled: false)
-    StaticFieldsBeforeInstanceFields(enabled: false)
-    StaticMethodsBeforeInstanceMethods(enabled: false)
-    TrailingComma(enabled: false)
+    PublicMethodsBeforeNonPublicMethods(enabled: Boolean.FALSE)
+    StaticFieldsBeforeInstanceFields(enabled: Boolean.FALSE)
+    StaticMethodsBeforeInstanceMethods(enabled: Boolean.FALSE)
+    TrailingComma(enabled: Boolean.FALSE)
   }
   ruleset('rulesets/design.xml') {
-    NestedForLoop(enabled: false)
+    NestedForLoop(enabled: Boolean.FALSE)
   }
   ruleset('rulesets/dry.xml') {
-    DuplicateListLiteral(enabled: false)
-    DuplicateMapLiteral(enabled: false)
-    DuplicateStringLiteral(enabled: false)
+    DuplicateListLiteral(enabled: Boolean.FALSE)
+    DuplicateMapLiteral(enabled: Boolean.FALSE)
+    DuplicateStringLiteral(enabled: Boolean.FALSE)
   }
   ruleset('rulesets/exceptions.xml')
   ruleset('rulesets/formatting.xml') {
-    ClassStartsWithBlankLine(blankLineRequired: false)
-    ClassEndsWithBlankLine(blankLineRequired: false)
+    ClassStartsWithBlankLine(blankLineRequired: Boolean.FALSE)
+    ClassEndsWithBlankLine(blankLineRequired: Boolean.FALSE)
     Indentation(spacesPerIndentLevel: 2)
     LineLength(enabled: false)
-    SpaceAroundMapEntryColon(enabled: false)
+    SpaceAroundMapEntryColon(enabled: Boolean.FALSE)
   }
   ruleset('rulesets/generic.xml')
   ruleset('rulesets/grails.xml')
@@ -55,7 +55,7 @@ ruleset {
   ruleset('rulesets/logging.xml')
   ruleset('rulesets/naming.xml')
   ruleset('rulesets/security.xml') {
-    JavaIoPackageAccess(enabled: false)
+    JavaIoPackageAccess(enabled: Boolean.FALSE)
   }
   ruleset('rulesets/serialization.xml')
   ruleset('rulesets/unnecessary.xml')
