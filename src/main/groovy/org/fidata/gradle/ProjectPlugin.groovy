@@ -323,7 +323,7 @@ final class ProjectPlugin extends AbstractProjectPlugin {
     project.convention.getPlugin(ArtifactoryPluginConvention).with {
       contextUrl = ARTIFACTORY_URL
       clientConfig.with {
-        includeEnvVars = true
+        includeEnvVars = Boolean.TRUE
         envVarsExcludePatterns = BUILD_INFO_ENV_VARS_EXCLUDE_PATTERS.join(',')
       }
     }

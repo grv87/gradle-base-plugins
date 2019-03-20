@@ -179,30 +179,30 @@ class ProjectPluginSpecification extends Specification {
 
     where:
     filename                                   | include
-    'build.gradle'                             | true
-    'settings.gradle'                          | true
-    'some-script.gradle'                       | true
-    'gradle.properties'                        | false
-    'gradle/file1.gradle'                      | true
-    'gradle/file2.txt'                         | false
-    'gradle/file3.groovy'                      | true
-    'build/file1.gradle'                       | false
-    'build/file1.groovy'                       | false
-    'buildSrc/build.gradle'                    | true
-    'buildSrc/settings.gradle'                 | true
-    'buildSrc/gradle/file4.gradle'             | true
-    'buildSrc/build/file5.gradle'              | false
-    'buildSrc/src/file6.groovy'                | true
-    'buildSrc/buildSrc/build.gradle'           | true
-    'buildSrc/buildSrc/settings.gradle'        | true
-    'buildSrc/buildSrc/src/file7.groovy'       | true
-    'buildSrc/buildSrc/build/file8.gradle'     | false
-    'buildSrc/buildSrc/src/build/file9.groovy' | true
-    'config/dir1/file10.groovy'                | true
-    'src/test.groovy'                          | false
-    'src/resources/test.groovy'                | false
-    'src/resources/test.gradle'                | false
-    'Jenkinsfile'                              | true
+    'build.gradle'                             | Boolean.TRUE
+    'settings.gradle'                          | Boolean.TRUE
+    'some-script.gradle'                       | Boolean.TRUE
+    'gradle.properties'                        | Boolean.FALSE
+    'gradle/file1.gradle'                      | Boolean.TRUE
+    'gradle/file2.txt'                         | Boolean.FALSE
+    'gradle/file3.groovy'                      | Boolean.TRUE
+    'build/file1.gradle'                       | Boolean.FALSE
+    'build/file1.groovy'                       | Boolean.FALSE
+    'buildSrc/build.gradle'                    | Boolean.TRUE
+    'buildSrc/settings.gradle'                 | Boolean.TRUE
+    'buildSrc/gradle/file4.gradle'             | Boolean.TRUE
+    'buildSrc/build/file5.gradle'              | Boolean.FALSE
+    'buildSrc/src/file6.groovy'                | Boolean.TRUE
+    'buildSrc/buildSrc/build.gradle'           | Boolean.TRUE
+    'buildSrc/buildSrc/settings.gradle'        | Boolean.TRUE
+    'buildSrc/buildSrc/src/file7.groovy'       | Boolean.TRUE
+    'buildSrc/buildSrc/build/file8.gradle'     | Boolean.FALSE
+    'buildSrc/buildSrc/src/build/file9.groovy' | Boolean.TRUE
+    'config/dir1/file10.groovy'                | Boolean.TRUE
+    'src/test.groovy'                          | Boolean.FALSE
+    'src/resources/test.groovy'                | Boolean.FALSE
+    'src/resources/test.gradle'                | Boolean.FALSE
+    'Jenkinsfile'                              | Boolean.TRUE
     testDescription = include ? 'Adds' : 'Doesn\'t add'
   }
 
