@@ -26,11 +26,16 @@ import com.google.common.base.Splitter;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Predicate;
 import java.util.Locale;
+import java.util.regex.Pattern;
 
 /**
  * Utilities to work with version strings and objects
  */
 public final class VersionUtils {
+  /**
+   * Suffix for snapshot version
+   */
+  public static final Pattern SNAPSHOT_SUFFIX = Pattern.compile("-SNAPSHOT\\z");
 
   /**
    * Checks whether specified version is actually a pre-release version
