@@ -18,6 +18,7 @@
  */
 package org.fidata.gradle;
 
+import static org.fidata.gradle.utils.VersionUtils.SNAPSHOT_SUFFIX;
 import com.github.zafarkhaja.semver.Version;
 import de.gliderpilot.gradle.semanticrelease.SemanticReleaseChangeLogService;
 import de.gliderpilot.gradle.semanticrelease.SemanticReleasePluginExtension;
@@ -118,7 +119,7 @@ public class RootProjectConvention extends AbstractExtension {
       isRelease = project.provider(new Callable<Boolean>() {
         @Override
         public Boolean call() {
-          return !project.getVersion().toString().endsWith("-SNAPSHOT");
+          return !SNAPSHOT_SUFFIX.matcher(project.getVersion().toString()).find();
         }
       });
 

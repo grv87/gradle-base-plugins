@@ -30,6 +30,7 @@ import static org.fidata.gradle.utils.VersionUtils.isPreReleaseVersion
 import static org.gradle.language.base.plugins.LifecycleBasePlugin.VERIFICATION_GROUP
 import static com.dorongold.gradle.tasktree.TaskTreePlugin.TASK_TREE_TASK_NAME
 import static org.fidata.gpg.GpgUtils.getGpgHome
+import static org.fidata.gradle.utils.VersionUtils.SNAPSHOT_SUFFIX
 import com.google.common.collect.ImmutableSet
 import com.github.zafarkhaja.semver.ParseException
 import java.nio.file.InvalidPathException
@@ -93,7 +94,6 @@ import de.gliderpilot.gradle.semanticrelease.UpdateGithubRelease
 import org.jfrog.gradle.plugin.artifactory.dsl.ArtifactoryPluginConvention
 import com.dorongold.gradle.tasktree.TaskTreeTask
 import java.util.regex.Matcher
-import java.util.regex.Pattern
 import com.github.zafarkhaja.semver.Version
 import org.gradle.api.tasks.TaskProvider
 
@@ -389,13 +389,12 @@ final class ProjectPlugin extends AbstractProjectPlugin {
            * SNAPSHOT documentation for other branches should be removed manually
            */
           preserve.exclude { FileTreeElement fileTreeElement ->
-            Pattern snapshotSuffix = ~/-SNAPSHOT$/
-            Matcher m = snapshotSuffix.matcher(fileTreeElement.relativePath.segments[0])
+            Matcher m = SNAPSHOT_SUFFIX.matcher(fileTreeElement.relativePath.segments[0])
             if (!m) {
               return false
             }
             String dirVersion = m.replaceFirst('')
-            String projectVersion = project.version.toString() - snapshotSuffix
+            String projectVersion = project.version.toString() - SNAPSHOT_SUFFIX
             try {
               return Version.valueOf(dirVersion).preReleaseVersion == Version.valueOf(projectVersion).preReleaseVersion
             } catch (IllegalArgumentException | ParseException e) {
