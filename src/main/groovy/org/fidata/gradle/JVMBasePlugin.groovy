@@ -524,6 +524,9 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
           }
         }
       }
+      if (!project.rootProject.convention.getPlugin(RootProjectConvention).isRelease.get()) {
+        ((StandardJavadocDocletOptions)javadoc.options).noTimestamp = true
+      }
     }
   }
 

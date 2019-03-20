@@ -76,6 +76,12 @@ final class GroovyBasePlugin extends AbstractProjectPlugin {
           groovydoc.link value.toString(), "$key."
         }
       }
+      if (!project.rootProject.convention.getPlugin(RootProjectConvention).isRelease.get()) {
+        groovydoc.with {
+          noTimestamp = true
+          noVersionStamp = true
+        }
+      }
     }
   }
 }
