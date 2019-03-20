@@ -30,7 +30,7 @@ import static org.fidata.gradle.utils.VersionUtils.isPreReleaseVersion
 import static org.gradle.language.base.plugins.LifecycleBasePlugin.VERIFICATION_GROUP
 import static com.dorongold.gradle.tasktree.TaskTreePlugin.TASK_TREE_TASK_NAME
 import static org.fidata.gpg.GpgUtils.getGpgHome
-import com.google.common.collect.ImmutableList
+import com.google.common.collect.ImmutableSet
 import com.github.zafarkhaja.semver.ParseException
 import java.nio.file.InvalidPathException
 import org.gradle.api.plugins.quality.Pmd
@@ -123,7 +123,7 @@ final class ProjectPlugin extends AbstractProjectPlugin {
   /**
    * List of filenames considered as license files
    */
-  public static final List<String> LICENSE_FILE_NAMES = ImmutableList.of(
+  public static final Set<String> LICENSE_FILE_NAMES = ImmutableSet.of(
     // License file names recognized by JFrog Artifactory
     'license',
     'LICENSE',
@@ -306,7 +306,7 @@ final class ProjectPlugin extends AbstractProjectPlugin {
    * Move these filters into separate library
    * <grv87 2018-09-22>
    */
-  public static final List<String> BUILD_INFO_ENV_VARS_EXCLUDE_PATTERS = ImmutableList.of(
+  public static final Set<String> BUILD_INFO_ENV_VARS_EXCLUDE_PATTERS = ImmutableSet.of(
     '*Password',
     '*Passphrase',
     '*SecretKey',

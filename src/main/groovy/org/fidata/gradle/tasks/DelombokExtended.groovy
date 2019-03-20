@@ -128,8 +128,8 @@ class DelombokExtended extends DelombokTask {
    */
   @Nested
   @SkipWhenEmpty
-  final Provider<List<InputDirectoryWrapper>> inputDirectories = project.providers.provider {
-    (List<InputDirectoryWrapper>)sourceSets.get().collectMany { Object sourceSet -> ((SourceSet)sourceSet).java.sourceDirectories.collect { File dir -> new InputDirectoryWrapper(dir) } }
+  final Provider<Set<InputDirectoryWrapper>> inputDirectories = project.providers.provider {
+    (Set<InputDirectoryWrapper>)sourceSets.get().collectMany { Object sourceSet -> ((SourceSet)sourceSet).java.sourceDirectories.collect { File dir -> new InputDirectoryWrapper(dir) } }.toSet()
   }
 
   /**

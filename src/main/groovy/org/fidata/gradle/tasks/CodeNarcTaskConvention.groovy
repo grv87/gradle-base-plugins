@@ -40,7 +40,7 @@ class CodeNarcTaskConvention extends AbstractExtension {
   /**
    * List of disabled rules
    */
-  List<String> disabledRules = []
+  Set<String> disabledRules = []
 
   CodeNarcTaskConvention(CodeNarc task) {
     super

@@ -53,7 +53,7 @@ final class PluginDependee {
   /**
    * List of exclusions
    */
-  List<PluginDependeeExclusion> excludes = null
+  Set<PluginDependeeExclusion> excludes = null
   /**
    * Whether this dependee is enabled during default applicating.
    * True by default

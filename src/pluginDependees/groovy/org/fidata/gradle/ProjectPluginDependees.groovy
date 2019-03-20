@@ -54,7 +54,7 @@ final class ProjectPluginDependees {
           group: 'org.codehaus.groovy',
           module: 'groovy-all'
         ),
-      ],
+      ].toSet(),
       enabledForBuildSrc: false,
     ),
     'org.gradle.signing': new PluginDependee(
