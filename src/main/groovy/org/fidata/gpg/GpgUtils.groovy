@@ -103,7 +103,7 @@ final class GpgUtils {
       List<String> lines = output.readLines()
       // See description of format at https://git.gnupg.org/cgi-bin/gitweb.cgi?p=gnupg.git;a=blob_plain;f=doc/DETAILS
       int i = 0
-      boolean found
+      boolean found = false
       // look for a key
       while (i < lines.size()) {
         String[] fields = lines[i].split(':')
