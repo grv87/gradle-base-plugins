@@ -54,9 +54,6 @@ class GroovyProjectPluginSpecification extends Specification {
   // run before every feature method
   void setup() {
     initEmptyGitRepository(testProjectDir.root)
-    testProjectDir.newFile('settings.gradle') << '''\
-      enableFeaturePreview('STABLE_PUBLISHING')
-    '''.stripIndent()
     project = ProjectBuilder.builder().withProjectDir(testProjectDir.root).build()
     EXTRA_PROPERTIES.each { String key, String value ->
       project.ext.setProperty key, value

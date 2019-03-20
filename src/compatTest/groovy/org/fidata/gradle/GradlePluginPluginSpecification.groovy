@@ -37,7 +37,6 @@ class GradlePluginPluginSpecification extends Specification {
   final File testProjectDir = File.createTempDir('compatTest', '-project')
 
   File buildFile = new File(testProjectDir, 'build.gradle')
-  File settingsFile = new File(testProjectDir, 'settings.gradle')
   File propertiesFile = new File(testProjectDir, 'gradle.properties')
 
   static final Map<String, String> EXTRA_PROPERTIES = ImmutableMap.copyOf([
@@ -64,10 +63,6 @@ class GradlePluginPluginSpecification extends Specification {
       }
     '''.stripIndent()
 
-    settingsFile << '''\
-      enableFeaturePreview('STABLE_PUBLISHING')
-    '''.stripIndent()
-
     propertiesFile.withPrintWriter { PrintWriter printWriter ->
       EXTRA_PROPERTIES.each { String key, String value ->
         printWriter.println "$key=$value"
@@ -92,15 +87,6 @@ class GradlePluginPluginSpecification extends Specification {
   // void cleanupSpec() { }
 
   // feature methods
-  /*
-   * WORKAROUND:
-   * This can't be tested in functional tests
-   * since `org.fidata.plugin` requires `enableFeaturePreview('STABLE_PUBLISHING')` in `settings.gradle`.
-   * Without that we got error:
-   * `org.gradle.api.InvalidUserDataException: Cannot configure the 'publishing' extension after it has been accessed.`
-   * Looks like ProjectBuilder doesn't support `settings.gradle`.
-   * <grv87 2018-07-01>
-   */
   void 'sets project group by default'() {
     given: 'task to print project group'
     buildFile << '''\
