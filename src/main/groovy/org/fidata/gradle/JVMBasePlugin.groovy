@@ -31,7 +31,7 @@ import static org.gradle.language.base.plugins.LifecycleBasePlugin.VERIFICATION_
 import static org.jfrog.gradle.plugin.artifactory.task.ArtifactoryTask.ARTIFACTORY_PUBLISH_TASK_NAME
 import static org.gradle.initialization.IGradlePropertiesLoader.ENV_PROJECT_PROPERTIES_PREFIX
 import groovy.transform.Internal
-import com.google.common.collect.ImmutableList
+import com.google.common.collect.ImmutableSet
 import java.nio.file.InvalidPathException
 import org.gradle.api.NamedDomainObjectProvider
 import org.gradle.external.javadoc.StandardJavadocDocletOptions
@@ -221,7 +221,7 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
   @Internal
   static final String SPOCK_MODULE = 'spock-core'
 
-  private static final List<String> SPOCK_GROOVY_MODULES = ImmutableList.of(
+  private static final Set<String> SPOCK_GROOVY_MODULES = ImmutableSet.of(
     'groovy-all',
     'groovy-json',
     'groovy-macro',

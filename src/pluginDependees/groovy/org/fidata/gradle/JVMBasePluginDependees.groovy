@@ -51,7 +51,7 @@ final class JVMBasePluginDependees {
           group: 'org.codehaus.plexus',
           module: 'plexus-container-default'
         )
-      ],
+      ].toSet(),
       enabled: false,
     ),
   ])
