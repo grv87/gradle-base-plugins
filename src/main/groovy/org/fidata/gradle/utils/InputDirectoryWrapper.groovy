@@ -48,6 +48,6 @@ class InputDirectoryWrapper {
    * @param value Actual {@link File} instance
    */
   InputDirectoryWrapper(File value) {
-    this.value = value
+    this.@value = value
   }
 }
