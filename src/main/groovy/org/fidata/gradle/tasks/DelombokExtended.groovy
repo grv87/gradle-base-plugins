@@ -28,14 +28,12 @@ import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.CacheableTask
+import org.gradle.api.tasks.Classpath
 import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputDirectory
-import org.gradle.api.tasks.PathSensitive
-import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.SkipWhenEmpty
 import org.gradle.api.tasks.SourceSet
 
@@ -117,8 +115,7 @@ class DelombokExtended extends DelombokTask {
     this.sourceSets
   }
 
-  @InputFiles
-  @PathSensitive(PathSensitivity.NONE)
+  @Classpath
   final FileCollection sourceSetsClasspath = project.files {
     sourceSets.get().collect { Object sourceSet -> ((SourceSet)sourceSet).compileClasspath }
   }
@@ -148,6 +145,12 @@ class DelombokExtended extends DelombokTask {
     if (encoding) {
       args '--encoding', encoding
     }
+    /*
+     * CAVEAT:
+     * We still need to set classpath
+     * even if @Classpath annotation was used
+     * <grv87 2018-03-24>
+     */
     classpath sourceSetsClasspath
     inputDirectories.get().each { InputDirectoryWrapper dir ->
       args dir.value, '--target', outputDir.get()
