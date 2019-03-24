@@ -149,7 +149,7 @@ public class RootProjectConvention extends AbstractExtension {
         }
       });
       issuesUrl = project.getObjects().property(String.class);
-      issuesUrl.set(vcsUrl + "/issues");
+      issuesUrl.convention(vcsUrl + "/issues");
     } else {
       isRelease = null;
 
