@@ -76,13 +76,13 @@ class ProjectPluginExtraPropertiesSpecification extends Specification {
       project.ext.setProperty key, value
     }
 
-    when: 'plugin is applied'
+    when: 'plugin is being applied'
     project.apply plugin: 'org.fidata.project'
 
     then: 'no exception is thrown'
     noExceptionThrown()
 
-    when: 'project evaluated'
+    when: 'project is being evaluated'
     project.evaluate()
 
     then: 'no exception is thrown'
@@ -98,7 +98,7 @@ class ProjectPluginExtraPropertiesSpecification extends Specification {
 
     when: 'plugin is applied'
     project.apply plugin: 'org.fidata.project'
-    and: 'project evaluated'
+    and: 'project is being evaluated'
     project.evaluate()
 
     then: 'PluginApplicationException is thrown'

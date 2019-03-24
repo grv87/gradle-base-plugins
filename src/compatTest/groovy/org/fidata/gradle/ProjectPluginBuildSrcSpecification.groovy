@@ -104,7 +104,7 @@ class ProjectPluginBuildSrcSpecification extends Specification {
   void 'can be applied to buildSrc project'() {
     given: 'buildSrc does\'t have its own gradle.properties'
 
-    when: 'Gradle task is run for main project'
+    when: 'Gradle task is being run for main project'
     GradleRunner.create()
       .withGradleVersion(System.getProperty('compat.gradle.version'))
       .withProjectDir(testProjectDir)
