@@ -75,21 +75,31 @@ class DelombokExtended extends DelombokTask {
    * @throws IllegalArgumentException When argument of unsupported type is passed
    */
   ListProperty<? extends SourceSet> sourceSet(Object sourceSet) {
+    /*
+     * TODO:
+     * Maybe we should check for CharSequence instead of String,
+     * to support GString too ?
+     * <grv87 2019-03-24>
+     */
     if (Provider.isInstance(sourceSet)) {
-      /*
-       * TODO:
-       * We suppose it is Provider<? extends SourceSet>.
-       * It it provides something else (e.g. String or Iterable), extra work is required.
-       * We have to find a way to determine actual type
-       */
-      sourceSets.add((Provider)sourceSet)
+      sourceSets.add project.providers.provider { ->
+        Object value = ((Provider)sourceSet).get()
+        if (SourceSet.isInstance(value)) {
+          return (SourceSet)value
+        }
+        else if (String.isInstance(sourceSet)) {
+          return project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName((String)sourceSet)
+        } else {
+          throw new IllegalArgumentException(sprintf('Unsupported argument type: %s', sourceSet.class))
+        }
+      }
     } else if (SourceSet.isInstance(sourceSet)) {
       sourceSets.add((SourceSet)sourceSet)
     }
     else if (String.isInstance(sourceSet)) {
       sourceSets.add project.convention.getPlugin(JavaPluginConvention).sourceSets.named((String)sourceSet)
     } else {
-      throw new IllegalArgumentException(sprintf('Unsupported argument type: %s', sourceSet))
+      throw new IllegalArgumentException(sprintf('Unsupported argument type: %s', sourceSet.class))
     }
     sourceSets
   }
