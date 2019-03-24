@@ -138,7 +138,7 @@ final class ProjectPlugin extends AbstractProjectPlugin {
   /**
    * Minimum supported version of Gradle
    */
-  public static final String GRADLE_MINIMUM_SUPPORTED_VERSION = '5.0'
+  public static final String GRADLE_MINIMUM_SUPPORTED_VERSION = '5.1'
 
   @PackageScope
   String defaultProjectGroup = 'org.fidata'

@@ -141,7 +141,7 @@ public class ProjectConvention extends AbstractExtension {
 
     if (!isBuildSrc) {
       websiteUrl = project.getObjects().property(String.class);
-      websiteUrl.set(project.provider(new Callable<String>() {
+      websiteUrl.convention(project.provider(new Callable<String>() {
         @Override
         public String call() {
           return "https://github.com/FIDATA/" + project.getRootProject().getName();
