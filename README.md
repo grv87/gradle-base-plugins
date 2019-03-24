@@ -9,7 +9,7 @@ for all our projects.
 These plugins are highly opinionated and for internal use only.
 They are not to be published to Maven Central or Gradle Plugins portal.
 However, you are free to fork, modify or use it as an example
-according to [Apache v2.0 license](LICENSE.txt).
+according to [LGPL v3.0+ license](COPYING.LESSER).
 
 If you are contributing to other FIDATA plugins the best choice is
 to join [FIDATA organization](https://github.com/FIDATA)
