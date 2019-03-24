@@ -95,8 +95,6 @@ public class RootProjectConvention extends AbstractExtension {
   public final Provider<String> vcsUrl;
 
   public RootProjectConvention(final Project project) {
-    super();
-
     if (project != project.getRootProject()) {
       throw new InvalidOperationException("RootProjectConvention can only be added to root project");
     }
