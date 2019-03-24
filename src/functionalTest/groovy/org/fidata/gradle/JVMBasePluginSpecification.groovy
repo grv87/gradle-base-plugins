@@ -72,34 +72,28 @@ class JVMBasePluginSpecification extends Specification {
   // feature methods
 
   void 'adds functionalTest task'() {
-    when:
-    'plugin is applied'
+    when: 'plugin is applied'
     project.apply plugin: 'org.fidata.base.jvm'
 
-    then:
-    'functionalTest task exists'
+    then: 'functionalTest task exists'
     Task functionalTest = project.tasks.getByName('functionalTest')
 
-    when: 'project evaluated'
+    when: 'project is evaluated'
     project.evaluate()
 
-    then:
-    'functionalTest should be run after test task'
+    then: 'functionalTest should be run after test task'
     functionalTest.shouldRunAfter.getDependencies(functionalTest).contains(project.tasks.getByName('test'))
   }
 
   void 'provides mavenJava publication'() {
-    when:
-    'plugin is applied'
+    when: 'plugin is applied'
     project.apply plugin: 'org.fidata.base.jvm'
     and: 'project evaluated'
     project.evaluate()
 
-    then:
-    'mavenJava publication exists'
+    then: 'mavenJava publication exists'
     project.publishing.publications.getByName('mavenJava')
-    and:
-    'mavenJava task exists'
+    and: 'mavenJava task exists'
     project.tasks.getByName(taskName)
 
     where:

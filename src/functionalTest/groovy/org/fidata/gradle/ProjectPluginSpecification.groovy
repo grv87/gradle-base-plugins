@@ -169,7 +169,7 @@ class ProjectPluginSpecification extends Specification {
     when: 'plugin is applied'
     project.apply plugin: 'org.fidata.project'
 
-    then:
+    then: 'codenarcBuildSrc task source #thenDescription #filename'
     project.tasks.getByName('codenarcBuildSrc').source.files.contains(file) == include
 
     where:
@@ -199,6 +199,7 @@ class ProjectPluginSpecification extends Specification {
     'src/resources/test.gradle'                | Boolean.FALSE
     'Jenkinsfile'                              | Boolean.TRUE
     testDescription = include ? 'Adds' : 'Doesn\'t add'
+    thenDescription = include ? 'contains' : 'doesn\'t contain'
   }
 
   void 'provides reportsDir read-only properties'() {
@@ -210,7 +211,7 @@ class ProjectPluginSpecification extends Specification {
     and: 'property value is an instance of File'
     File.isInstance(propertyValue)
 
-    when: 'property is tried to be set'
+    when: 'property is being set'
     project.setProperty(property, project.file('dummyFile'))
 
     then: 'GroovyRuntimeException is thrown'
@@ -264,28 +265,28 @@ class ProjectPluginSpecification extends Specification {
     given: 'plugin is applied'
     project.apply plugin: 'org.fidata.project'
 
-    when: 'license property set with valid SPDX license identifier'
+    when: 'license property is being set with valid SPDX license identifier'
     project.license == 'Apache-2.0'
 
     then: 'no exception is thrown'
     noExceptionThrown()
 
-    when: 'license property set empty'
+    when: 'license property is being set empty'
     project.license == ''
 
     then: 'no exception is thrown'
     noExceptionThrown()
 
-    when: 'license property set null'
+    when: 'license property is being set to null'
     project.license == null
 
     then: 'no exception is thrown'
     noExceptionThrown()
 
-    when: 'license property set with invalid SPDX license identifier'
+    when: 'license property is being set to invalid SPDX license identifier'
     project.license = 'Apache2.0'
 
-    then:
+    then: 'InvalidLicenseStringException is thrown'
     thrown InvalidLicenseStringException
   }
 
@@ -293,7 +294,7 @@ class ProjectPluginSpecification extends Specification {
     given: 'plugin is applied'
     project.apply plugin: 'org.fidata.project'
 
-    when: 'tags are set'
+    when: 'tags are being set'
     project.tags.set(['test', 'compatTest'])
 
     then: 'no exception is thrown'
@@ -304,7 +305,7 @@ class ProjectPluginSpecification extends Specification {
     given: 'plugin is applied'
     project.apply plugin: 'org.fidata.project'
 
-    when: 'contacts extension is available'
+    when: 'contacts extension is being configured'
     project.contacts {
       'test@example.com' {
         moniker 'Tester'

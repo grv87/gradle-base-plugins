@@ -71,19 +71,16 @@ class GroovyProjectPluginSpecification extends Specification {
   // feature methods
 
   void 'can be applied'() {
-    when:
-    'plugin is applied'
+    when: 'plugin is being applied'
     project.apply plugin: 'org.fidata.project.groovy'
 
-    then:
-    'no exception is thrown'
+    then: 'no exception is thrown'
     noExceptionThrown()
 
-    when: 'project evaluated'
+    when: 'project is being evaluated'
     project.evaluate()
 
-    then:
-    'no exception is thrown'
+    then: 'no exception is thrown'
     noExceptionThrown()
   }
 
