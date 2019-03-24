@@ -114,37 +114,30 @@ class ProjectPluginSpecification extends Specification {
     project.apply plugin: 'org.fidata.project'
 
     then: 'lint task exists'
-    project.tasks.findByName('lint')
+    Task lint = project.tasks.getByName('lint')
+
+    and: 'check task depends on lint task'
+    Task check = project.tasks.getByName('check')
+    check.taskDependencies.getDependencies(check).contains(lint)
   }
 
-  @SuppressWarnings('BuilderMethodWithSideEffects')
-  void 'makes check task depend on code quality tasks indirectly only'() {
+  void 'provides codenarc task'() {
     when: 'plugin is applied'
     project.apply plugin: 'org.fidata.project'
 
     then: 'codenarc task exists'
     Task codenarc = project.tasks.getByName('codenarc')
 
+    and: 'lint task depends on codenarc task'
+    Task lint = project.tasks.getByName('lint')
+    lint.taskDependencies.getDependencies(lint).contains(codenarc)
+
     when: 'groovy plugin is applied'
     project.apply plugin: 'groovy'
 
-    and: 'project evaluated'
-    project.evaluate()
-
-    then: 'check task does not depend on codenarcMain task'
+    then: 'codenarc task depends on codenarcMain task'
     Task codenarcMain = project.tasks.getByName('codenarcMain')
-    Task check = project.tasks.getByName('check')
-    !check.taskDependencies.getDependencies(check).contains(codenarcMain)
-
-    and: 'check task depends on lint task'
-    Task lint = project.tasks.getByName('lint')
-    check.taskDependencies.getDependencies(check).contains(lint)
-
-    and: 'lint task depends on codenarc task'
-    lint.taskDependencies.getDependencies(lint).contains(codenarc)
-
-    and: 'codenarc task depends on codenarcMain task'
-    codenarc.taskDependencies.getDependencies(check).contains(codenarcMain)
+    codenarc.taskDependencies.getDependencies(codenarc).contains(codenarcMain)
   }
 
   void 'provides codenarcBuildSrc task'() {
