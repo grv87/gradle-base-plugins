@@ -20,17 +20,19 @@
  */
 package org.fidata.gradle.internal;
 
-import lombok.Getter;
-import lombok.AccessLevel;
-import java.beans.PropertyChangeSupport;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import lombok.AccessLevel;
+import lombok.Getter;
 
 /**
- * Base class for extensions and conventions
+ * Base class for extensions and conventions.
  */
 @SuppressWarnings("AbstractClassWithoutAbstractMethod")
 public abstract class AbstractExtension {
   /**
+   * Returns list of property change listeners.
+   *
    * @return list of property change listeners
    */
   @Getter(value = AccessLevel.PROTECTED, lazy = true)
@@ -38,6 +40,7 @@ public abstract class AbstractExtension {
 
   /**
    * Adds a property change listener.
+   *
    * @param listener The {@link PropertyChangeListener} to be added.
    */
   public void addPropertyChangeListener(final PropertyChangeListener listener) {
@@ -46,6 +49,7 @@ public abstract class AbstractExtension {
 
   /**
    * Removes a property change listener.
+   *
    * @param listener The {@link PropertyChangeListener} to be removed
    */
   public void removePropertyChangeListener(final PropertyChangeListener listener) {

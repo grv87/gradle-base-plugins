@@ -19,6 +19,6 @@
  * If not, see <https://www.gnu.org/licenses/>.
  */
 /**
- * Utils to work with GPG
+ * Utils to work with GPG.
  */
 package org.fidata.gpg;

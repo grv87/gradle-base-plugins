@@ -87,6 +87,7 @@ dependencies {
 
 sourceSets {
   testFixtures {
+    java.srcDirs = ['src/testFixtures/java']
     groovy.srcDirs = ['src/testFixtures/groovy']
   }
 }

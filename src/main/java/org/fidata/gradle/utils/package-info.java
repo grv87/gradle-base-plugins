@@ -19,6 +19,6 @@
  * If not, see <https://www.gnu.org/licenses/>.
  */
 /**
- * Utils for Gradle plugins developed by FIDATA
+ * Utils for Gradle plugins developed by FIDATA.
  */
 package org.fidata.gradle.utils;

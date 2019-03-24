@@ -20,45 +20,48 @@
  */
 package org.fidata.gradle.utils;
 
-import com.github.zafarkhaja.semver.Version;
 import com.github.zafarkhaja.semver.ParseException;
-import com.google.common.base.Strings;
-import com.google.common.collect.Iterables;
-import com.google.common.base.Splitter;
+import com.github.zafarkhaja.semver.Version;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Predicate;
+import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
+import com.google.common.collect.Iterables;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
 /**
- * Utilities to work with version strings and objects
+ * Utilities to work with version strings and objects.
  */
+@SuppressWarnings("parameterassignment")
 public final class VersionUtils {
   /**
-   * Suffix for snapshot version
+   * Suffix for snapshot version.
    */
   public static final Pattern SNAPSHOT_SUFFIX = Pattern.compile("-SNAPSHOT\\z");
 
+  private static final CharMatcher SEPARATOR_MATCHER = CharMatcher.anyOf("-\\._");
+
   /**
-   * Checks whether specified version is actually a pre-release version
+   * Checks whether specified version is actually a pre-release version.
    * @param version Version
    * @return true when version is definitely pre-release
    *         null on empty or null version
    */
-
   @SuppressWarnings("UnusedReturnValue")
-  public static Boolean isPreReleaseVersion(String version) {
+  public static Boolean isPreReleaseVersion(@SuppressWarnings("AssignmentToMethodParameter") String version) {
     if (Strings.isNullOrEmpty(version)) {
       return null;
     }
+    //noinspection AssignmentToMethodParameter
+    version = version.toUpperCase(Locale.ROOT);
     try {
-      String preReleaseVersion = Version.valueOf(version).getPreReleaseVersion();
+      final String preReleaseVersion = Version.valueOf(version).getPreReleaseVersion();
       if (preReleaseVersion.isEmpty()) {
-        return false;
+        return Boolean.FALSE;
       }
-      return !Iterables.all(Splitter.on(CharMatcher.anyOf("-\\._")).split(preReleaseVersion), new Predicate<String>() {
-        public boolean apply(String label) {
-          label = label.toUpperCase(Locale.ROOT);
+      return !Iterables.all(Splitter.on(SEPARATOR_MATCHER).split(preReleaseVersion), new Predicate<String>() {
+        public boolean apply(final String label) {
           return
             label.startsWith("GA") ||
             label.startsWith("RELEASE") ||
@@ -66,15 +69,12 @@ public final class VersionUtils {
             label.startsWith("SP") ||
             label.startsWith("SR") ||
             label.startsWith("FINAL") ||
-            label.matches("^\\d+$")
-          ;
+            label.matches("^\\d+$");
         }
       });
-    }
-    catch (ParseException e) {
-      return Iterables.any(Splitter.on(CharMatcher.anyOf("-\\._")).split(version), new Predicate<String>() {
-        public boolean apply(String label) {
-          label = label.toUpperCase(Locale.ROOT);
+    } catch (final ParseException e) {
+      return Iterables.any(Splitter.on(SEPARATOR_MATCHER).split(version), new Predicate<String>() {
+        public boolean apply(final String label) {
           return
             label.startsWith("DEV") ||
             label.startsWith("SNAPSHOT") ||
@@ -83,8 +83,7 @@ public final class VersionUtils {
             label.startsWith("MILESTONE") ||
             label.matches("^[ABM]\\d+$") ||
             label.startsWith("RC") ||
-            label.startsWith("CR")
-          ;
+            label.startsWith("CR");
         }
       });
     }

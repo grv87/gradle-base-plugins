@@ -26,20 +26,24 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 
 /**
- * Base class for plugins applicable to @{link Project}
+ * Base class for plugins applicable to @{link Project}.
  */
 @SuppressWarnings("AbstractClassWithoutAbstractMethod")
 public abstract class AbstractProjectPlugin implements Plugin<Project> {
   /**
-   * @return project which this plugin instance is applied to
+   * Returns project which this plugin instance is applied to.
+   *
+   * @return target project
    */
   @Getter(value = AccessLevel.PROTECTED)
   private Project project;
 
   /**
-   * Applies the plugin to the project
+   * Applies the plugin to the project.
+   *
+   * @param project The target project
    */
-  public void apply(Project project) {
+  public final void apply(@SuppressWarnings({"ParameterHidesMemberVariable", "checkstyle:hiddenfield"}) final Project project) {
     this.project = project;
   }
 }

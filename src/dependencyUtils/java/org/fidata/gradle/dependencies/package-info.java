@@ -19,6 +19,6 @@
  * If not, see <https://www.gnu.org/licenses/>.
  */
 /**
- * Utils to work with dependencies in Gradle
+ * Utils to work with dependencies in Gradle.
  */
 package org.fidata.gradle.dependencies;

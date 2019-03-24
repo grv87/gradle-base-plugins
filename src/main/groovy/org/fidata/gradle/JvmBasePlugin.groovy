@@ -80,7 +80,7 @@ import org.gradle.api.publish.PublicationContainer
  * Provides an environment for a JDK project
  */
 @CompileStatic
-final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChangeListener {
+final class JvmBasePlugin extends AbstractProjectPlugin implements PropertyChangeListener {
   /**
    * Name of jvm extension for {@link Project}
    */
@@ -96,9 +96,9 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
 
     boolean isBuildSrc = project.rootProject.convention.getPlugin(RootProjectConvention).isBuildSrc
 
-    PluginDependeesUtils.applyPlugins project, isBuildSrc, JVMBasePluginDependees.PLUGIN_DEPENDEES
+    PluginDependeesUtils.applyPlugins project, isBuildSrc, JvmBasePluginDependees.PLUGIN_DEPENDEES
 
-    project.extensions.add JVM_EXTENSION_NAME, new JVMBaseExtension(project)
+    project.extensions.add JVM_EXTENSION_NAME, new JvmBaseExtension(project)
 
     project.convention.getPlugin(ProjectConvention).addPropertyChangeListener this
 
@@ -514,14 +514,14 @@ final class JVMBasePlugin extends AbstractProjectPlugin implements PropertyChang
     if ([project.configurations.getByName(COMPILE_CONFIGURATION_NAME), project.configurations.getByName(API_CONFIGURATION_NAME)].any { Configuration configuration ->
       configuration.dependencies.contains(project.dependencies.gradleApi())
     }) {
-      project.extensions.getByType(JVMBaseExtension).javadocLinks['org.gradle'] = project.uri("https://docs.gradle.org/${ project.gradle.gradleVersion }/javadoc/index.html?")
+      project.extensions.getByType(JvmBaseExtension).javadocLinks['org.gradle'] = project.uri("https://docs.gradle.org/${ project.gradle.gradleVersion }/javadoc/index.html?")
     }
 
     project.tasks.withType(Javadoc).configureEach { Javadoc javadoc ->
       javadoc.options.encoding = UTF_8.name()
       javadoc.doFirst {
         javadoc.options { StandardJavadocDocletOptions options ->
-          javadoc.project.extensions.getByType(JVMBaseExtension).javadocLinks.values().each { URI link ->
+          javadoc.project.extensions.getByType(JvmBaseExtension).javadocLinks.values().each { URI link ->
             options.links link.toString()
           }
         }

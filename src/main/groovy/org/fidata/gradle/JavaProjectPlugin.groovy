@@ -54,7 +54,7 @@ final class JavaProjectPlugin extends AbstractProjectPlugin {
   void apply(Project project) {
     super.apply(project)
 
-    project.pluginManager.apply JVMBasePlugin
+    project.pluginManager.apply JvmBasePlugin
 
     boolean isBuildSrc = project.rootProject.convention.getPlugin(RootProjectConvention).isBuildSrc
 

@@ -19,6 +19,6 @@
  * If not, see <https://www.gnu.org/licenses/>.
  */
 /**
- * Commonly used exceptions
+ * Commonly used exceptions.
  */
 package org.fidata.exceptions;

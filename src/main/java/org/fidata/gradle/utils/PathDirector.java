@@ -20,19 +20,18 @@
  */
 package org.fidata.gradle.utils;
 
-import org.gradle.api.Namer;
-import org.gradle.internal.FileUtils;
-
 import java.nio.file.Path;
 
 /**
  * A path director is capable of providing a path based on some inherent characteristics of an object.
- * Analogue for {@link Namer}
+ * Analogue for {@link org.gradle.api.Namer}
+ *
+ * @param <T> Type of objects which paths are determined
  */
 public interface PathDirector<T> {
   /**
    * Determines the path for the given object.
-   * Implementation should manually call {@link FileUtils#toSafeFileName}
+   * Implementation should manually call {@link org.gradle.internal.FileUtils#toSafeFileName}
    * on individual directory/file names whenever necessary
    *
    * @param object The object to determine the path for

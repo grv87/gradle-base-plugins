@@ -19,6 +19,6 @@
  * If not, see <https://www.gnu.org/licenses/>.
  */
 /**
- * Gradle tasks developed by FIDATA
+ * Gradle tasks developed by FIDATA.
  */
 package org.fidata.gradle.tasks;

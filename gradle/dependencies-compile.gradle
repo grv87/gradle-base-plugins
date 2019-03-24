@@ -53,7 +53,7 @@ dependencies {
   }
 
   addDependencies org.fidata.gradle.ProjectPluginDependees.PLUGIN_DEPENDEES
-  addDependencies org.fidata.gradle.JVMBasePluginDependees.PLUGIN_DEPENDEES
+  addDependencies org.fidata.gradle.JvmBasePluginDependees.PLUGIN_DEPENDEES
   addDependencies org.fidata.gradle.JavaProjectPluginDependees.PLUGIN_DEPENDEES
   addDependencies org.fidata.gradle.GroovyBaseProjectPluginDependees.PLUGIN_DEPENDEES
   addDependencies org.fidata.gradle.GradlePluginPluginDependees.PLUGIN_DEPENDEES
