@@ -35,8 +35,6 @@ import com.google.common.collect.ImmutableSet
 import com.github.zafarkhaja.semver.ParseException
 import java.nio.file.InvalidPathException
 import org.gradle.api.plugins.quality.Pmd
-import org.gradle.api.plugins.quality.internal.AbstractCodeQualityPlugin
-import java.util.concurrent.Callable
 import org.gradle.tooling.UnsupportedVersionException
 import org.fidata.gradle.utils.PathDirector
 import org.fidata.gradle.utils.ReportPathDirectorException
@@ -541,13 +539,6 @@ final class ProjectPlugin extends AbstractProjectPlugin {
     TaskProvider<Task> checkProvider = project.tasks.named(CHECK_TASK_NAME)
     checkProvider.configure { Task check ->
       check.dependsOn lintProvider
-    }
-    project.afterEvaluate { Project project ->
-      checkProvider.configure { Task check ->
-        check.dependsOn.removeAll { Object dependency ->
-          Callable.isInstance(dependency) && ((Callable)dependency).class.enclosingMethod.declaringClass.enclosingMethod.declaringClass == AbstractCodeQualityPlugin
-        }
-      }
     }
 
     addCodeQualityCommonTask 'CodeNarc', CODENARC_TASK_NAME, CodeNarc
