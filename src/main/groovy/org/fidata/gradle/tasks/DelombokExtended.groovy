@@ -19,8 +19,8 @@
 package org.fidata.gradle.tasks
 
 import groovy.transform.CompileStatic
+import groovy.transform.Internal
 import io.franzbecker.gradle.lombok.task.DelombokTask
-import org.fidata.gradle.utils.InputDirectoryWrapper
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileCollection
 import org.gradle.api.plugins.JavaPluginConvention
@@ -30,10 +30,12 @@ import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Classpath
 import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.Internal
-import org.gradle.api.tasks.Nested
+import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.Internal as GradleInternal
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.PathSensitive
+import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.SkipWhenEmpty
 import org.gradle.api.tasks.SourceSet
 
@@ -45,8 +47,8 @@ import org.gradle.api.tasks.SourceSet
 @CacheableTask
 @CompileStatic
 class DelombokExtended extends DelombokTask {
+  @GradleInternal
   @Override
-  @Internal
   // We don't actually use this and get compile classpath from sourceSet instead
   String getCompileConfigurationName() {
     super.compileConfigurationName
@@ -63,7 +65,7 @@ class DelombokExtended extends DelombokTask {
    * Source sets to pass through delombok.
    * The task gets from these source sets list of Java source files and also compile classpath
    */
-  @Internal
+  @GradleInternal
   @SkipWhenEmpty
   final ListProperty<? extends SourceSet> sourceSets = project.objects.listProperty(SourceSet).empty()
 
@@ -88,10 +90,9 @@ class DelombokExtended extends DelombokTask {
           return (SourceSet)value
         }
         else if (String.isInstance(sourceSet)) {
-          return project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName((String)sourceSet)
-        } else {
-          throw new IllegalArgumentException(sprintf('Unsupported argument type: %s', sourceSet.class))
+          return project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName((String) sourceSet)
         }
+        throw new IllegalArgumentException(sprintf('Unsupported argument type: %s', sourceSet.class))
       }
     } else if (SourceSet.isInstance(sourceSet)) {
       sourceSets.add((SourceSet)sourceSet)
@@ -130,16 +131,12 @@ class DelombokExtended extends DelombokTask {
     sourceSets.get().collect { Object sourceSet -> ((SourceSet)sourceSet).compileClasspath }
   }
 
-  /*
-   * WORKAROUND:
-   * We use Nested annotation and InputDirectoryWrapper
-   * to emulate InputDirectories annotation
-   * which Gradle doesn't have
-   */
-  @Nested
+  @Internal
+  @InputFiles
+  @PathSensitive(PathSensitivity.RELATIVE)
   @SkipWhenEmpty
-  final Provider<Set<InputDirectoryWrapper>> inputDirectories = project.providers.provider {
-    (Set<InputDirectoryWrapper>)sourceSets.get().collectMany { Object sourceSet -> ((SourceSet)sourceSet).java.sourceDirectories.collect { File dir -> new InputDirectoryWrapper(dir) } }.toSet()
+  final Provider<Set<File>> inputDirectories = project.providers.provider {
+    (Set<File>)sourceSets.get().collectMany { Object sourceSet -> ((SourceSet)sourceSet).java.srcDirs }
   }
 
   /**
@@ -162,8 +159,10 @@ class DelombokExtended extends DelombokTask {
      * <grv87 2018-03-24>
      */
     classpath sourceSetsClasspath
-    inputDirectories.get().each { InputDirectoryWrapper dir ->
-      args dir.value, '--target', outputDir.get()
+    sourceSets.get().each { Object sourceSet ->
+      ((SourceSet)sourceSet).java.srcDirs.each { File srcDir ->
+        args  srcDir, '--target', outputDir.get()
+      }
     }
     super.exec()
   }
