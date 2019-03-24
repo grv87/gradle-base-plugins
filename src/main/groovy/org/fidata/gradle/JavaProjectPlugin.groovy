@@ -25,6 +25,14 @@ import static java.nio.charset.StandardCharsets.UTF_8
 import static org.gradle.api.plugins.JavaPlugin.COMPILE_JAVA_TASK_NAME
 import static org.gradle.api.plugins.JavaPlugin.JAVADOC_TASK_NAME
 import static org.gradle.api.tasks.SourceSet.MAIN_SOURCE_SET_NAME
+import static org.gradle.internal.FileUtils.toSafeFileName
+import org.gradle.api.plugins.quality.CheckstyleExtension
+import com.google.common.io.Resources
+import org.fidata.gradle.utils.PathDirector
+import org.fidata.gradle.utils.ReportPathDirectorException
+import java.nio.file.InvalidPathException
+import java.nio.file.Path
+import java.nio.file.Paths
 import org.gradle.api.plugins.quality.Checkstyle
 import io.franzbecker.gradle.lombok.LombokPluginExtension
 import groovy.transform.CompileStatic
@@ -117,7 +125,54 @@ final class JavaProjectPlugin extends AbstractProjectPlugin {
    */
   public static final String CHECKSTYLE_TASK_NAME = 'checkstyle'
 
+  /**
+   * Path director for codenarc reports
+   */
+  static final PathDirector<Checkstyle> CHECKSTYLE_REPORT_DIRECTOR = new PathDirector<Checkstyle>() {
+    @Override
+    Path determinePath(Checkstyle object)  {
+      try {
+        Paths.get(toSafeFileName((object.name - ~/^checkstyle/ /* WORKAROUND: CheckstylePlugin.getTaskBaseName has protected scope <grv87 2019-03-24> */).uncapitalize()))
+      } catch (InvalidPathException e) {
+        throw new ReportPathDirectorException(object, e)
+      }
+    }
+  }
+
+  /*
+   * WORKAROUND:
+   * Groovy error. Usage of `destination =` instead of setDestination leads to error:
+   * [Static type checking] - Cannot set read-only property: destination
+   * Also may be CodeNarc error
+   * <grv87 2019-03-27>
+   */
+  @SuppressWarnings('UnnecessarySetter')
   private void configureCodeQuality() {
     project.plugins.getPlugin(ProjectPlugin).addCodeQualityCommonTask 'Checkstyle', CHECKSTYLE_TASK_NAME, Checkstyle
+
+    project.extensions.configure(CheckstyleExtension) { CheckstyleExtension extension ->
+      extension.toolVersion = '[8.19, 9['
+      /*
+       * WORKAROUND:
+       * `fromUri` doesn't accept Charset.
+       * See https://github.com/gradle/gradle/issues/8472 for discussion
+       * <grv87 2019-03-24>
+       */
+      // extension.config = project.resources.text.fromUri(Resources.getResource(this.class, 'config/checkstyle/checkstyle.xml'))
+      extension.config = project.resources.text.fromString(Resources.toString(Resources.getResource(this.class, 'config/checkstyle/checkstyle.xml'), UTF_8))
+      extension.configProperties['basedir'] = project.rootDir.toString()
+      extension.maxWarnings = 0
+    }
+
+    ProjectConvention projectConvention = project.convention.getPlugin(ProjectConvention)
+    project.tasks.withType(Checkstyle).configureEach { Checkstyle checkstyle ->
+      checkstyle.with {
+        Path reportSubpath = Paths.get('checkstyle')
+        reports.xml.enabled = true
+        reports.xml.setDestination projectConvention.getXmlReportFile(reportSubpath, CHECKSTYLE_REPORT_DIRECTOR, checkstyle)
+        reports.html.enabled = true
+        reports.html.setDestination projectConvention.getHtmlReportFile(reportSubpath, CHECKSTYLE_REPORT_DIRECTOR, checkstyle)
+      }
+    }
   }
 }

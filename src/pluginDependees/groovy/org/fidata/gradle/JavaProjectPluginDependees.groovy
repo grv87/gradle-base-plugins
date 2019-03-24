@@ -35,6 +35,7 @@ final class JavaProjectPluginDependees {
    */
   static final Map<String, PluginDependee> PLUGIN_DEPENDEES = ImmutableMap.copyOf([
     'org.gradle.java': new PluginDependee(),
+    'org.gradle.checkstyle': new PluginDependee(),
     'io.franzbecker.gradle-lombok': new PluginDependee(
       configurationName: 'implementation',
       version: '[2, 3[',
