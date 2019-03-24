@@ -1,6 +1,6 @@
 #!/usr/bin/env groovy
 /*
- * JVMBasePluginDependees class
+ * JvmBasePluginDependees class
  * Copyright © 2017-2018  Basil Peace
  *
  * This file is part of gradle-base-plugins.
@@ -30,7 +30,7 @@ import org.fidata.gradle.utils.PluginDependeeExclusion
  * List of dependees of org.fidata.base.jvm plugin
  */
 @CompileStatic
-final class JVMBasePluginDependees {
+final class JvmBasePluginDependees {
   /**
    * List of plugin dependees with IDs
    */
@@ -59,7 +59,7 @@ final class JVMBasePluginDependees {
   ])
 
   // Suppress default constructor for noninstantiability
-  private JVMBasePluginDependees() {
+  private JvmBasePluginDependees() {
     throw new UnsupportedOperationException()
   }
 }

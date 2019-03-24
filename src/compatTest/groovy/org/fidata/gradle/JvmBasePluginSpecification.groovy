@@ -27,9 +27,9 @@ import org.gradle.testkit.runner.GradleRunner
 import spock.lang.Specification
 
 /**
- * Specification for {@link JVMBasePlugin} class
+ * Specification for {@link JvmBasePlugin} class
  */
-class JVMBasePluginSpecification extends Specification {
+class JvmBasePluginSpecification extends Specification {
   // fields
   boolean success = false
 

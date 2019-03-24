@@ -1,6 +1,6 @@
 /*
- * org.fidata.gradle.internal Package Info
- * Copyright © 2017-2018  Basil Peace
+ * org.fidata.testfixtures Package Info
+ * Copyright © 2019  Basil Peace
  *
  * This file is part of gradle-base-plugins.
  *
@@ -19,6 +19,6 @@
  * If not, see <https://www.gnu.org/licenses/>.
  */
 /**
- * Internal classes for Gradle plugins developed by FIDATA.
+ * General fixtures for testing JVM-based projects.
  */
-package org.fidata.gradle.internal;
+package org.fidata.testfixtures;

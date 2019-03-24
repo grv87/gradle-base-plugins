@@ -25,6 +25,8 @@ import com.github.zafarkhaja.semver.Version;
 import de.gliderpilot.gradle.semanticrelease.SemanticReleaseChangeLogService;
 import de.gliderpilot.gradle.semanticrelease.SemanticReleasePluginExtension;
 import groovy.lang.Writable;
+import java.io.IOException;
+import java.util.concurrent.Callable;
 import lombok.Getter;
 import org.ajoberstar.gradle.git.release.base.ReleasePluginExtension;
 import org.ajoberstar.gradle.git.release.base.ReleaseVersion;
@@ -36,14 +38,15 @@ import org.gradle.api.provider.Provider;
 import org.gradle.cache.internal.filelock.LockFileAccess;
 import org.gradle.cache.internal.filelock.LockStateAccess;
 import org.gradle.cache.internal.filelock.Version1LockStateSerializer;
-import java.io.IOException;
-import java.util.concurrent.Callable;
 
 /**
- * Provides additional properties to the root project
+ * Provides additional properties to the root project.
  */
-public class RootProjectConvention extends AbstractExtension {
+public final class RootProjectConvention extends AbstractExtension {
+  private static final String BUILD_SRC_PROJECT_CAN_T_HAVE_CHANGELOG = "buildSrc project can't have changelog";
   /**
+   * Returns whether the project this convention is applied to is buildSrc.
+   *
    * @return whether the project this convention is applied to is buildSrc
    */
   @Getter
@@ -52,9 +55,11 @@ public class RootProjectConvention extends AbstractExtension {
   private final Provider<Boolean> isRelease;
 
   /**
+   * Returns whether this run has release version (not snapshot).
+   *
    * @return whether this run has release version (not snapshot)
    */
-  public final Provider<Boolean> getIsRelease() {
+  public Provider<Boolean> getIsRelease() {
     if (isBuildSrc) {
       throw new InvalidOperationException("buildSrc project can't have releases at all");
     }
@@ -64,11 +69,13 @@ public class RootProjectConvention extends AbstractExtension {
   private final Provider<Writable> changeLog;
 
   /**
+   * Returns changelog since last release in Markdown format.
+   *
    * @return changelog since last release
    */
-  public final Provider<Writable> getChangeLog() {
+  public Provider<Writable> getChangeLog() {
     if (isBuildSrc) {
-      throw new InvalidOperationException("buildSrc project can't have changelog");
+      throw new InvalidOperationException(BUILD_SRC_PROJECT_CAN_T_HAVE_CHANGELOG);
     }
     return changeLog;
   }
@@ -76,38 +83,51 @@ public class RootProjectConvention extends AbstractExtension {
   private final Provider<Writable> changeLogTxt;
 
   /**
-   * @return changelog since last release in text format
+   * Returns changelog since last release in text format.
+   *
+   * @return changelog since last release
    */
-  public final Provider<Writable> getChangeLogTxt() {
+  public Provider<Writable> getChangeLogTxt() {
     if (isBuildSrc) {
-      throw new InvalidOperationException("buildSrc project can't have changelog");
+      throw new InvalidOperationException(BUILD_SRC_PROJECT_CAN_T_HAVE_CHANGELOG);
     }
     return changeLogTxt;
   }
 
   /**
+   * Returns issues URL.
+   *
    * @return issues URL
    */
   @Getter
   private final Property<String> issuesUrl;
 
   /**
-   * Project VCS URL
+   * Project VCS URL.
+   *
+   * @return project VCS URL
    */
-  public final Provider<String> vcsUrl;
+  @Getter
+  private final Provider<String> vcsUrl;
 
+  /**
+   * Default constructor.
+   *
+   * @param project the project this instance is being applied to
+   */
   public RootProjectConvention(final Project project) {
     if (project != project.getRootProject()) {
       throw new InvalidOperationException("RootProjectConvention can only be added to root project");
     }
 
-    boolean _isBuildSrc;
+    @SuppressWarnings({"LocalVariableHidesMemberVariable", "checkstyle:hiddenfield"})
+    boolean isBuildSrc;
     try {
-      _isBuildSrc = "buildSrc".equals(project.getProjectDir().getName()) && new LockFileAccess(project.file(".gradle/noVersion/buildSrc.lock"), new LockStateAccess(new Version1LockStateSerializer())).readLockInfo().lockId != 0;
-    } catch (IOException e) {
-      _isBuildSrc = false;
+      isBuildSrc = "buildSrc".equals(project.getProjectDir().getName()) && new LockFileAccess(project.file(".gradle/noVersion/buildSrc.lock"), new LockStateAccess(new Version1LockStateSerializer())).readLockInfo().lockId != 0;
+    } catch (final IOException ignored) {
+      isBuildSrc = false;
     }
-    isBuildSrc = _isBuildSrc;
+    this.isBuildSrc = isBuildSrc;
 
     if (!isBuildSrc) {
       /*
@@ -126,18 +146,18 @@ public class RootProjectConvention extends AbstractExtension {
       changeLog = project.provider(new Callable<Writable>() {
         @Override
         public Writable call() {
-          SemanticReleaseChangeLogService changeLogService = project.getExtensions().getByType(SemanticReleasePluginExtension.class).getChangeLog();
-          Object version = project.getVersion();
-          ReleaseVersion inferredVersion = ((ReleasePluginExtension.DelayedVersion) version).getInferredVersion();
+          final SemanticReleaseChangeLogService changeLogService = project.getExtensions().getByType(SemanticReleasePluginExtension.class).getChangeLog();
+          final Object version = project.getVersion();
+          final ReleaseVersion inferredVersion = ((ReleasePluginExtension.DelayedVersion)version).getInferredVersion();
           return changeLogService.getChangeLog().call(changeLogService.commits(Version.valueOf(inferredVersion.getPreviousVersion())), inferredVersion);
         }
       });
       changeLogTxt = project.provider(new Callable<Writable>() {
         @Override
         public Writable call() {
-          SemanticReleaseChangeLogService changeLogService = project.getExtensions().getByType(SemanticReleasePluginExtension.class).getChangeLog();
-          Object version = project.getVersion();
-          ReleaseVersion inferredVersion = ((ReleasePluginExtension.DelayedVersion) version).getInferredVersion();
+          final SemanticReleaseChangeLogService changeLogService = project.getExtensions().getByType(SemanticReleasePluginExtension.class).getChangeLog();
+          final Object version = project.getVersion();
+          final ReleaseVersion inferredVersion = ((ReleasePluginExtension.DelayedVersion)version).getInferredVersion();
           return changeLogService.getChangeLogTxt().call(changeLogService.commits(Version.valueOf(inferredVersion.getPreviousVersion())), inferredVersion);
         }
       });

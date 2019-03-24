@@ -40,7 +40,7 @@ final class GroovyBasePlugin extends AbstractProjectPlugin {
   void apply(Project project) {
     super.apply(project)
 
-    project.pluginManager.apply JVMBasePlugin
+    project.pluginManager.apply JvmBasePlugin
 
     boolean isBuildSrc = project.rootProject.convention.getPlugin(RootProjectConvention).isBuildSrc
 
@@ -67,14 +67,14 @@ final class GroovyBasePlugin extends AbstractProjectPlugin {
 
   void configureDocumentation() {
     URI groovydocLink = project.uri("http://docs.groovy-lang.org/${ GroovySystem.version }/html/api/index.html?")
-    project.extensions.configure(JVMBaseExtension) { JVMBaseExtension extension ->
+    project.extensions.configure(JvmBaseExtension) { JvmBaseExtension extension ->
       extension.javadocLinks['groovy'] = groovydocLink
       extension.javadocLinks['org.codehaus.groovy'] = groovydocLink
     }
 
     project.tasks.withType(Groovydoc).configureEach { Groovydoc groovydoc ->
       groovydoc.doFirst {
-        groovydoc.project.extensions.getByType(JVMBaseExtension).javadocLinks.each { String key, URI value ->
+        groovydoc.project.extensions.getByType(JvmBaseExtension).javadocLinks.each { String key, URI value ->
           groovydoc.link value.toString(), "$key."
         }
       }

@@ -31,9 +31,9 @@ import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
 
 /**
- * Specification for {@link JVMBasePlugin} class
+ * Specification for {@link JvmBasePlugin} class
  */
-class JVMBasePluginSpecification extends Specification {
+class JvmBasePluginSpecification extends Specification {
   // fields
   @Rule
   final TemporaryFolder testProjectDir = new TemporaryFolder()

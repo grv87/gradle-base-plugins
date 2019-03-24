@@ -23,12 +23,12 @@ package org.fidata.gradle
 
 import static org.ajoberstar.gradle.git.release.base.BaseReleasePlugin.RELEASE_TASK_NAME
 import static ProjectPlugin.ARTIFACTORY_URL
-import static JVMBasePlugin.FUNCTIONAL_TEST_SOURCE_SET_NAME
-import static JVMBasePlugin.FUNCTIONAL_TEST_TASK_NAME
-import static JVMBasePlugin.JUNIT_GROUP
-import static JVMBasePlugin.JUNIT_MODULE
-import static JVMBasePlugin.SPOCK_GROUP
-import static JVMBasePlugin.SPOCK_MODULE
+import static JvmBasePlugin.FUNCTIONAL_TEST_SOURCE_SET_NAME
+import static JvmBasePlugin.FUNCTIONAL_TEST_TASK_NAME
+import static JvmBasePlugin.JUNIT_GROUP
+import static JvmBasePlugin.JUNIT_MODULE
+import static JvmBasePlugin.SPOCK_GROUP
+import static JvmBasePlugin.SPOCK_MODULE
 import static org.gradle.internal.FileUtils.toSafeFileName
 import org.gradle.api.NamedDomainObjectProvider
 import org.gradle.api.artifacts.Dependency
@@ -68,13 +68,13 @@ final class GradlePluginPlugin extends AbstractProjectPlugin implements Property
   void apply(Project project) {
     super.apply(project)
 
-    project.pluginManager.apply JVMBasePlugin
+    project.pluginManager.apply JvmBasePlugin
 
     boolean isBuildSrc = project.rootProject.convention.getPlugin(RootProjectConvention).isBuildSrc
 
     PluginDependeesUtils.applyPlugins project, isBuildSrc, GradlePluginPluginDependees.PLUGIN_DEPENDEES
 
-    project.plugins.getPlugin(ProjectPlugin).defaultProjectGroup = 'org.fidata.gradle'
+    project.plugins.getPlugin(ProjectPlugin).defaultProjectGroup = "${ -> ProjectPlugin.DEFAULT_PROJECT_GROUP }.gradle"
 
     project.convention.getPlugin(ProjectConvention).addPropertyChangeListener this
 
@@ -183,11 +183,11 @@ final class GradlePluginPlugin extends AbstractProjectPlugin implements Property
         }
         null
       }
-      project.plugins.getPlugin(JVMBasePlugin).addJUnitDependency gradleTestSourceSetProvider
-      project.plugins.getPlugin(JVMBasePlugin).addSpockDependency gradleTestSourceSetProvider
+      project.plugins.getPlugin(JvmBasePlugin).addJUnitDependency gradleTestSourceSetProvider
+      project.plugins.getPlugin(JvmBasePlugin).addSpockDependency gradleTestSourceSetProvider
     }
 
-    project.plugins.getPlugin(JVMBasePlugin).addSpockDependency(
+    project.plugins.getPlugin(JvmBasePlugin).addSpockDependency(
       sourceSets.named('compatTest'),
       /*
        * TOTEST:
@@ -201,7 +201,7 @@ final class GradlePluginPlugin extends AbstractProjectPlugin implements Property
     project.afterEvaluate {
       project.extensions.getByType(GradlePluginDevelopmentExtension).testSourceSets((project.extensions.getByType(GradlePluginDevelopmentExtension).testSourceSets + [sourceSets.getByName(TestSet.baseName(/* WORKAROUND: org.ysb33r.gradle.gradletest.Names.DEFAULT_TASK has package scope <> */ 'gradleTest')), sourceSets.getByName(FUNCTIONAL_TEST_SOURCE_SET_NAME)]).toArray(new SourceSet[0]))
       project.extensions.getByType(GradlePluginDevelopmentExtension).testSourceSets.each { SourceSet sourceSet ->
-        project.plugins.getPlugin(JVMBasePlugin).configureIntegrationTestSourceSetClasspath sourceSet
+        project.plugins.getPlugin(JvmBasePlugin).configureIntegrationTestSourceSetClasspath sourceSet
       }
     }
 
@@ -211,7 +211,7 @@ final class GradlePluginPlugin extends AbstractProjectPlugin implements Property
   }
 
   private void configureArtifactsPublishing() {
-    project.plugins.getPlugin(JVMBasePlugin).createMavenJavaPublication = false
+    project.plugins.getPlugin(JvmBasePlugin).createMavenJavaPublication = false
 
     GString repository = "plugins-${ project.rootProject.convention.getPlugin(RootProjectConvention).isRelease.get() ? 'release' : 'snapshot' }"
     project.convention.getPlugin(ArtifactoryPluginConvention).clientConfig.publisher.repoKey = "$repository-local"

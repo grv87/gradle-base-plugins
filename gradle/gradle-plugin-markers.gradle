@@ -29,7 +29,7 @@ gradlePlugin {
     }
     jvmBasePlugin {
       id = 'org.fidata.base.jvm'
-      implementationClass = 'org.fidata.gradle.JVMBasePlugin'
+      implementationClass = 'org.fidata.gradle.JvmBasePlugin'
     }
     javaProjectPlugin {
       id = 'org.fidata.project.java'
