@@ -479,7 +479,7 @@ final class JvmBasePlugin extends AbstractProjectPlugin implements PropertyChang
     configureArtifactory()
   }
 
-  @SuppressWarnings(['UnnecessaryObjectReferences', 'UnnecessarySetter'])
+  @SuppressWarnings(['UnnecessaryObjectReferences'])
   private void configureBintray() {
     RootProjectConvention rootProjectConvention = project.rootProject.convention.getPlugin(RootProjectConvention)
     ProjectConvention projectConvention = project.convention.getPlugin(ProjectConvention)
@@ -497,7 +497,7 @@ final class JvmBasePlugin extends AbstractProjectPlugin implements PropertyChang
         pkg.version.gpg.sign = true // TODO ?
         pkg.desc = project.version.toString() == '1.0.0' ? project.description : rootProjectConvention.changeLogTxt.get().toString()
         pkg.labels = projectConvention.tags.get().toArray(new String[0])
-        pkg.setLicenses projectConvention.license
+        pkg.licenses = [projectConvention.license].toArray(new String[1])
         pkg.vcsUrl = rootProjectConvention.vcsUrl.get()
         // pkg.version.attributes // Attributes to be attached to the version
       }
