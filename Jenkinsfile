@@ -21,7 +21,7 @@
 @SuppressWarnings(['UnusedVariable', 'NoDef', 'VariableTypeRequired'])
 @Library('jenkins-pipeline-shared-library@develop') dummy
 
-defaultJVMPipeline(
+defaultJvmPipeline(
   publicReleases: Boolean.FALSE,
   timeouts: [
     Test: 10,
