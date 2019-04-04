@@ -140,19 +140,19 @@ final class ProjectPlugin extends AbstractProjectPlugin {
    */
   public static final String GRADLE_MINIMUM_SUPPORTED_VERSION = '5.1'
 
+  public static final String DEFAULT_PROJECT_GROUP = 'org.fidata'
+
   @PackageScope
-  String defaultProjectGroup = 'org.fidata'
+  String defaultProjectGroup = DEFAULT_PROJECT_GROUP
 
   private boolean isBuildSrc
 
   @Override
   @SuppressWarnings('CouldBeElvis')
-  void apply(Project project) {
+  protected void doApply() {
     if (GradleVersion.current() < GradleVersion.version(GRADLE_MINIMUM_SUPPORTED_VERSION)) {
       throw new UnsupportedVersionException("Gradle versions before $GRADLE_MINIMUM_SUPPORTED_VERSION are not supported")
     }
-
-    super.apply(project)
 
     RootProjectConvention rootProjectConvention
     if (project == project.rootProject) {

@@ -87,9 +87,7 @@ final class JvmBasePlugin extends AbstractProjectPlugin implements PropertyChang
   public static final String JVM_EXTENSION_NAME = 'jvm'
 
   @Override
-  void apply(Project project) {
-    super.apply(project)
-
+  protected void doApply() {
     if (project == project.rootProject) {
       project.pluginManager.apply ProjectPlugin
     }

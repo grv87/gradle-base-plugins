@@ -49,7 +49,6 @@ import java.util.regex.Pattern
 import java.nio.file.Paths
 import groovy.transform.CompileStatic
 import org.fidata.gradle.internal.AbstractProjectPlugin
-import org.gradle.api.Project
 import com.gradle.publish.PluginBundleExtension
 import org.gradle.api.tasks.testing.Test
 import org.gradle.plugin.devel.tasks.ValidateTaskProperties
@@ -65,9 +64,7 @@ import org.gradle.api.tasks.TaskProvider
 @CompileStatic
 final class GradlePluginPlugin extends AbstractProjectPlugin implements PropertyChangeListener {
   @Override
-  void apply(Project project) {
-    super.apply(project)
-
+  protected void doApply() {
     project.pluginManager.apply JvmBasePlugin
 
     boolean isBuildSrc = project.rootProject.convention.getPlugin(RootProjectConvention).isBuildSrc

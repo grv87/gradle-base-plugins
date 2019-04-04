@@ -27,7 +27,6 @@ import org.fidata.gradle.utils.PluginDependeesUtils
 import org.gradle.api.artifacts.Configuration
 import groovy.transform.CompileStatic
 import org.fidata.gradle.internal.AbstractProjectPlugin
-import org.gradle.api.Project
 import org.gradle.api.tasks.compile.GroovyCompile
 import org.gradle.api.tasks.javadoc.Groovydoc
 
@@ -37,9 +36,7 @@ import org.gradle.api.tasks.javadoc.Groovydoc
 @CompileStatic
 final class GroovyBasePlugin extends AbstractProjectPlugin {
   @Override
-  void apply(Project project) {
-    super.apply(project)
-
+  protected void doApply() {
     project.pluginManager.apply JvmBasePlugin
 
     boolean isBuildSrc = project.rootProject.convention.getPlugin(RootProjectConvention).isBuildSrc

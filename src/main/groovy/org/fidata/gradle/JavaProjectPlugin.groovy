@@ -40,7 +40,6 @@ import org.fidata.gradle.tasks.DelombokExtended
 import org.ajoberstar.gradle.git.publish.GitPublishExtension
 import org.fidata.gradle.internal.AbstractProjectPlugin
 import org.fidata.gradle.utils.PluginDependeesUtils
-import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.tasks.javadoc.Javadoc
 import org.gradle.api.tasks.TaskProvider
@@ -51,9 +50,7 @@ import org.gradle.api.tasks.TaskProvider
 @CompileStatic
 final class JavaProjectPlugin extends AbstractProjectPlugin {
   @Override
-  void apply(Project project) {
-    super.apply(project)
-
+  protected void doApply() {
     project.pluginManager.apply JvmBasePlugin
 
     boolean isBuildSrc = project.rootProject.convention.getPlugin(RootProjectConvention).isBuildSrc
