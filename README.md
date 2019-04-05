@@ -430,7 +430,7 @@ Should be provided in [standard Gradle ways
     <tr><td><code>gitUsername</code></td>                                                            <td rowspan="2">Git push during release</td><td>&nbsp;</td>
     <tr><td><code>gitPassword</code></td>                                                                                                        <td>&nbsp;</td>
     <tr><td><code>ghToken</code></td>                                                                <td>Create release on GitHub</td><td>&nbsp;</td>
-    <tr><td><code>gpgKeyId</code>        </td>                                                       <td rowspan="2">Sign artifacts, git commits and git tags</td><td>&nbsp;                                             </td>
+    <tr><td><code>gpgKeyId</code>        </td>                                                       <td rowspan="2">Sign artifacts, git commits and git tags</td><td>&nbsp;                                                  </td>
     <tr><td><code>gpgKeyPassphrase</code></td>                                                                                                                    <td>Not required. Assumes no passphrase if not provided</td>
     <tr><td><code>mavenCentralUsername</code></td><td rowspan="2"><code>org.fidata.base.jvm</code> for public releases</td><td rowspan="2">Release to Bintray</td><td>&nbsp;</td>
     <tr><td><code>mavenCentralPassword</code></td>                                                                                                                <td>&nbsp;</td>
