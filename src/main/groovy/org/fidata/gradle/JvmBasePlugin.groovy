@@ -32,6 +32,7 @@ import static org.gradle.api.tasks.SourceSet.TEST_SOURCE_SET_NAME
 import static org.gradle.initialization.IGradlePropertiesLoader.ENV_PROJECT_PROPERTIES_PREFIX
 import static org.gradle.language.base.plugins.LifecycleBasePlugin.VERIFICATION_GROUP
 import static org.jfrog.gradle.plugin.artifactory.task.ArtifactoryTask.ARTIFACTORY_PUBLISH_TASK_NAME
+import static org.gradle.api.publish.plugins.PublishingPlugin.PUBLISH_LIFECYCLE_TASK_NAME
 import com.google.common.collect.ImmutableSet
 import com.jfrog.bintray.gradle.BintrayExtension
 import com.jfrog.bintray.gradle.tasks.BintrayPublishTask
@@ -54,6 +55,7 @@ import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.ModuleDependency
+import org.gradle.api.artifacts.repositories.MavenArtifactRepository
 import org.gradle.api.file.CopySpec
 import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.plugins.quality.CodeNarc
@@ -148,6 +150,7 @@ final class JvmBasePlugin extends AbstractProjectPlugin implements PropertyChang
 
   private void configurePublicReleases() {
     if (project.convention.getPlugin(ProjectConvention).publicReleases) {
+      configureMavenCentral()
       configureBintray()
     }
   }
@@ -475,6 +478,29 @@ final class JvmBasePlugin extends AbstractProjectPlugin implements PropertyChang
     project.extensions.getByType(SigningExtension).sign project.extensions.getByType(PublishingExtension).publications
 
     configureArtifactory()
+  }
+
+  private void configureMavenCentral() {
+    project.extensions.getByType(PublishingExtension).repositories.maven { MavenArtifactRepository mavenArtifactRepository ->
+      mavenArtifactRepository.with {
+        /*
+         * WORKAROUND:
+         * Groovy bug?
+         * When GString is used, URI property setter is called anyway, and we got cast error
+         * <grv87 2018-06-26>
+         */
+        url = project.uri(
+          project.rootProject.convention.getPlugin(RootProjectConvention).isRelease.get() ?
+          'https://oss.sonatype.org/service/local/staging/deploy/maven2' :
+          'https://oss.sonatype.org/content/repositories/snapshots'
+        )
+        credentials.username = project.rootProject.extensions.extraProperties['mavenCentralUsername'].toString()
+        credentials.password = project.rootProject.extensions.extraProperties['mavenCentralPassword'].toString()
+      }
+    }
+    project.rootProject.tasks.named(RELEASE_TASK_NAME).configure { Task release ->
+      release.finalizedBy PUBLISH_LIFECYCLE_TASK_NAME
+    }
   }
 
   @SuppressWarnings(['UnnecessaryObjectReferences'])
