@@ -5,3 +5,4 @@ org.fidata.gradle.dependencies
 org.fidata.gradle.internal
 org.fidata.gradle.tasks
 org.fidata.gradle.utils
+org.fidata.utils
