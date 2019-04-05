@@ -23,11 +23,11 @@ package org.fidata.gradle.tasks
 import static java.nio.charset.StandardCharsets.UTF_8
 import groovy.transform.CompileStatic
 import org.gradle.api.DefaultTask
+import org.gradle.api.Task
 import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.reporting.ReportingExtension
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
-import org.gradle.api.Task
-import org.gradle.api.reporting.ReportingExtension
 
 /**
  * Generates reports about all task file inputs and outputs

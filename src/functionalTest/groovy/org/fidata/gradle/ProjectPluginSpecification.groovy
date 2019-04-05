@@ -23,14 +23,14 @@ package org.fidata.gradle
 
 import static org.fidata.testfixtures.TestFixtures.initEmptyGitRepository
 import com.google.common.collect.ImmutableMap
-import org.spdx.spdxspreadsheet.InvalidLicenseStringException
-import spock.lang.Specification
-import org.junit.Rule
-import org.junit.rules.TemporaryFolder
 import org.gradle.api.Project
-import org.gradle.testfixtures.ProjectBuilder
 import org.gradle.api.Task
 import org.gradle.api.plugins.quality.CodeNarc
+import org.gradle.testfixtures.ProjectBuilder
+import org.junit.Rule
+import org.junit.rules.TemporaryFolder
+import org.spdx.spdxspreadsheet.InvalidLicenseStringException
+import spock.lang.Specification
 import spock.lang.Unroll
 
 /**

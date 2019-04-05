@@ -26,23 +26,23 @@ import static org.gradle.api.plugins.JavaPlugin.COMPILE_JAVA_TASK_NAME
 import static org.gradle.api.plugins.JavaPlugin.JAVADOC_TASK_NAME
 import static org.gradle.api.tasks.SourceSet.MAIN_SOURCE_SET_NAME
 import static org.gradle.internal.FileUtils.toSafeFileName
-import org.gradle.api.plugins.quality.CheckstyleExtension
 import com.google.common.io.Resources
-import org.fidata.gradle.utils.PathDirector
-import org.fidata.gradle.utils.ReportPathDirectorException
+import groovy.transform.CompileStatic
+import io.franzbecker.gradle.lombok.LombokPluginExtension
 import java.nio.file.InvalidPathException
 import java.nio.file.Path
 import java.nio.file.Paths
-import org.gradle.api.plugins.quality.Checkstyle
-import io.franzbecker.gradle.lombok.LombokPluginExtension
-import groovy.transform.CompileStatic
-import org.fidata.gradle.tasks.DelombokExtended
 import org.ajoberstar.gradle.git.publish.GitPublishExtension
 import org.fidata.gradle.internal.AbstractProjectPlugin
+import org.fidata.gradle.tasks.DelombokExtended
+import org.fidata.gradle.utils.PathDirector
 import org.fidata.gradle.utils.PluginDependeesUtils
+import org.fidata.gradle.utils.ReportPathDirectorException
 import org.gradle.api.plugins.JavaPluginConvention
-import org.gradle.api.tasks.javadoc.Javadoc
+import org.gradle.api.plugins.quality.Checkstyle
+import org.gradle.api.plugins.quality.CheckstyleExtension
 import org.gradle.api.tasks.TaskProvider
+import org.gradle.api.tasks.javadoc.Javadoc
 
 /**
  * Provides an environment for a JDK project

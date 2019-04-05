@@ -21,62 +21,23 @@
  */
 package org.fidata.gradle
 
-import static org.gradle.language.base.plugins.LifecycleBasePlugin.ASSEMBLE_TASK_NAME
-import static org.gradle.language.base.plugins.LifecycleBasePlugin.CHECK_TASK_NAME
-import static org.ajoberstar.gradle.git.release.base.BaseReleasePlugin.RELEASE_TASK_NAME
-import static org.gradle.api.plugins.ProjectReportsPlugin.PROJECT_REPORT
-import static org.gradle.initialization.DefaultSettings.DEFAULT_BUILD_SRC_DIR
-import static org.gradle.api.Project.DEFAULT_BUILD_DIR_NAME
-import static org.gradle.internal.FileUtils.toSafeFileName
-import static org.fidata.utils.VersionUtils.isPreReleaseVersion
-import static org.gradle.language.base.plugins.LifecycleBasePlugin.VERIFICATION_GROUP
 import static com.dorongold.gradle.tasktree.TaskTreePlugin.TASK_TREE_TASK_NAME
+import static org.ajoberstar.gradle.git.release.base.BaseReleasePlugin.RELEASE_TASK_NAME
 import static org.fidata.gpg.GpgUtils.getGpgHome
 import static org.fidata.utils.VersionUtils.SNAPSHOT_SUFFIX
-import com.google.common.collect.ImmutableSet
+import static org.fidata.utils.VersionUtils.isPreReleaseVersion
+import static org.gradle.api.Project.DEFAULT_BUILD_DIR_NAME
+import static org.gradle.api.plugins.ProjectReportsPlugin.PROJECT_REPORT
+import static org.gradle.initialization.DefaultSettings.DEFAULT_BUILD_SRC_DIR
+import static org.gradle.internal.FileUtils.toSafeFileName
+import static org.gradle.language.base.plugins.LifecycleBasePlugin.ASSEMBLE_TASK_NAME
+import static org.gradle.language.base.plugins.LifecycleBasePlugin.CHECK_TASK_NAME
+import static org.gradle.language.base.plugins.LifecycleBasePlugin.VERIFICATION_GROUP
+import com.dorongold.gradle.tasktree.TaskTreeTask
+import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 import com.github.zafarkhaja.semver.ParseException
-import java.nio.file.InvalidPathException
-import org.gradle.api.plugins.quality.Pmd
-import org.gradle.tooling.UnsupportedVersionException
-import org.fidata.gradle.utils.PathDirector
-import org.fidata.gradle.utils.ReportPathDirectorException
-import java.nio.file.Path
-import java.nio.file.Paths
-import org.gradle.api.tasks.TaskCollection
-import org.ajoberstar.grgit.auth.AuthConfig
-import org.ajoberstar.grgit.Grgit
-import de.gliderpilot.gradle.semanticrelease.SemanticReleasePluginExtension
-import org.gradle.api.artifacts.repositories.MavenArtifactRepository
-import org.fidata.gradle.tasks.CodeNarcTaskConvention
-import org.gradle.api.file.ConfigurableFileTree
-import groovy.transform.CompileStatic
-import groovy.transform.PackageScope
-import org.fidata.gradle.internal.AbstractProjectPlugin
-import org.gradle.api.Project
-import org.gradle.api.Task
-import org.gradle.api.tasks.testing.Test
-import org.fidata.gradle.tasks.NoJekyll
-import org.fidata.gradle.tasks.ResignGitCommit
-import org.gradle.api.plugins.quality.CodeNarc
-import org.fidata.gradle.utils.PluginDependeesUtils
-import org.gradle.api.plugins.quality.CodeNarcExtension
-import org.gradle.util.GradleVersion
-import org.gradle.api.plugins.ProjectReportsPluginConvention
-import org.gradle.api.tasks.diagnostics.BuildEnvironmentReportTask
-import org.gradle.api.reporting.components.ComponentReport
-import org.gradle.api.tasks.diagnostics.DependencyReportTask
-import org.gradle.api.tasks.diagnostics.DependencyInsightReportTask
-import org.gradle.api.reporting.dependents.DependentComponentsReport
-import org.gradle.api.reporting.model.ModelReport
-import org.gradle.api.tasks.diagnostics.ProjectReportTask
-import org.gradle.api.tasks.diagnostics.PropertyReportTask
-import org.gradle.api.reporting.dependencies.HtmlDependencyReportTask
-import org.gradle.api.tasks.diagnostics.TaskReportTask
-import org.fidata.gradle.tasks.InputsOutputs
-import org.gradle.api.artifacts.ComponentSelection
-import org.gradle.api.file.FileTreeElement
-import groovy.text.StreamingTemplateEngine
-import groovy.text.Template
+import com.github.zafarkhaja.semver.Version
+import com.google.common.collect.ImmutableSet
 /*
  * WORKAROUND:
  * cz.malohlava plugin doesn't work with Gradle 5
@@ -84,18 +45,56 @@ import groovy.text.Template
  * <grv87 2018-12-01>
  */
 // import cz.malohlava.VisTegPluginExtension
-// import org.gradle.api.logging.LogLevel
-import org.gradle.api.tasks.wrapper.Wrapper
-import org.gradle.api.reporting.ReportingExtension
-import org.ajoberstar.gradle.git.publish.GitPublishExtension
-import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
-import org.gradle.api.artifacts.ResolutionStrategy
+import de.gliderpilot.gradle.semanticrelease.SemanticReleasePluginExtension
 import de.gliderpilot.gradle.semanticrelease.UpdateGithubRelease
-import org.jfrog.gradle.plugin.artifactory.dsl.ArtifactoryPluginConvention
-import com.dorongold.gradle.tasktree.TaskTreeTask
+import groovy.text.StreamingTemplateEngine
+import groovy.text.Template
+import groovy.transform.CompileStatic
+import groovy.transform.PackageScope
+import java.nio.file.InvalidPathException
+import java.nio.file.Path
+import java.nio.file.Paths
 import java.util.regex.Matcher
-import com.github.zafarkhaja.semver.Version
+import org.ajoberstar.gradle.git.publish.GitPublishExtension
+import org.ajoberstar.grgit.Grgit
+import org.ajoberstar.grgit.auth.AuthConfig
+import org.fidata.gradle.internal.AbstractProjectPlugin
+import org.fidata.gradle.tasks.CodeNarcTaskConvention
+import org.fidata.gradle.tasks.InputsOutputs
+import org.fidata.gradle.tasks.NoJekyll
+import org.fidata.gradle.tasks.ResignGitCommit
+import org.fidata.gradle.utils.PathDirector
+import org.fidata.gradle.utils.PluginDependeesUtils
+import org.fidata.gradle.utils.ReportPathDirectorException
+import org.gradle.api.Project
+import org.gradle.api.Task
+import org.gradle.api.artifacts.ComponentSelection
+import org.gradle.api.artifacts.ResolutionStrategy
+import org.gradle.api.artifacts.repositories.MavenArtifactRepository
+import org.gradle.api.file.ConfigurableFileTree
+import org.gradle.api.file.FileTreeElement
+import org.gradle.api.plugins.ProjectReportsPluginConvention
+import org.gradle.api.plugins.quality.CodeNarc
+import org.gradle.api.plugins.quality.CodeNarcExtension
+import org.gradle.api.plugins.quality.Pmd
+import org.gradle.api.reporting.ReportingExtension
+import org.gradle.api.reporting.components.ComponentReport
+import org.gradle.api.reporting.dependencies.HtmlDependencyReportTask
+import org.gradle.api.reporting.dependents.DependentComponentsReport
+import org.gradle.api.reporting.model.ModelReport
+import org.gradle.api.tasks.TaskCollection
 import org.gradle.api.tasks.TaskProvider
+import org.gradle.api.tasks.diagnostics.BuildEnvironmentReportTask
+import org.gradle.api.tasks.diagnostics.DependencyInsightReportTask
+import org.gradle.api.tasks.diagnostics.DependencyReportTask
+import org.gradle.api.tasks.diagnostics.ProjectReportTask
+import org.gradle.api.tasks.diagnostics.PropertyReportTask
+import org.gradle.api.tasks.diagnostics.TaskReportTask
+import org.gradle.api.tasks.testing.Test
+import org.gradle.api.tasks.wrapper.Wrapper
+import org.gradle.tooling.UnsupportedVersionException
+import org.gradle.util.GradleVersion
+import org.jfrog.gradle.plugin.artifactory.dsl.ArtifactoryPluginConvention
 
 /**
  * Provides an environment for a general, language-agnostic project
