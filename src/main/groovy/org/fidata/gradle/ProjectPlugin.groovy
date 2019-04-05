@@ -28,11 +28,11 @@ import static org.gradle.api.plugins.ProjectReportsPlugin.PROJECT_REPORT
 import static org.gradle.initialization.DefaultSettings.DEFAULT_BUILD_SRC_DIR
 import static org.gradle.api.Project.DEFAULT_BUILD_DIR_NAME
 import static org.gradle.internal.FileUtils.toSafeFileName
-import static org.fidata.gradle.utils.VersionUtils.isPreReleaseVersion
+import static org.fidata.utils.VersionUtils.isPreReleaseVersion
 import static org.gradle.language.base.plugins.LifecycleBasePlugin.VERIFICATION_GROUP
 import static com.dorongold.gradle.tasktree.TaskTreePlugin.TASK_TREE_TASK_NAME
 import static org.fidata.gpg.GpgUtils.getGpgHome
-import static org.fidata.gradle.utils.VersionUtils.SNAPSHOT_SUFFIX
+import static org.fidata.utils.VersionUtils.SNAPSHOT_SUFFIX
 import com.google.common.collect.ImmutableSet
 import com.github.zafarkhaja.semver.ParseException
 import java.nio.file.InvalidPathException

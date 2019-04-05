@@ -20,7 +20,7 @@
  */
 package org.fidata.gradle.dependencies
 
-import static org.fidata.gradle.utils.VersionUtils.isPreReleaseVersion
+import static org.fidata.utils.VersionUtils.isPreReleaseVersion
 import static org.gradle.internal.component.model.ComponentResolveMetadata.DEFAULT_STATUS_SCHEME
 import org.gradle.api.Plugin
 import org.gradle.api.Project

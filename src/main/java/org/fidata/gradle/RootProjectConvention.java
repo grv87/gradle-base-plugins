@@ -20,7 +20,7 @@
  */
 package org.fidata.gradle;
 
-import static org.fidata.gradle.utils.VersionUtils.SNAPSHOT_SUFFIX;
+import static org.fidata.utils.VersionUtils.SNAPSHOT_SUFFIX;
 import com.github.zafarkhaja.semver.Version;
 import de.gliderpilot.gradle.semanticrelease.SemanticReleaseChangeLogService;
 import de.gliderpilot.gradle.semanticrelease.SemanticReleasePluginExtension;

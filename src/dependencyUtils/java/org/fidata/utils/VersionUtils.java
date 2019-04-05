@@ -18,7 +18,7 @@
  * License along with this program.
  * If not, see <https://www.gnu.org/licenses/>.
  */
-package org.fidata.gradle.utils;
+package org.fidata.utils;
 
 import com.github.zafarkhaja.semver.ParseException;
 import com.github.zafarkhaja.semver.Version;
