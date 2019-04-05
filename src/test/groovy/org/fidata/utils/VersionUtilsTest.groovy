@@ -19,7 +19,7 @@
  * License along with this program.
  * If not, see <https://www.gnu.org/licenses/>.
  */
-package org.fidata.gradle.utils
+package org.fidata.utils
 
 import groovy.transform.CompileStatic
 import org.junit.runner.RunWith
