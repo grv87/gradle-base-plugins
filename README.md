@@ -432,6 +432,8 @@ Should be provided in [standard Gradle ways
     <tr><td><code>ghToken</code></td>                                                                <td>Create release on GitHub</td><td>&nbsp;</td>
     <tr><td><code>gpgKeyId</code>        </td>                                                       <td rowspan="2">Sign artifacts, git commits and git tags</td><td>&nbsp;                                             </td>
     <tr><td><code>gpgKeyPassphrase</code></td>                                                                                                                    <td>Not required. Assumes no passphrase if not provided</td>
+    <tr><td><code>mavenCentralUsername</code></td><td rowspan="2"><code>org.fidata.base.jvm</code> for public releases</td><td rowspan="2">Release to Bintray</td><td>&nbsp;</td>
+    <tr><td><code>mavenCentralPassword</code></td>                                                                                                                <td>&nbsp;</td>
     <tr><td><code>bintrayUser</code>  </td><td rowspan="2"><code>org.fidata.base.jvm</code> for public releases</td><td rowspan="2">Release to Bintray</td><td>&nbsp;</td>
     <tr><td><code>bintrayAPIKey</code></td>                                                                                                                <td>&nbsp;</td>
     <tr><td><code>gradlePluginsKey</code>   </td><td rowspan="2"><code>org.fidata.plugin</code> for public releases</td><td rowspan="2">Release to Gradle Plugins portal</td><td>&nbsp;</td>
