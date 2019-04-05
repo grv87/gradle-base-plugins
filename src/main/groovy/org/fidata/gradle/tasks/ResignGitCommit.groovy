@@ -21,18 +21,18 @@
 package org.fidata.gradle.tasks
 
 import groovy.transform.CompileStatic
+import java.nio.file.Paths
 import org.fidata.gpg.GpgUtils
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
 import org.gradle.api.Task
-import org.gradle.api.tasks.Optional
-import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.tasks.InputDirectory
+import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.internal.os.OperatingSystem
 import org.gradle.process.ExecSpec
-import java.nio.file.Paths
 
 /**
  * Amends previous git commit adding sign to it ("resigns" commit)

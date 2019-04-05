@@ -21,20 +21,20 @@
  */
 package org.fidata.gradle
 
+import static org.gradle.api.plugins.GroovyPlugin.GROOVYDOC_TASK_NAME
 import static org.gradle.api.plugins.JavaPlugin.API_CONFIGURATION_NAME
 import static org.gradle.api.plugins.JavaPlugin.API_ELEMENTS_CONFIGURATION_NAME
 import static org.gradle.api.plugins.JavaPlugin.JAVADOC_TASK_NAME
-import static org.gradle.api.plugins.GroovyPlugin.GROOVYDOC_TASK_NAME
-import org.gradle.api.artifacts.ConfigurationVariant
-import org.gradle.api.artifacts.Configuration
-import org.gradle.api.tasks.TaskProvider
-import org.fidata.gradle.utils.PluginDependeesUtils
 import groovy.transform.CompileStatic
-import org.fidata.gradle.internal.AbstractProjectPlugin
-import org.gradle.api.tasks.javadoc.Groovydoc
-import org.gradle.api.artifacts.type.ArtifactTypeDefinition
-import org.gradle.api.tasks.compile.GroovyCompile
 import org.ajoberstar.gradle.git.publish.GitPublishExtension
+import org.fidata.gradle.internal.AbstractProjectPlugin
+import org.fidata.gradle.utils.PluginDependeesUtils
+import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.ConfigurationVariant
+import org.gradle.api.artifacts.type.ArtifactTypeDefinition
+import org.gradle.api.tasks.TaskProvider
+import org.gradle.api.tasks.compile.GroovyCompile
+import org.gradle.api.tasks.javadoc.Groovydoc
 import org.gradle.api.tasks.javadoc.Javadoc
 
 /**

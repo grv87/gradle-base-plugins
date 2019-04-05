@@ -22,11 +22,11 @@
 package org.fidata.gradle
 
 import static java.nio.charset.StandardCharsets.UTF_8
-import org.gradle.api.NamedDomainObjectProvider
-import org.fidata.gradle.utils.PluginDependeesUtils
-import org.gradle.api.artifacts.Configuration
 import groovy.transform.CompileStatic
 import org.fidata.gradle.internal.AbstractProjectPlugin
+import org.fidata.gradle.utils.PluginDependeesUtils
+import org.gradle.api.NamedDomainObjectProvider
+import org.gradle.api.artifacts.Configuration
 import org.gradle.api.tasks.compile.GroovyCompile
 import org.gradle.api.tasks.javadoc.Groovydoc
 

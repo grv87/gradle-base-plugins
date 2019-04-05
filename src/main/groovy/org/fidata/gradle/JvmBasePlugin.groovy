@@ -21,60 +21,60 @@
  */
 package org.fidata.gradle
 
-import static java.nio.charset.StandardCharsets.UTF_8
-import static org.gradle.api.plugins.JavaPlugin.COMPILE_CONFIGURATION_NAME
-import static org.gradle.api.plugins.JavaPlugin.API_CONFIGURATION_NAME
-import static org.gradle.api.plugins.JavaPlugin.TEST_TASK_NAME
-import static org.gradle.api.tasks.SourceSet.TEST_SOURCE_SET_NAME
-import static org.gradle.api.tasks.SourceSet.MAIN_SOURCE_SET_NAME
-import static org.ajoberstar.gradle.git.release.base.BaseReleasePlugin.RELEASE_TASK_NAME
 import static ProjectPlugin.LICENSE_FILE_NAMES
+import static java.nio.charset.StandardCharsets.UTF_8
+import static org.ajoberstar.gradle.git.release.base.BaseReleasePlugin.RELEASE_TASK_NAME
+import static org.gradle.api.plugins.JavaPlugin.API_CONFIGURATION_NAME
+import static org.gradle.api.plugins.JavaPlugin.COMPILE_CONFIGURATION_NAME
+import static org.gradle.api.plugins.JavaPlugin.TEST_TASK_NAME
+import static org.gradle.api.tasks.SourceSet.MAIN_SOURCE_SET_NAME
+import static org.gradle.api.tasks.SourceSet.TEST_SOURCE_SET_NAME
+import static org.gradle.initialization.IGradlePropertiesLoader.ENV_PROJECT_PROPERTIES_PREFIX
 import static org.gradle.language.base.plugins.LifecycleBasePlugin.VERIFICATION_GROUP
 import static org.jfrog.gradle.plugin.artifactory.task.ArtifactoryTask.ARTIFACTORY_PUBLISH_TASK_NAME
-import static org.gradle.initialization.IGradlePropertiesLoader.ENV_PROJECT_PROPERTIES_PREFIX
-import groovy.transform.Internal
 import com.google.common.collect.ImmutableSet
-import java.nio.file.InvalidPathException
-import org.gradle.api.NamedDomainObjectProvider
-import org.gradle.external.javadoc.StandardJavadocDocletOptions
-import org.gradle.api.artifacts.Configuration
-import org.gradle.api.plugins.quality.FindBugs
-import org.gradle.api.plugins.quality.JDepend
-import org.gradle.api.Namer
-import org.fidata.gradle.utils.PathDirector
-import org.fidata.gradle.utils.ReportPathDirectorException
-import org.gradle.api.Task
-import groovy.transform.PackageScope
-import org.gradle.api.tasks.compile.JavaCompile
-import org.gradle.api.tasks.javadoc.Javadoc
-import org.gradle.plugins.signing.Sign
-import org.gradle.api.file.CopySpec
-import org.gradle.api.publish.maven.MavenPublication
-import org.gradle.plugins.signing.SigningExtension
-import org.fidata.gradle.utils.PluginDependeesUtils
-import org.gradle.api.publish.PublishingExtension
-import org.jfrog.gradle.plugin.artifactory.dsl.ArtifactoryPluginConvention
-import org.jfrog.gradle.plugin.artifactory.task.ArtifactoryTask
-import org.fidata.gradle.tasks.CodeNarcTaskConvention
-import org.gradle.api.artifacts.ModuleDependency
-import groovy.transform.CompileStatic
-import org.fidata.gradle.internal.AbstractProjectPlugin
-import org.gradle.api.Project
-import org.gradle.api.tasks.testing.Test
-import org.gradle.language.jvm.tasks.ProcessResources
-import java.beans.PropertyChangeListener
-import java.beans.PropertyChangeEvent
-import org.gradle.api.plugins.JavaPluginConvention
-import org.gradle.api.tasks.SourceSet
-import org.gradle.api.reporting.ReportingExtension
 import com.jfrog.bintray.gradle.BintrayExtension
 import com.jfrog.bintray.gradle.tasks.BintrayPublishTask
-import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import groovy.transform.CompileStatic
+import groovy.transform.Internal
+import groovy.transform.PackageScope
+import java.beans.PropertyChangeEvent
+import java.beans.PropertyChangeListener
+import java.nio.file.InvalidPathException
 import java.nio.file.Path
 import java.nio.file.Paths
-import org.gradle.api.tasks.TaskProvider
+import org.fidata.gradle.internal.AbstractProjectPlugin
+import org.fidata.gradle.tasks.CodeNarcTaskConvention
+import org.fidata.gradle.utils.PathDirector
+import org.fidata.gradle.utils.PluginDependeesUtils
+import org.fidata.gradle.utils.ReportPathDirectorException
+import org.gradle.api.NamedDomainObjectProvider
+import org.gradle.api.Namer
+import org.gradle.api.Project
+import org.gradle.api.Task
+import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.ModuleDependency
+import org.gradle.api.file.CopySpec
+import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.plugins.quality.CodeNarc
+import org.gradle.api.plugins.quality.FindBugs
+import org.gradle.api.plugins.quality.JDepend
 import org.gradle.api.publish.PublicationContainer
+import org.gradle.api.publish.PublishingExtension
+import org.gradle.api.publish.maven.MavenPublication
+import org.gradle.api.reporting.ReportingExtension
+import org.gradle.api.tasks.SourceSet
+import org.gradle.api.tasks.TaskProvider
+import org.gradle.api.tasks.compile.JavaCompile
+import org.gradle.api.tasks.javadoc.Javadoc
+import org.gradle.api.tasks.testing.Test
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.gradle.external.javadoc.StandardJavadocDocletOptions
+import org.gradle.language.jvm.tasks.ProcessResources
+import org.gradle.plugins.signing.Sign
+import org.gradle.plugins.signing.SigningExtension
+import org.jfrog.gradle.plugin.artifactory.dsl.ArtifactoryPluginConvention
+import org.jfrog.gradle.plugin.artifactory.task.ArtifactoryTask
 
 /**
  * Provides an environment for a JDK project

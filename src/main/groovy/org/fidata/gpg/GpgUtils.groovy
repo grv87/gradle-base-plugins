@@ -22,16 +22,16 @@
 package org.fidata.gpg
 
 // import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS
-import org.gradle.api.Project
-import org.gradle.process.ExecSpec
-import java.security.InvalidKeyException
-import groovy.transform.CompileStatic
 import com.sun.jna.platform.win32.Advapi32Util
-import com.sun.jna.platform.win32.WinReg
 import com.sun.jna.platform.win32.Win32Exception
+import com.sun.jna.platform.win32.WinReg
+import groovy.transform.CompileStatic
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.security.InvalidKeyException
+import org.gradle.api.Project
 import org.gradle.internal.os.OperatingSystem
+import org.gradle.process.ExecSpec
 
 /**
  * Utils to work with GPG

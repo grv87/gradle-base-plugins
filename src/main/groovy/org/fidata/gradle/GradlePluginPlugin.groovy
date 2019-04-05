@@ -21,42 +21,42 @@
  */
 package org.fidata.gradle
 
-import static org.ajoberstar.gradle.git.release.base.BaseReleasePlugin.RELEASE_TASK_NAME
-import static ProjectPlugin.ARTIFACTORY_URL
 import static JvmBasePlugin.FUNCTIONAL_TEST_SOURCE_SET_NAME
 import static JvmBasePlugin.FUNCTIONAL_TEST_TASK_NAME
 import static JvmBasePlugin.JUNIT_GROUP
 import static JvmBasePlugin.JUNIT_MODULE
 import static JvmBasePlugin.SPOCK_GROUP
 import static JvmBasePlugin.SPOCK_MODULE
+import static ProjectPlugin.ARTIFACTORY_URL
+import static org.ajoberstar.gradle.git.release.base.BaseReleasePlugin.RELEASE_TASK_NAME
 import static org.gradle.internal.FileUtils.toSafeFileName
+import com.gradle.publish.PluginBundleExtension
+import com.gradle.publish.PublishTask
+import groovy.transform.CompileStatic
+import java.beans.PropertyChangeEvent
+import java.beans.PropertyChangeListener
+import java.nio.file.InvalidPathException
+import java.nio.file.Path
+import java.nio.file.Paths
+import java.util.regex.Pattern
+import org.fidata.gradle.internal.AbstractProjectPlugin
+import org.fidata.gradle.utils.PathDirector
+import org.fidata.gradle.utils.PluginDependeesUtils
+import org.fidata.gradle.utils.ReportPathDirectorException
 import org.gradle.api.NamedDomainObjectProvider
+import org.gradle.api.Task
 import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.ExternalModuleDependency
-import com.gradle.publish.PublishTask
-import org.fidata.gradle.utils.PathDirector
-import java.nio.file.InvalidPathException
-import org.fidata.gradle.utils.ReportPathDirectorException
-import java.nio.file.Path
-import org.gradle.api.tasks.SourceSetContainer
-import org.gradle.api.Task
-import org.gradle.api.tasks.SourceSet
-import org.gradle.plugin.devel.GradlePluginDevelopmentExtension
-import org.fidata.gradle.utils.PluginDependeesUtils
 import org.gradle.api.artifacts.repositories.MavenArtifactRepository
-import org.jfrog.gradle.plugin.artifactory.dsl.ArtifactoryPluginConvention
-import java.util.regex.Pattern
-import java.nio.file.Paths
-import groovy.transform.CompileStatic
-import org.fidata.gradle.internal.AbstractProjectPlugin
-import com.gradle.publish.PluginBundleExtension
-import org.gradle.api.tasks.testing.Test
-import org.gradle.plugin.devel.tasks.ValidateTaskProperties
-import java.beans.PropertyChangeListener
-import java.beans.PropertyChangeEvent
 import org.gradle.api.plugins.JavaPluginConvention
-import org.ysb33r.gradle.gradletest.TestSet
+import org.gradle.api.tasks.SourceSet
+import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.TaskProvider
+import org.gradle.api.tasks.testing.Test
+import org.gradle.plugin.devel.GradlePluginDevelopmentExtension
+import org.gradle.plugin.devel.tasks.ValidateTaskProperties
+import org.jfrog.gradle.plugin.artifactory.dsl.ArtifactoryPluginConvention
+import org.ysb33r.gradle.gradletest.TestSet
 
 /**
  * Provides an environment for a Gradle plugin project
