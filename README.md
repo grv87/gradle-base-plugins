@@ -1,6 +1,8 @@
 gradle-base-plugins
 ===================
 
+[![Build Status](https://jenkins.fidata.org/buildStatus/icon?job=Github%2Fgradle-base-plugins%2Fdevelop)](https://jenkins.fidata.org/job/Github/job/gradle-base-plugins/job/develop/)
+
 Plugins to configure Gradle to build projects (including
 other Gradle pluging) developed by FIDATA.
 They provide reasonable defaults and sane environment
