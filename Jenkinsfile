@@ -31,10 +31,5 @@ defaultJvmPipeline(
     'functionalTest',
   ].toSet(),
   compatTest: Boolean.TRUE,
-  customCodenarcReports: [
-    'exceptions',
-    'mainResources',
-    'testFixtures',
-  ].toSet(),
   gradlePlugin: Boolean.TRUE
 )
