@@ -127,7 +127,8 @@ class JvmBasePluginSpecification extends Specification {
 
   void 'copies license file into resources META-INF directory'() {
     given: 'license file'
-    new File(testProjectDir, 'LICENSE').text = 'Dummy license file'
+    String license = 'LICENSE'
+    new File(testProjectDir, license).text = 'Dummy license file'
 
     when:
     GradleRunner.create()
@@ -139,7 +140,7 @@ class JvmBasePluginSpecification extends Specification {
       .build()
 
     then: 'resources META-INF directory contains license file'
-    new File(testProjectDir, 'build/resources/main/META-INF/LICENSE').text == 'Dummy license file' // TODO
+    new File(testProjectDir, "build/resources/main/META-INF/$license").text == 'Dummy license file' // TODO
 
     (success = true) != null
   }
