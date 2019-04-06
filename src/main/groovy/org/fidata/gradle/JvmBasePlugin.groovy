@@ -348,15 +348,6 @@ final class JvmBasePlugin extends AbstractProjectPlugin implements PropertyChang
    * Name of functional test task
    */
   public static final String FUNCTIONAL_TEST_TASK_NAME = 'functionalTest'
-  /**
-   * Name of functional test reports directory
-   */
-  @Deprecated
-  public static final String FUNCTIONAL_TEST_REPORTS_DIR_NAME = 'functionalTest'
-  /**
-   * Path of functional test reports directory
-   */
-  public static final Path FUNCTIONAL_TEST_REPORTS_PATH = Paths.get('functionalTest')
 
   /*
    * WORKAROUND:
@@ -457,12 +448,6 @@ final class JvmBasePlugin extends AbstractProjectPlugin implements PropertyChang
    * Name of maven java publication
    */
   public static final String MAVEN_JAVA_PUBLICATION_NAME = 'mavenJava'
-  /**
-   * Name of maven java publication
-   * @deprecated Typo in the name. Use {@link #MAVEN_JAVA_PUBLICATION_NAME} instead
-   */
-  @Deprecated
-  public static final String MAVEN_JAVA_PUBICATION_NAME = MAVEN_JAVA_PUBLICATION_NAME
 
   @PackageScope
   boolean createMavenJavaPublication = true
