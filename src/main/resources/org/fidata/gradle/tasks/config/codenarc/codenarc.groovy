@@ -22,7 +22,9 @@
 package org.fidata.gradle.tasks.config.codenarc
 
 ruleset {
-  ruleset('rulesets/basic.xml')
+  ruleset('rulesets/basic.xml') {
+    EmptyCatchBlock(ignoreRegex: '^ignored$')
+  }
   ruleset('rulesets/braces.xml')
   ruleset('rulesets/comments.xml')
   ruleset('rulesets/concurrency.xml')
