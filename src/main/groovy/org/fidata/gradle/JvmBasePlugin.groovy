@@ -36,6 +36,8 @@ import static org.gradle.api.publish.plugins.PublishingPlugin.PUBLISH_LIFECYCLE_
 import com.google.common.collect.ImmutableSet
 import com.jfrog.bintray.gradle.BintrayExtension
 import com.jfrog.bintray.gradle.tasks.BintrayPublishTask
+import de.gliderpilot.gradle.semanticrelease.GitRepo
+import de.gliderpilot.gradle.semanticrelease.SemanticReleasePluginExtension
 import groovy.transform.CompileStatic
 import groovy.transform.Internal
 import groovy.transform.PackageScope
@@ -61,9 +63,16 @@ import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.plugins.quality.CodeNarc
 import org.gradle.api.plugins.quality.FindBugs
 import org.gradle.api.plugins.quality.JDepend
+import org.gradle.api.publish.Publication
 import org.gradle.api.publish.PublicationContainer
 import org.gradle.api.publish.PublishingExtension
+import org.gradle.api.publish.ivy.IvyArtifact
+import org.gradle.api.publish.ivy.internal.publication.IvyPublicationInternal
+import org.gradle.api.publish.ivy.internal.publisher.IvyNormalizedPublication
+import org.gradle.api.publish.maven.MavenArtifact
 import org.gradle.api.publish.maven.MavenPublication
+import org.gradle.api.publish.maven.internal.publication.MavenPublicationInternal
+import org.gradle.api.publish.maven.internal.publisher.MavenNormalizedPublication
 import org.gradle.api.reporting.ReportingExtension
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.TaskProvider
@@ -152,6 +161,7 @@ final class JvmBasePlugin extends AbstractProjectPlugin implements PropertyChang
     if (project.convention.getPlugin(ProjectConvention).publicReleases) {
       configureMavenCentral()
       configureBintray()
+      configureGithubReleases()
     }
   }
 
@@ -516,6 +526,45 @@ final class JvmBasePlugin extends AbstractProjectPlugin implements PropertyChang
     }
     project.rootProject.tasks.named(RELEASE_TASK_NAME).configure { Task release ->
       release.finalizedBy project.tasks.withType(BintrayPublishTask)
+    }
+  }
+
+  private void configureGithubReleases() {
+    GitRepo repo = project.extensions.getByType(SemanticReleasePluginExtension).repo
+    project.afterEvaluate {
+      /**
+       * CRED:
+       * Code borrowed from JFrog Artifactory (build-info) Gradle plugin
+       * under Apache 2.0 license
+       * <grv87 2019-04-07>
+       */
+      project.extensions.getByType(PublishingExtension).publications.configureEach { Publication publication ->
+        if (MavenPublicationInternal.isInstance(publication)) {
+          MavenPublicationInternal mavenPublicationInternal = (MavenPublicationInternal) publication
+          MavenNormalizedPublication mavenNormalizedPublication = mavenPublicationInternal.asNormalisedPublication()
+
+          Set<MavenArtifact> artifacts = mavenNormalizedPublication.allArtifacts
+          for (MavenArtifact artifact : artifacts) {
+            File file = artifact.file
+            repo.releaseAsset([
+              label: artifact.classifier
+            ], file)
+          }
+        } else if (IvyPublicationInternal.isInstance(publication)) {
+          IvyPublicationInternal ivyPublicationInternal = (IvyPublicationInternal) publication
+          IvyNormalizedPublication ivyNormalizedPublication = ivyPublicationInternal.asNormalisedPublication()
+
+          Set<IvyArtifact> artifacts = ivyNormalizedPublication.allArtifacts
+          for (IvyArtifact artifact : artifacts) {
+            File file = artifact.file
+            repo.releaseAsset([
+              label: artifact.classifier
+            ], file)
+          }
+        } else {
+          throw new UnsupportedOperationException("Unsupported publication of type ${ publication.class.canonicalName }, named $publication.name")
+        }
+      }
     }
   }
 
