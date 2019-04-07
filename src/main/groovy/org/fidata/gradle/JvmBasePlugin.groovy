@@ -403,7 +403,7 @@ final class JvmBasePlugin extends AbstractProjectPlugin implements PropertyChang
     project.tasks.withType(Test).configureEach { Test test ->
       test.with {
         environment = environment.findAll { String key, Object value -> key != 'GRADLE_OPTS' && !key.startsWith(ENV_PROJECT_PROPERTIES_PREFIX) }
-        maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
+        maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2).intValue()
         testLogging.exceptionFormat = TestExceptionFormat.FULL
       }
     }
