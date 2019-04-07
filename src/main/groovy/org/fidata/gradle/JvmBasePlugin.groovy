@@ -487,7 +487,7 @@ final class JvmBasePlugin extends AbstractProjectPlugin implements PropertyChang
   public static final String JAVADOC_JAR_ARTIFACT_CLASSIFIER = 'javadoc'
 
   /**
-   * Name of maven java publication
+   * Name of mavenJava publication
    */
   public static final String MAVEN_JAVA_PUBLICATION_NAME = 'mavenJava'
 
