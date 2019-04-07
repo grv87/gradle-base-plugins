@@ -40,6 +40,7 @@ import de.gliderpilot.gradle.semanticrelease.GitRepo
 import de.gliderpilot.gradle.semanticrelease.SemanticReleasePluginExtension
 import groovy.transform.CompileStatic
 import groovy.transform.Internal
+import groovy.transform.Memoized
 import groovy.transform.PackageScope
 import java.beans.PropertyChangeEvent
 import java.beans.PropertyChangeListener
@@ -64,6 +65,7 @@ import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.plugins.quality.CodeNarc
 import org.gradle.api.plugins.quality.FindBugs
 import org.gradle.api.plugins.quality.JDepend
+import org.gradle.api.provider.Property
 import org.gradle.api.publish.Publication
 import org.gradle.api.publish.PublicationContainer
 import org.gradle.api.publish.PublishingExtension
@@ -83,6 +85,7 @@ import org.gradle.api.tasks.javadoc.Javadoc
 import org.gradle.api.tasks.testing.Test
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.external.javadoc.StandardJavadocDocletOptions
+import org.gradle.api.tasks.bundling.Jar
 import org.gradle.language.jvm.tasks.ProcessResources
 import org.gradle.plugins.signing.Sign
 import org.gradle.plugins.signing.SigningExtension
@@ -464,21 +467,110 @@ final class JvmBasePlugin extends AbstractProjectPlugin implements PropertyChang
   }
 
   /**
+   * Name of sourcesJar task
+   */
+  public static final String SOURCES_JAR_TASK_NAME = 'sourcesJar'
+
+  /**
+   * Classifier of sources jar artifact
+   */
+  public static final String SOURCES_JAR_ARTIFACT_CLASSIFIER = 'sources'
+
+  /**
+   * Name of javadocJar task
+   */
+  public static final String JAVADOC_JAR_TASK_NAME = 'javadocJar'
+
+  /**
+   * Classifier of javadoc jar artifact
+   */
+  public static final String JAVADOC_JAR_ARTIFACT_CLASSIFIER = 'javadoc'
+
+  /**
    * Name of maven java publication
    */
   public static final String MAVEN_JAVA_PUBLICATION_NAME = 'mavenJava'
 
+  private Property<String> mainPublicationName
+
   @PackageScope
-  boolean createMavenJavaPublication = true
+  Property<String> getMainPublicationName() {
+    this.@mainPublicationName
+  }
+
+  @PackageScope
+  @Memoized
+  MavenPublication getMainPublication() {
+    String mainPublicationName = this.@mainPublicationName.get()
+    MavenPublication mainPublication = project.extensions.getByType(PublishingExtension).publications.maybeCreate(mainPublicationName, MavenPublication)
+    if (mainPublicationName == MAVEN_JAVA_PUBLICATION_NAME) { // Default publication
+      mainPublication.from project.components.getByName('java' /* hardcoded in JavaPlugin */)
+    }
+    mainPublication
+  }
+
+  private TaskProvider<Jar> defaultSourcesJarProvider
+
+  @PackageScope
+  TaskProvider<Jar> getDefaultSourcesJarProvider() {
+    this.@defaultSourcesJarProvider
+  }
+
+  private Property<Jar> sourcesJar
+
+  @PackageScope
+  Property<Jar> getSourcesJar() {
+    this.@sourcesJar
+  }
+
+  private TaskProvider<Jar> defaultJavadocJarProvider
+
+  @PackageScope
+  TaskProvider<Jar> getDefaultJavadocJarProvider() {
+    this.@defaultJavadocJarProvider
+  }
+
+  @PackageScope
+  private Property<Jar> javadocJar
+
+  @PackageScope
+  Property<Jar> getJavadocJar() {
+    this.@javadocJar
+  }
 
   private void configureArtifactsPublishing() {
-    project.afterEvaluate {
-      if (createMavenJavaPublication) {
-        project.extensions.getByType(PublishingExtension).publications.register(MAVEN_JAVA_PUBLICATION_NAME, MavenPublication) { MavenPublication publication ->
-          publication.from project.components.getByName('java' /* TODO */)
-        }
+    this.@mainPublicationName = project.objects.property(String).convention(MAVEN_JAVA_PUBLICATION_NAME)
+
+    this.@defaultSourcesJarProvider = project.tasks.register(SOURCES_JAR_TASK_NAME, Jar) { Jar defaultSourceJar ->
+      defaultSourceJar.with {
+        from project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(MAIN_SOURCE_SET_NAME).allSource
+        // dependsOn
+        archiveClassifier.set SOURCES_JAR_ARTIFACT_CLASSIFIER
       }
     }
+    this.@sourcesJar = project.objects.property(Jar).convention(defaultSourcesJarProvider)
+
+    this.@defaultJavadocJarProvider = project.tasks.register(JAVADOC_JAR_TASK_NAME, Jar) { Jar defaultJavadocJar ->
+      defaultJavadocJar.archiveClassifier.set JAVADOC_JAR_ARTIFACT_CLASSIFIER
+    }
+    this.@javadocJar = project.objects.property(Jar).convention(defaultJavadocJarProvider)
+
+    project.afterEvaluate {
+      defaultSourcesJarProvider.configure { Jar defaultSourcesJar ->
+        defaultSourcesJar.enabled = sourcesJar.get() == defaultSourcesJar
+        null
+      }
+      defaultJavadocJarProvider.configure { Jar defaultJavadocJar ->
+        defaultJavadocJar.enabled = javadocJar.get() == defaultJavadocJar
+        null
+      }
+
+      mainPublication.with {
+        artifact sourcesJar.get()
+        artifact javadocJar.get()
+      }
+    }
+
     project.extensions.getByType(SigningExtension).sign project.extensions.getByType(PublishingExtension).publications
 
     configureArtifactory()

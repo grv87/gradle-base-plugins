@@ -23,10 +23,14 @@ package org.fidata.gradle
 
 import static java.nio.charset.StandardCharsets.UTF_8
 import groovy.transform.CompileStatic
+import groovy.transform.PackageScope
 import org.fidata.gradle.internal.AbstractProjectPlugin
 import org.fidata.gradle.utils.PluginDependeesUtils
 import org.gradle.api.NamedDomainObjectProvider
 import org.gradle.api.artifacts.Configuration
+import org.gradle.api.provider.Property
+import org.gradle.api.tasks.TaskProvider
+import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.compile.GroovyCompile
 import org.gradle.api.tasks.javadoc.Groovydoc
 
@@ -49,6 +53,8 @@ final class GroovyBasePlugin extends AbstractProjectPlugin {
 
     if (!isBuildSrc) {
       configureDocumentation()
+
+      configureArtifactsPublishing()
     }
   }
 
@@ -81,6 +87,47 @@ final class GroovyBasePlugin extends AbstractProjectPlugin {
           noVersionStamp = true
         }
       }
+    }
+  }
+
+  /**
+   * Name of groovydocJar task
+   */
+  public static final String GROOVYDOC_JAR_TASK_NAME = 'groovydocJar'
+
+  /**
+   * Classifier of javadoc jar artifact
+   */
+  public static final String GROOVYDOC_JAR_ARTIFACT_CLASSIFIER = 'groovydoc'
+
+  private TaskProvider<Jar> defaultGroovydocJarProvider
+
+  @PackageScope
+  TaskProvider<Jar> getDefaultGroovydocJarProvider() {
+    this.@defaultGroovydocJarProvider
+  }
+
+  @PackageScope
+  private Property<Jar> groovydocJar
+
+  @PackageScope
+  Property<Jar> getGroovydocJar() {
+    this.@groovydocJar
+  }
+
+  private void configureArtifactsPublishing() {
+    this.@defaultGroovydocJarProvider = project.tasks.register(GROOVYDOC_JAR_TASK_NAME, Jar) { Jar defaultGroovydocJar ->
+      defaultGroovydocJar.archiveClassifier.set GROOVYDOC_JAR_ARTIFACT_CLASSIFIER
+    }
+    this.@groovydocJar = project.objects.property(Jar).convention(defaultGroovydocJarProvider)
+
+    project.afterEvaluate {
+      defaultGroovydocJarProvider.configure { Jar defaultGroovydocJar ->
+        defaultGroovydocJar.enabled = groovydocJar.get() == defaultGroovydocJar
+        null
+      }
+
+      project.plugins.getPlugin(JvmBasePlugin).mainPublication.artifact groovydocJar.get()
     }
   }
 }

@@ -42,6 +42,7 @@ import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.plugins.quality.Checkstyle
 import org.gradle.api.plugins.quality.CheckstyleExtension
 import org.gradle.api.tasks.TaskProvider
+import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.javadoc.Javadoc
 
 /**
@@ -64,6 +65,10 @@ final class JavaProjectPlugin extends AbstractProjectPlugin {
     }
 
     configureCodeQuality()
+
+    if (!isBuildSrc) {
+      configureArtifactsPublishing()
+    }
   }
 
   private void configureLombok() {
@@ -170,6 +175,12 @@ final class JavaProjectPlugin extends AbstractProjectPlugin {
         reports.html.enabled = true
         reports.html.setDestination projectConvention.getHtmlReportFile(reportSubpath, CHECKSTYLE_REPORT_DIRECTOR, checkstyle)
       }
+    }
+  }
+
+  private void configureArtifactsPublishing() {
+    project.plugins.getPlugin(JvmBasePlugin).defaultJavadocJarProvider.configure { Jar defaultJavadocJar ->
+      defaultJavadocJar.from project.tasks.withType(Javadoc).named(JAVADOC_TASK_NAME)
     }
   }
 }
