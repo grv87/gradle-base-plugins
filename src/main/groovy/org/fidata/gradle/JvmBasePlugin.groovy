@@ -46,6 +46,7 @@ import java.beans.PropertyChangeListener
 import java.nio.file.InvalidPathException
 import java.nio.file.Path
 import java.nio.file.Paths
+import org.apache.commons.lang3.ArrayUtils
 import org.fidata.gradle.internal.AbstractProjectPlugin
 import org.fidata.gradle.tasks.CodeNarcTaskConvention
 import org.fidata.gradle.utils.PathDirector
@@ -519,6 +520,15 @@ final class JvmBasePlugin extends AbstractProjectPlugin implements PropertyChang
         pkg.licenses = [projectConvention.license].toArray(new String[1])
         pkg.vcsUrl = rootProjectConvention.vcsUrl.get()
         // pkg.version.attributes // Attributes to be attached to the version
+      }
+
+      project.extensions.getByType(PublishingExtension).with {
+        publications.withType(MavenPublication) { MavenPublication mavenPublication ->
+          extension.publications = ArrayUtils.add(extension.publications, mavenPublication.name)
+        }
+        publications.whenObjectRemoved { MavenPublication mavenPublication ->
+          extension.publications = ArrayUtils.remove(extension.publications, extension.publications.findIndexOf { String item -> item == mavenPublication.name })
+        }
       }
     }
     project.tasks.withType(BintrayPublishTask).configureEach { BintrayPublishTask bintrayPublish ->
