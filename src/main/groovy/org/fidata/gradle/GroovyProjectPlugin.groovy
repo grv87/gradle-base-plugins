@@ -33,6 +33,7 @@ import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.ConfigurationVariant
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition
 import org.gradle.api.tasks.TaskProvider
+import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.compile.GroovyCompile
 import org.gradle.api.tasks.javadoc.Groovydoc
 import org.gradle.api.tasks.javadoc.Javadoc
@@ -71,6 +72,8 @@ final class GroovyProjectPlugin extends AbstractProjectPlugin {
 
     if (!isBuildSrc) {
       configureDocumentation()
+
+      configureArtifactsPublishing()
     }
   }
 
@@ -85,5 +88,11 @@ final class GroovyProjectPlugin extends AbstractProjectPlugin {
     }
 
     project.rootProject.extensions.getByType(GitPublishExtension).contents.from(project.tasks.named('groovydoc')).into "$project.version/groovydoc"
+  }
+
+  private void configureArtifactsPublishing() {
+    project.plugins.getPlugin(GroovyBasePlugin).defaultGroovydocJarProvider.configure { Jar defaultGroovydocJar ->
+      defaultGroovydocJar.from project.tasks.withType(Groovydoc).named(GROOVYDOC_TASK_NAME)
+    }
   }
 }
