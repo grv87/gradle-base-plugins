@@ -54,7 +54,7 @@ final class GroovyBasePlugin extends AbstractProjectPlugin {
     if (!isBuildSrc) {
       configureDocumentation()
 
-      configureArtifactsPublishing()
+      configureArtifacts()
     }
   }
 
@@ -115,7 +115,7 @@ final class GroovyBasePlugin extends AbstractProjectPlugin {
     this.@groovydocJar
   }
 
-  private void configureArtifactsPublishing() {
+  private void configureArtifacts() {
     this.@defaultGroovydocJarProvider = project.tasks.register(GROOVYDOC_JAR_TASK_NAME, Jar) { Jar defaultGroovydocJar ->
       defaultGroovydocJar.archiveClassifier.set GROOVYDOC_JAR_ARTIFACT_CLASSIFIER
     }

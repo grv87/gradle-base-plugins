@@ -182,29 +182,30 @@ final class ProjectPlugin extends AbstractProjectPlugin {
 
     configurePrerequisitesLifecycle()
 
-    if (!isBuildSrc) {
-      configureArtifactory()
-    }
-
     configureDependencyResolution()
 
     if (!isBuildSrc) {
       configureDocumentation()
-
-      configureArtifactPublishing()
     }
 
     configureCodeQuality()
 
     configureDiagnostics()
 
-    if (!isBuildSrc && project == project.rootProject) {
-      createGenerateChangelogTasks()
+    if (!isBuildSrc) {
+      configureArtifacts()
+
+      configureReleases()
     }
 
     project.subprojects { Project subproject ->
       subproject.pluginManager.apply ProjectPlugin
     }
+  }
+
+  private void configureGit() {
+    System.setProperty AuthConfig.USERNAME_OPTION, project./*rootProject.*/extensions.extraProperties['gitUsername'].toString()
+    System.setProperty AuthConfig.PASSWORD_OPTION, project./*rootProject.*/extensions.extraProperties['gitPassword'].toString()
   }
 
   /**
@@ -318,16 +319,6 @@ final class ProjectPlugin extends AbstractProjectPlugin {
     '*Token',
   )
 
-  private void configureArtifactory() {
-    project.convention.getPlugin(ArtifactoryPluginConvention).with {
-      contextUrl = ARTIFACTORY_URL
-      clientConfig.with {
-        includeEnvVars = Boolean.TRUE
-        envVarsExcludePatterns = BUILD_INFO_ENV_VARS_EXCLUDE_PATTERS.join(',')
-      }
-    }
-  }
-
   private void configureDependencyResolution() {
     RootProjectConvention rootProjectConvention = project.rootProject.convention.getPlugin(RootProjectConvention)
     project.repositories.maven { MavenArtifactRepository mavenArtifactRepository ->
@@ -343,33 +334,6 @@ final class ProjectPlugin extends AbstractProjectPlugin {
         credentials.password = project.rootProject.extensions.extraProperties['artifactoryPassword'].toString()
       }
     }
-  }
-
-  // TODO: CodeNarc bug
-  @SuppressWarnings('UnnecessaryGetter')
-  private void configureArtifactPublishing() {
-    /*
-     * WORKAROUND:
-     * https://github.com/gradle/gradle/issues/1918
-     * Signing plugin doesn't support GPG 2 key IDs
-     * <grv87 2018-07-01>
-     */
-    project.extensions.extraProperties['signing.keyId'] = project.rootProject.extensions.extraProperties['gpgKeyId'].toString()[-8..-1]
-    project.extensions.extraProperties['signing.password'] = project.rootProject.extensions.extraProperties.has('gpgKeyPassphrase') ? project.rootProject.extensions.extraProperties['gpgKeyPassphrase'] : null
-    project.extensions.extraProperties['signing.secretKeyRingFile'] = getGpgHome().resolve('secring.gpg')
-
-    project.extensions.extraProperties['signing.gnupg.executable'] = 'gpg'
-    project.extensions.extraProperties['signing.gnupg.keyName'] = project.rootProject.extensions.extraProperties['gpgKeyId']
-    project.extensions.extraProperties['signing.gnupg.passphrase'] = project.rootProject.extensions.extraProperties.has('gpgKeyPassphrase') ? project.rootProject.extensions.extraProperties['gpgKeyPassphrase'] : null
-    String gnupgHome = System.getenv('GNUPGHOME')
-    if (gnupgHome != null) {
-      project.extensions.extraProperties['signing.gnupg.homeDir'] = gnupgHome
-    }
-  }
-
-  private void configureGit() {
-    System.setProperty AuthConfig.USERNAME_OPTION, project./*rootProject.*/extensions.extraProperties['gitUsername'].toString()
-    System.setProperty AuthConfig.PASSWORD_OPTION, project./*rootProject.*/extensions.extraProperties['gitPassword'].toString()
   }
 
   /**
@@ -699,6 +663,28 @@ final class ProjectPlugin extends AbstractProjectPlugin {
     }*/
   }
 
+  // TODO: CodeNarc bug
+  @SuppressWarnings('UnnecessaryGetter')
+  private void configureArtifacts() {
+    /*
+     * WORKAROUND:
+     * https://github.com/gradle/gradle/issues/1918
+     * Signing plugin doesn't support GPG 2 key IDs
+     * <grv87 2018-07-01>
+     */
+    project.extensions.extraProperties['signing.keyId'] = project.rootProject.extensions.extraProperties['gpgKeyId'].toString()[-8..-1]
+    project.extensions.extraProperties['signing.password'] = project.rootProject.extensions.extraProperties.has('gpgKeyPassphrase') ? project.rootProject.extensions.extraProperties['gpgKeyPassphrase'] : null
+    project.extensions.extraProperties['signing.secretKeyRingFile'] = getGpgHome().resolve('secring.gpg')
+
+    project.extensions.extraProperties['signing.gnupg.executable'] = 'gpg'
+    project.extensions.extraProperties['signing.gnupg.keyName'] = project.rootProject.extensions.extraProperties['gpgKeyId']
+    project.extensions.extraProperties['signing.gnupg.passphrase'] = project.rootProject.extensions.extraProperties.has('gpgKeyPassphrase') ? project.rootProject.extensions.extraProperties['gpgKeyPassphrase'] : null
+    String gnupgHome = System.getenv('GNUPGHOME')
+    if (gnupgHome != null) {
+      project.extensions.extraProperties['signing.gnupg.homeDir'] = gnupgHome
+    }
+  }
+
   /**
    * Name of generateChangelog task
    */
@@ -745,5 +731,23 @@ final class ProjectPlugin extends AbstractProjectPlugin {
         outputs.file outputFile
       }
     }
+  }
+
+  private void configureArtifactory() {
+    project.convention.getPlugin(ArtifactoryPluginConvention).with {
+      contextUrl = ARTIFACTORY_URL
+      clientConfig.with {
+        includeEnvVars = Boolean.TRUE
+        envVarsExcludePatterns = BUILD_INFO_ENV_VARS_EXCLUDE_PATTERS.join(',')
+      }
+    }
+  }
+
+  private void configureReleases() {
+    if (project == project.rootProject) {
+      createGenerateChangelogTasks()
+    }
+
+    configureArtifactory()
   }
 }

@@ -30,7 +30,6 @@ tags.set(['defaults', 'opinions', 'opinionated', 'conventions', 'internal'])
 //noinspection GroovyUnusedAssignment
 license = 'LGPL-3.0-or-later'
 //noinspection GroovyUnusedAssignment
-publicReleases = false
 contacts {
   'grv87@yandex.ru' {
     moniker 'Basil Peace'
@@ -131,3 +130,5 @@ tasks.register('codenarcMainResources', CodeNarc) {
     source fileTree(dir: srcDir, includes: ['**/*.groovy'])
   }
 }
+
+publicReleases = false

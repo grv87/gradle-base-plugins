@@ -116,10 +116,6 @@ final class JvmBasePlugin extends AbstractProjectPlugin implements PropertyChang
 
     project.convention.getPlugin(ProjectConvention).addPropertyChangeListener this
 
-    if (!isBuildSrc) {
-      configurePublicReleases()
-    }
-
     project.tasks.withType(JavaCompile).configureEach { JavaCompile javaCompile ->
       javaCompile.options.encoding = UTF_8.name()
     }
@@ -138,11 +134,13 @@ final class JvmBasePlugin extends AbstractProjectPlugin implements PropertyChang
 
     configureTesting()
 
-    if (!isBuildSrc) {
-      configureArtifactsPublishing()
-    }
-
     configureCodeQuality()
+
+    if (!isBuildSrc) {
+      configureArtifacts()
+
+      configureReleases()
+    }
   }
 
   /**
@@ -162,11 +160,25 @@ final class JvmBasePlugin extends AbstractProjectPlugin implements PropertyChang
     }
   }
 
-  private void configurePublicReleases() {
-    if (project.convention.getPlugin(ProjectConvention).publicReleases) {
-      configureMavenCentral()
-      configureBintray()
-      configureGithubReleases()
+  private void configureDocumentation() {
+    if ([project.configurations.getByName(COMPILE_CONFIGURATION_NAME), project.configurations.getByName(API_CONFIGURATION_NAME)].any { Configuration configuration ->
+      configuration.dependencies.contains(project.dependencies.gradleApi())
+    }) {
+      project.extensions.getByType(JvmBaseExtension).javadocLinks['org.gradle'] = project.uri("https://docs.gradle.org/${ project.gradle.gradleVersion }/javadoc/index.html?")
+    }
+
+    project.tasks.withType(Javadoc).configureEach { Javadoc javadoc ->
+      javadoc.options.encoding = UTF_8.name()
+      javadoc.doFirst {
+        javadoc.options { StandardJavadocDocletOptions options ->
+          javadoc.project.extensions.getByType(JvmBaseExtension).javadocLinks.values().each { URI link ->
+            options.links link.toString()
+          }
+        }
+      }
+      if (!project.rootProject.convention.getPlugin(RootProjectConvention).isRelease.get()) {
+        ((StandardJavadocDocletOptions)javadoc.options).noTimestamp = true
+      }
     }
   }
 
@@ -414,55 +426,27 @@ final class JvmBasePlugin extends AbstractProjectPlugin implements PropertyChang
   }
 
   /**
+   * Name of FindBugs common task
+   */
+  public static final String FINDBUGS_TASK_NAME = 'findbugs'
+
+  /**
+   * Name of JDepend common task
+   */
+  public static final String JDEPEND_TASK_NAME = 'jdepend'
+
+  private void configureCodeQuality() {
+    project.plugins.getPlugin(ProjectPlugin).addCodeQualityCommonTask 'FindBugs', FINDBUGS_TASK_NAME, FindBugs
+    project.plugins.getPlugin(ProjectPlugin).addCodeQualityCommonTask 'JDepend', JDEPEND_TASK_NAME, JDepend
+  }
+
+  /**
    * Namer of sign task for maven publications
    */
   static final Namer<MavenPublication> SIGN_MAVEN_PUBLICATION_NAMER = new Namer<MavenPublication>() {
     @Override
     String determineName(MavenPublication mavenPublication)  {
       "sign${ mavenPublication.name.capitalize() }Publication"
-    }
-  }
-
-  private void configureArtifactory() {
-    project.convention.getPlugin(ArtifactoryPluginConvention).with {
-      clientConfig.publisher.repoKey = "libs-${ project.rootProject.convention.getPlugin(RootProjectConvention).isRelease.get() ? 'release' : 'snapshot' }-local"
-      clientConfig.publisher.username = project.rootProject.extensions.extraProperties['artifactoryUser'].toString()
-      clientConfig.publisher.password = project.rootProject.extensions.extraProperties['artifactoryPassword'].toString()
-      clientConfig.publisher.maven = true
-    }
-    project.tasks.withType(ArtifactoryTask).named(ARTIFACTORY_PUBLISH_TASK_NAME).configure { ArtifactoryTask artifactoryPublish ->
-      PublicationContainer publications = project.extensions.getByType(PublishingExtension).publications
-      publications.withType(MavenPublication) { MavenPublication mavenPublication ->
-        artifactoryPublish.mavenPublications.add mavenPublication
-      }
-      publications.whenObjectRemoved { MavenPublication mavenPublication ->
-        artifactoryPublish.mavenPublications.remove mavenPublication
-      }
-
-      publications.withType(IvyPublication) { IvyPublication ivyPublication ->
-        artifactoryPublish.ivyPublications.add ivyPublication
-      }
-      publications.whenObjectRemoved { IvyPublication ivyPublication ->
-        artifactoryPublish.ivyPublications.remove ivyPublication
-      }
-
-      artifactoryPublish.dependsOn project.tasks.withType(Sign).matching { Sign sign -> // TODO
-        /*
-         * WORKAROUND:
-         * Without that cast we got compilation error with Groovy 2.5.2:
-         * [Static type checking] - Reference to method is ambiguous.
-         * Cannot choose between
-         * [boolean java.lang.Iterable <T>#any(groovy.lang.Closure),
-         * boolean java.lang.Object#any(groovy.lang.Closure)]
-         * <grv87 2018-12-01>
-         */
-        ((Iterable<MavenPublication>)publications.withType(MavenPublication)).any { MavenPublication mavenPublication ->
-          sign.name == SIGN_MAVEN_PUBLICATION_NAMER.determineName(mavenPublication)
-        }
-      }
-    }
-    project.rootProject.tasks.named(RELEASE_TASK_NAME).configure { Task release ->
-      release.finalizedBy project.tasks.withType(ArtifactoryTask)
     }
   }
 
@@ -538,7 +522,7 @@ final class JvmBasePlugin extends AbstractProjectPlugin implements PropertyChang
     this.@javadocJar
   }
 
-  private void configureArtifactsPublishing() {
+  private void configureArtifacts() {
     this.@mainPublicationName = project.objects.property(String).convention(MAVEN_JAVA_PUBLICATION_NAME)
 
     this.@defaultSourcesJarProvider = project.tasks.register(SOURCES_JAR_TASK_NAME, Jar) { Jar defaultSourceJar ->
@@ -572,8 +556,49 @@ final class JvmBasePlugin extends AbstractProjectPlugin implements PropertyChang
     }
 
     project.extensions.getByType(SigningExtension).sign project.extensions.getByType(PublishingExtension).publications
+  }
 
-    configureArtifactory()
+  private void configureArtifactory() {
+    project.convention.getPlugin(ArtifactoryPluginConvention).with {
+      clientConfig.publisher.repoKey = "libs-${ project.rootProject.convention.getPlugin(RootProjectConvention).isRelease.get() ? 'release' : 'snapshot' }-local"
+      clientConfig.publisher.username = project.rootProject.extensions.extraProperties['artifactoryUser'].toString()
+      clientConfig.publisher.password = project.rootProject.extensions.extraProperties['artifactoryPassword'].toString()
+      clientConfig.publisher.maven = true
+    }
+    project.tasks.withType(ArtifactoryTask).named(ARTIFACTORY_PUBLISH_TASK_NAME).configure { ArtifactoryTask artifactoryPublish ->
+      PublicationContainer publications = project.extensions.getByType(PublishingExtension).publications
+      publications.withType(MavenPublication) { MavenPublication mavenPublication ->
+        artifactoryPublish.mavenPublications.add mavenPublication
+      }
+      publications.whenObjectRemoved { MavenPublication mavenPublication ->
+        artifactoryPublish.mavenPublications.remove mavenPublication
+      }
+
+      publications.withType(IvyPublication) { IvyPublication ivyPublication ->
+        artifactoryPublish.ivyPublications.add ivyPublication
+      }
+      publications.whenObjectRemoved { IvyPublication ivyPublication ->
+        artifactoryPublish.ivyPublications.remove ivyPublication
+      }
+
+      artifactoryPublish.dependsOn project.tasks.withType(Sign).matching { Sign sign -> // TODO
+        /*
+         * WORKAROUND:
+         * Without that cast we got compilation error with Groovy 2.5.2:
+         * [Static type checking] - Reference to method is ambiguous.
+         * Cannot choose between
+         * [boolean java.lang.Iterable <T>#any(groovy.lang.Closure),
+         * boolean java.lang.Object#any(groovy.lang.Closure)]
+         * <grv87 2018-12-01>
+         */
+        ((Iterable<MavenPublication>)publications.withType(MavenPublication)).any { MavenPublication mavenPublication ->
+          sign.name == SIGN_MAVEN_PUBLICATION_NAMER.determineName(mavenPublication)
+        }
+      }
+    }
+    project.rootProject.tasks.named(RELEASE_TASK_NAME).configure { Task release ->
+      release.finalizedBy project.tasks.withType(ArtifactoryTask)
+    }
   }
 
   private void configureMavenCentral() {
@@ -678,40 +703,17 @@ final class JvmBasePlugin extends AbstractProjectPlugin implements PropertyChang
     }
   }
 
-  private void configureDocumentation() {
-    if ([project.configurations.getByName(COMPILE_CONFIGURATION_NAME), project.configurations.getByName(API_CONFIGURATION_NAME)].any { Configuration configuration ->
-      configuration.dependencies.contains(project.dependencies.gradleApi())
-    }) {
-      project.extensions.getByType(JvmBaseExtension).javadocLinks['org.gradle'] = project.uri("https://docs.gradle.org/${ project.gradle.gradleVersion }/javadoc/index.html?")
-    }
-
-    project.tasks.withType(Javadoc).configureEach { Javadoc javadoc ->
-      javadoc.options.encoding = UTF_8.name()
-      javadoc.doFirst {
-        javadoc.options { StandardJavadocDocletOptions options ->
-          javadoc.project.extensions.getByType(JvmBaseExtension).javadocLinks.values().each { URI link ->
-            options.links link.toString()
-          }
-        }
-      }
-      if (!project.rootProject.convention.getPlugin(RootProjectConvention).isRelease.get()) {
-        ((StandardJavadocDocletOptions)javadoc.options).noTimestamp = true
-      }
+  private void configurePublicReleases() {
+    if (project.convention.getPlugin(ProjectConvention).publicReleases) {
+      configureMavenCentral()
+      configureBintray()
+      configureGithubReleases()
     }
   }
 
-  /**
-   * Name of FindBugs common task
-   */
-  public static final String FINDBUGS_TASK_NAME = 'findbugs'
+  private void configureReleases() {
+    configureArtifactory()
 
-  /**
-   * Name of JDepend common task
-   */
-  public static final String JDEPEND_TASK_NAME = 'jdepend'
-
-  private void configureCodeQuality() {
-    project.plugins.getPlugin(ProjectPlugin).addCodeQualityCommonTask 'FindBugs', FINDBUGS_TASK_NAME, FindBugs
-    project.plugins.getPlugin(ProjectPlugin).addCodeQualityCommonTask 'JDepend', JDEPEND_TASK_NAME, JDepend
+    configurePublicReleases()
   }
 }
