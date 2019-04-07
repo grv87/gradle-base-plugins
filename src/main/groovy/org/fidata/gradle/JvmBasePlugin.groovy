@@ -68,6 +68,7 @@ import org.gradle.api.publish.Publication
 import org.gradle.api.publish.PublicationContainer
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.ivy.IvyArtifact
+import org.gradle.api.publish.ivy.IvyPublication
 import org.gradle.api.publish.ivy.internal.publication.IvyPublicationInternal
 import org.gradle.api.publish.ivy.internal.publisher.IvyNormalizedPublication
 import org.gradle.api.publish.maven.MavenArtifact
@@ -433,6 +434,13 @@ final class JvmBasePlugin extends AbstractProjectPlugin implements PropertyChang
       }
       publications.whenObjectRemoved { MavenPublication mavenPublication ->
         artifactoryPublish.mavenPublications.remove mavenPublication
+      }
+
+      publications.withType(IvyPublication) { IvyPublication ivyPublication ->
+        artifactoryPublish.ivyPublications.add ivyPublication
+      }
+      publications.whenObjectRemoved { IvyPublication ivyPublication ->
+        artifactoryPublish.ivyPublications.remove ivyPublication
       }
 
       artifactoryPublish.dependsOn project.tasks.withType(Sign).matching { Sign sign -> // TODO
