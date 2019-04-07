@@ -67,7 +67,7 @@ final class JavaProjectPlugin extends AbstractProjectPlugin {
     configureCodeQuality()
 
     if (!isBuildSrc) {
-      configureArtifactsPublishing()
+      configureArtifacts()
     }
   }
 
@@ -178,7 +178,7 @@ final class JavaProjectPlugin extends AbstractProjectPlugin {
     }
   }
 
-  private void configureArtifactsPublishing() {
+  private void configureArtifacts() {
     project.plugins.getPlugin(JvmBasePlugin).defaultJavadocJarProvider.configure { Jar defaultJavadocJar ->
       defaultJavadocJar.from project.tasks.withType(Javadoc).named(JAVADOC_TASK_NAME)
     }

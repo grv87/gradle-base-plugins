@@ -73,7 +73,7 @@ final class GroovyProjectPlugin extends AbstractProjectPlugin {
     if (!isBuildSrc) {
       configureDocumentation()
 
-      configureArtifactsPublishing()
+      configureArtifacts()
     }
   }
 
@@ -90,7 +90,7 @@ final class GroovyProjectPlugin extends AbstractProjectPlugin {
     project.rootProject.extensions.getByType(GitPublishExtension).contents.from(project.tasks.named('groovydoc')).into "$project.version/groovydoc"
   }
 
-  private void configureArtifactsPublishing() {
+  private void configureArtifacts() {
     project.plugins.getPlugin(GroovyBasePlugin).defaultGroovydocJarProvider.configure { Jar defaultGroovydocJar ->
       defaultGroovydocJar.from project.tasks.withType(Groovydoc).named(GROOVYDOC_TASK_NAME)
     }
