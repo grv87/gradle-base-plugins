@@ -22,15 +22,19 @@ package org.fidata.gradle;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.concurrent.Callable;
 import lombok.Getter;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.fidata.exceptions.InvalidOperationException;
 import org.fidata.gradle.internal.AbstractExtension;
 import org.fidata.gradle.utils.PathDirector;
 import org.gradle.api.Project;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
+import org.spdx.rdfparser.license.AnyLicenseInfo;
 import org.spdx.rdfparser.license.LicenseInfoFactory;
+import org.spdx.rdfparser.license.SpdxNoneLicense;
 import org.spdx.spdxspreadsheet.InvalidLicenseStringException;
 
 /**
@@ -56,22 +60,52 @@ public final class ProjectConvention extends AbstractExtension {
    *
    * @return SPDX identifier of the project license
    */
-  @Getter
-  private String license;
+  public String getLicense() {
+    return spdxLicenseInfo.toString();
+  }
 
   /**
-   * Sets the project license.
+   * Sets the project license from SPDX indentifier.
    *
    * @param newValue SPDX license identifier
-   * @throws InvalidLicenseStringException when license parsing with SPDX failed
    */
-  public void setLicense(final String newValue) throws InvalidLicenseStringException {
-    final String oldLicense = license;
-    license = newValue;
-    if (!LicenseInfoFactory.isSpdxListedLicenseID(newValue)) {
-      throw new InvalidLicenseStringException(String.format("License identifier is not in SPDX list: %s", newValue));
+  public void setLicense(final String newValue) {
+    try {
+      setSpdxLicenseInfoInternal(LicenseInfoFactory.parseSPDXLicenseString(newValue));
+    } catch (final InvalidLicenseStringException exception) {
+      throw new IllegalArgumentException(String.format("Parsing license expression %s with SPDX failed", DefaultGroovyMethods.inspect(newValue)), exception);
     }
-    getPropertyChangeSupport().firePropertyChange("license", oldLicense, newValue);
+  }
+
+  private AnyLicenseInfo spdxLicenseInfo = new SpdxNoneLicense();
+
+  /**
+   * Returns SPDX info on the project license.
+   *
+   * @return SPDX info on the project license
+   */
+  public AnyLicenseInfo getSpdxLicenseInfo() {
+    return spdxLicenseInfo.clone();
+  }
+
+  /**
+   * Sets SPDX info on the project license.
+   *
+   * @param newValue SPDX info on the project license
+   */
+  public void setSpdxLicenseInfo(final AnyLicenseInfo newValue) {
+    setSpdxLicenseInfoInternal(newValue.clone());
+  }
+
+  private void setSpdxLicenseInfoInternal(final AnyLicenseInfo newValue) {
+    final List<String> validationErrors = newValue.verify();
+    if (!validationErrors.isEmpty()) {
+      throw new IllegalArgumentException(String.format("License %s is not valid (for own developments). Validation errors: %s", DefaultGroovyMethods.inspect(newValue), DefaultGroovyMethods.toListString(validationErrors)));
+    }
+    final AnyLicenseInfo oldValue = spdxLicenseInfo;
+    spdxLicenseInfo = newValue;
+    getPropertyChangeSupport().firePropertyChange("spdxLicenseInfo", oldValue, newValue);
+    getPropertyChangeSupport().firePropertyChange("license", oldValue.toString(), newValue.toString());
   }
 
   private final boolean isBuildSrc;
