@@ -30,6 +30,5 @@ defaultJvmPipeline(
     'test',
     'functionalTest',
   ].toSet(),
-  compatTest: Boolean.TRUE,
   gradlePlugin: Boolean.TRUE
 )
