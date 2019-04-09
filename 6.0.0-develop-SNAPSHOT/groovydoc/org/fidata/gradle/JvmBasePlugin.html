@@ -149,18 +149,6 @@ extends <a href='../../../org/fidata/gradle/internal/AbstractProjectPlugin.html'
                         
                         <tr class="rowColor">
                             <td class="colFirst"><code><strong>static&nbsp;<a href='https://docs.oracle.com/javase/8/docs/api/index.html?/java/lang/String.html' title='String'>String</a></strong></code>&nbsp;</td>
-                            <td class="colLast"><code><a href="#FUNCTIONAL_TEST_REPORTS_DIR_NAME">FUNCTIONAL_TEST_REPORTS_DIR_NAME</a></code></td>
-                            <td class="colLast">Name of functional test reports directory</td>
-                        </tr>
-                        
-                        <tr class="altColor">
-                            <td class="colFirst"><code><strong>static&nbsp;<a href='https://docs.oracle.com/javase/8/docs/api/index.html?/java/nio/file/Path.html' title='Path'>Path</a></strong></code>&nbsp;</td>
-                            <td class="colLast"><code><a href="#FUNCTIONAL_TEST_REPORTS_PATH">FUNCTIONAL_TEST_REPORTS_PATH</a></code></td>
-                            <td class="colLast">Path of functional test reports directory</td>
-                        </tr>
-                        
-                        <tr class="rowColor">
-                            <td class="colFirst"><code><strong>static&nbsp;<a href='https://docs.oracle.com/javase/8/docs/api/index.html?/java/lang/String.html' title='String'>String</a></strong></code>&nbsp;</td>
                             <td class="colLast"><code><a href="#FUNCTIONAL_TEST_SOURCE_SET_NAME">FUNCTIONAL_TEST_SOURCE_SET_NAME</a></code></td>
                             <td class="colLast">Name of functional test source set</td>
                         </tr>
@@ -179,6 +167,18 @@ extends <a href='../../../org/fidata/gradle/internal/AbstractProjectPlugin.html'
                         
                         <tr class="altColor">
                             <td class="colFirst"><code><strong>static&nbsp;<a href='https://docs.oracle.com/javase/8/docs/api/index.html?/java/lang/String.html' title='String'>String</a></strong></code>&nbsp;</td>
+                            <td class="colLast"><code><a href="#JAVADOC_JAR_ARTIFACT_CLASSIFIER">JAVADOC_JAR_ARTIFACT_CLASSIFIER</a></code></td>
+                            <td class="colLast">Classifier of javadoc jar artifact</td>
+                        </tr>
+                        
+                        <tr class="rowColor">
+                            <td class="colFirst"><code><strong>static&nbsp;<a href='https://docs.oracle.com/javase/8/docs/api/index.html?/java/lang/String.html' title='String'>String</a></strong></code>&nbsp;</td>
+                            <td class="colLast"><code><a href="#JAVADOC_JAR_TASK_NAME">JAVADOC_JAR_TASK_NAME</a></code></td>
+                            <td class="colLast">Name of javadocJar task</td>
+                        </tr>
+                        
+                        <tr class="altColor">
+                            <td class="colFirst"><code><strong>static&nbsp;<a href='https://docs.oracle.com/javase/8/docs/api/index.html?/java/lang/String.html' title='String'>String</a></strong></code>&nbsp;</td>
                             <td class="colLast"><code><a href="#JDEPEND_TASK_NAME">JDEPEND_TASK_NAME</a></code></td>
                             <td class="colLast">Name of JDepend common task</td>
                         </tr>
@@ -191,14 +191,20 @@ extends <a href='../../../org/fidata/gradle/internal/AbstractProjectPlugin.html'
                         
                         <tr class="altColor">
                             <td class="colFirst"><code><strong>static&nbsp;<a href='https://docs.oracle.com/javase/8/docs/api/index.html?/java/lang/String.html' title='String'>String</a></strong></code>&nbsp;</td>
-                            <td class="colLast"><code><a href="#MAVEN_JAVA_PUBICATION_NAME">MAVEN_JAVA_PUBICATION_NAME</a></code></td>
-                            <td class="colLast">Name of maven java publication</td>
+                            <td class="colLast"><code><a href="#MAVEN_JAVA_PUBLICATION_NAME">MAVEN_JAVA_PUBLICATION_NAME</a></code></td>
+                            <td class="colLast">Name of mavenJava publication</td>
                         </tr>
                         
                         <tr class="rowColor">
                             <td class="colFirst"><code><strong>static&nbsp;<a href='https://docs.oracle.com/javase/8/docs/api/index.html?/java/lang/String.html' title='String'>String</a></strong></code>&nbsp;</td>
-                            <td class="colLast"><code><a href="#MAVEN_JAVA_PUBLICATION_NAME">MAVEN_JAVA_PUBLICATION_NAME</a></code></td>
-                            <td class="colLast">Name of maven java publication</td>
+                            <td class="colLast"><code><a href="#SOURCES_JAR_ARTIFACT_CLASSIFIER">SOURCES_JAR_ARTIFACT_CLASSIFIER</a></code></td>
+                            <td class="colLast">Classifier of sources jar artifact</td>
+                        </tr>
+                        
+                        <tr class="altColor">
+                            <td class="colFirst"><code><strong>static&nbsp;<a href='https://docs.oracle.com/javase/8/docs/api/index.html?/java/lang/String.html' title='String'>String</a></strong></code>&nbsp;</td>
+                            <td class="colLast"><code><a href="#SOURCES_JAR_TASK_NAME">SOURCES_JAR_TASK_NAME</a></code></td>
+                            <td class="colLast">Name of sourcesJar task</td>
                         </tr>
                         
                     </table>
@@ -368,25 +374,6 @@ extends <a href='../../../org/fidata/gradle/internal/AbstractProjectPlugin.html'
                             </li>
                         </ul>
                     
-                        <a name="FUNCTIONAL_TEST_REPORTS_DIR_NAME"><!-- --></a>
-                        <ul class="blockListLast">
-                            <li class="blockList">
-                                <h4>@<a href='https://docs.oracle.com/javase/8/docs/api/index.html?/java/lang/Deprecated.html' title='Deprecated'>Deprecated</a>
-public&nbsp;static&nbsp;final&nbsp;<a href='https://docs.oracle.com/javase/8/docs/api/index.html?/java/lang/String.html' title='String'>String</a> <strong>FUNCTIONAL_TEST_REPORTS_DIR_NAME</strong></h4>
-                                <p> Name of functional test reports directory
-   </p>
-                            </li>
-                        </ul>
-                    
-                        <a name="FUNCTIONAL_TEST_REPORTS_PATH"><!-- --></a>
-                        <ul class="blockListLast">
-                            <li class="blockList">
-                                <h4>public&nbsp;static&nbsp;final&nbsp;<a href='https://docs.oracle.com/javase/8/docs/api/index.html?/java/nio/file/Path.html' title='Path'>Path</a> <strong>FUNCTIONAL_TEST_REPORTS_PATH</strong></h4>
-                                <p> Path of functional test reports directory
-   </p>
-                            </li>
-                        </ul>
-                    
                         <a name="FUNCTIONAL_TEST_SOURCE_SET_NAME"><!-- --></a>
                         <ul class="blockListLast">
                             <li class="blockList">
@@ -414,6 +401,24 @@ public&nbsp;static&nbsp;final&nbsp;<a href='https://docs.oracle.com/javase/8/doc
                             </li>
                         </ul>
                     
+                        <a name="JAVADOC_JAR_ARTIFACT_CLASSIFIER"><!-- --></a>
+                        <ul class="blockListLast">
+                            <li class="blockList">
+                                <h4>public&nbsp;static&nbsp;final&nbsp;<a href='https://docs.oracle.com/javase/8/docs/api/index.html?/java/lang/String.html' title='String'>String</a> <strong>JAVADOC_JAR_ARTIFACT_CLASSIFIER</strong></h4>
+                                <p> Classifier of javadoc jar artifact
+   </p>
+                            </li>
+                        </ul>
+                    
+                        <a name="JAVADOC_JAR_TASK_NAME"><!-- --></a>
+                        <ul class="blockListLast">
+                            <li class="blockList">
+                                <h4>public&nbsp;static&nbsp;final&nbsp;<a href='https://docs.oracle.com/javase/8/docs/api/index.html?/java/lang/String.html' title='String'>String</a> <strong>JAVADOC_JAR_TASK_NAME</strong></h4>
+                                <p> Name of javadocJar task
+   </p>
+                            </li>
+                        </ul>
+                    
                         <a name="JDEPEND_TASK_NAME"><!-- --></a>
                         <ul class="blockListLast">
                             <li class="blockList">
@@ -432,21 +437,29 @@ public&nbsp;static&nbsp;final&nbsp;<a href='https://docs.oracle.com/javase/8/doc
                             </li>
                         </ul>
                     
-                        <a name="MAVEN_JAVA_PUBICATION_NAME"><!-- --></a>
-                        <ul class="blockListLast">
-                            <li class="blockList">
-                                <h4>@<a href='https://docs.oracle.com/javase/8/docs/api/index.html?/java/lang/Deprecated.html' title='Deprecated'>Deprecated</a>
-public&nbsp;static&nbsp;final&nbsp;<a href='https://docs.oracle.com/javase/8/docs/api/index.html?/java/lang/String.html' title='String'>String</a> <strong>MAVEN_JAVA_PUBICATION_NAME</strong></h4>
-                                <p> Name of maven java publication<DL><DT><B>deprecated:</B></DT><DD>Typo in the name. Use <a href='#MAVEN_JAVA_PUBLICATION_NAME'>MAVEN_JAVA_PUBLICATION_NAME</a> instead</DD></DL>
-   </p>
-                            </li>
-                        </ul>
-                    
                         <a name="MAVEN_JAVA_PUBLICATION_NAME"><!-- --></a>
                         <ul class="blockListLast">
                             <li class="blockList">
                                 <h4>public&nbsp;static&nbsp;final&nbsp;<a href='https://docs.oracle.com/javase/8/docs/api/index.html?/java/lang/String.html' title='String'>String</a> <strong>MAVEN_JAVA_PUBLICATION_NAME</strong></h4>
-                                <p> Name of maven java publication
+                                <p> Name of mavenJava publication
+   </p>
+                            </li>
+                        </ul>
+                    
+                        <a name="SOURCES_JAR_ARTIFACT_CLASSIFIER"><!-- --></a>
+                        <ul class="blockListLast">
+                            <li class="blockList">
+                                <h4>public&nbsp;static&nbsp;final&nbsp;<a href='https://docs.oracle.com/javase/8/docs/api/index.html?/java/lang/String.html' title='String'>String</a> <strong>SOURCES_JAR_ARTIFACT_CLASSIFIER</strong></h4>
+                                <p> Classifier of sources jar artifact
+   </p>
+                            </li>
+                        </ul>
+                    
+                        <a name="SOURCES_JAR_TASK_NAME"><!-- --></a>
+                        <ul class="blockListLast">
+                            <li class="blockList">
+                                <h4>public&nbsp;static&nbsp;final&nbsp;<a href='https://docs.oracle.com/javase/8/docs/api/index.html?/java/lang/String.html' title='String'>String</a> <strong>SOURCES_JAR_TASK_NAME</strong></h4>
+                                <p> Name of sourcesJar task
    </p>
                             </li>
                         </ul>
