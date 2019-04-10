@@ -41,10 +41,6 @@ contacts {
 ext.rootDir = '.'
 
 sourceSets {
-  exceptions {
-    java.srcDirs = [new File(project.ext.rootDir, 'src/exceptions/java')]
-    groovy.srcDirs = [new File(project.ext.rootDir, 'src/exceptions/groovy')]
-  }
   main {
     java.srcDirs new File(project.ext.rootDir, 'src/dependencyUtils/java')
     groovy.srcDirs += [
@@ -55,18 +51,6 @@ sourceSets {
 }
 
 apply from: new File(ext.rootDir, 'gradle/dependencies-compile.gradle')
-
-tasks.named('delombok').configure {
-  sourceSet project.sourceSets.exceptions
-}
-tasks.named('groovydoc').configure {
-  source sourceSets.exceptions.groovy
-}
-
-tasks.named('jar').configure {
-  from sourceSets.exceptions.output
-  dependsOn exceptionsClasses
-}
 
 /*
  * WORKAROUND:
