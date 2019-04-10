@@ -22,11 +22,13 @@
 package org.fidata.gradle.utils
 
 import groovy.transform.CompileStatic
+import groovy.transform.Internal
 import org.gradle.api.Project
 
 /**
  * Class to handle list of plugin dependees
  */
+@Internal
 @CompileStatic
 final class PluginDependeesUtils {
   /**

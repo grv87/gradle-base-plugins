@@ -22,10 +22,12 @@
 package org.fidata.gradle.utils
 
 import groovy.transform.CompileStatic
+import groovy.transform.Internal
 
 /**
  * Plugin dependee
  */
+@Internal
 @CompileStatic
 final class PluginDependee {
   /**

@@ -20,6 +20,7 @@
  */
 package org.fidata.gradle.internal;
 
+import groovy.transform.Internal;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import lombok.AccessLevel;
@@ -28,6 +29,7 @@ import lombok.Getter;
 /**
  * Base class for extensions and conventions.
  */
+@Internal
 @SuppressWarnings("AbstractClassWithoutAbstractMethod")
 public abstract class AbstractExtension {
   /**

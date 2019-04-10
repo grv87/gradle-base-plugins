@@ -20,6 +20,7 @@
  */
 package org.fidata.gradle.internal;
 
+import groovy.transform.Internal;
 import lombok.AccessLevel;
 import lombok.Getter;
 import org.gradle.api.Plugin;
@@ -28,6 +29,7 @@ import org.gradle.api.Project;
 /**
  * Base class for plugins applicable to @{link Project}.
  */
+@Internal
 public abstract class AbstractProjectPlugin implements Plugin<Project> {
   /**
    * Returns project which this plugin instance is applied to.

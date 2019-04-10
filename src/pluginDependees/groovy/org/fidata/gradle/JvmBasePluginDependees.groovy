@@ -23,12 +23,14 @@ package org.fidata.gradle
 
 import com.google.common.collect.ImmutableMap
 import groovy.transform.CompileStatic
+import groovy.transform.Internal
 import org.fidata.gradle.utils.PluginDependee
 import org.fidata.gradle.utils.PluginDependeeExclusion
 
 /**
  * List of dependees of org.fidata.base.jvm plugin
  */
+@Internal
 @CompileStatic
 final class JvmBasePluginDependees {
   /**

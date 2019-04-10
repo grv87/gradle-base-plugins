@@ -23,11 +23,13 @@ package org.fidata.gradle
 
 import com.google.common.collect.ImmutableMap
 import groovy.transform.CompileStatic
+import groovy.transform.Internal
 import org.fidata.gradle.utils.PluginDependee
 
 /**
  * List of dependees of org.fidata.plugin plugin
  */
+@Internal
 @CompileStatic
 final class GradlePluginPluginDependees {
   /**
