@@ -555,7 +555,10 @@ final class JvmBasePlugin extends AbstractProjectPlugin implements PropertyChang
       }
     }
 
-    project.extensions.getByType(SigningExtension).sign project.extensions.getByType(PublishingExtension).publications
+    project.extensions.getByType(SigningExtension).with {
+      sign project.configurations.getByName('archives' /* Hardcoded in BasePlugin */)
+      sign project.extensions.getByType(PublishingExtension).publications
+    }
   }
 
   private void configureArtifactory() {
