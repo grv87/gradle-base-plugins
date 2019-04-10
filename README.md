@@ -506,7 +506,7 @@ with previous Gradle versions:
 
 
 ------------------------------------------------------------------------
-Copyright © 2017-2018  Basil Peace
+Copyright ©  Basil Peace
 
 This file is part of gradle-base-plugins.
 

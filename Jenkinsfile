@@ -1,7 +1,7 @@
 #!/usr/bin/env groovy
 /*
  * Jenkinsfile for gradle-base-plugins
- * Copyright © 2018  Basil Peace
+ * Copyright ©  Basil Peace
  *
  * This file is part of gradle-base-plugins.
  *

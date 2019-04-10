@@ -1,6 +1,6 @@
 /*
  * org.fidata.testfixtures Package Info
- * Copyright © 2019  Basil Peace
+ * Copyright ©  Basil Peace
  *
  * This file is part of gradle-base-plugins.
  *

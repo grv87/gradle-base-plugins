@@ -2,7 +2,7 @@
 /*
  * Specification for org.fidata.project Gradle plugin
  * for extra properties
- * Copyright © 2018  Basil Peace
+ * Copyright ©  Basil Peace
  *
  * This file is part of gradle-base-plugins.
  *
