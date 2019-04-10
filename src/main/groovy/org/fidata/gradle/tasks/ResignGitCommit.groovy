@@ -21,7 +21,6 @@
 package org.fidata.gradle.tasks
 
 import groovy.transform.CompileStatic
-import java.nio.file.Paths
 import org.fidata.gpg.GpgUtils
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
@@ -31,7 +30,6 @@ import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.TaskProvider
-import org.gradle.internal.os.OperatingSystem
 import org.gradle.process.ExecSpec
 
 /**
@@ -68,9 +66,6 @@ class ResignGitCommit extends DefaultTask {
         project.logger.info('ResignGitCommit: presetting gpgKeyPassphrase')
         project.exec { ExecSpec execSpec ->
           execSpec.executable 'gpg-preset-passphrase'
-          if (!OperatingSystem.current().windows) {
-            execSpec.executable Paths.get('/usr/local/libexec', execSpec.executable).toString()
-          }
           execSpec.args '--preset', '--passphrase', project.rootProject.extensions.extraProperties['gpgKeyPassphrase'], GpgUtils.getKeyGrip(project, gpgKeyId)
         }
       }

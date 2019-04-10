@@ -266,6 +266,8 @@ when buildSrc project is detected.
     It is usually achieved by adding this string
     into `gpg-agent.conf` file in GPG home directory.
 
+    `gpg-preset-passphrase` should be available in the path.
+
 ## `org.fidata.base.jvm` plugin
 
 Project which uses JVM-based language.
