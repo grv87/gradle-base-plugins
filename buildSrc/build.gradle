@@ -46,9 +46,6 @@ repositories {
 }
 
 sourceSets {
-  exceptions {
-    groovy.srcDirs = [new File(project.ext.rootDir,  'src/exceptions/groovy')]
-  }
   main {
     java.srcDirs = [
       new File(project.ext.rootDir, 'src/dependencyUtils/java'),

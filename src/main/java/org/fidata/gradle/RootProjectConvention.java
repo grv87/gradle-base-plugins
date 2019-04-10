@@ -30,7 +30,6 @@ import java.util.concurrent.Callable;
 import lombok.Getter;
 import org.ajoberstar.gradle.git.release.base.ReleasePluginExtension;
 import org.ajoberstar.gradle.git.release.base.ReleaseVersion;
-import org.fidata.exceptions.InvalidOperationException;
 import org.fidata.gradle.internal.AbstractExtension;
 import org.gradle.api.Project;
 import org.gradle.api.provider.Property;
@@ -61,7 +60,7 @@ public final class RootProjectConvention extends AbstractExtension {
    */
   public Provider<Boolean> getIsRelease() {
     if (isBuildSrc) {
-      throw new InvalidOperationException("buildSrc project can't have releases at all");
+      throw new IllegalStateException("buildSrc project can't have releases at all");
     }
     return isRelease;
   }
@@ -75,7 +74,7 @@ public final class RootProjectConvention extends AbstractExtension {
    */
   public Provider<Writable> getChangeLog() {
     if (isBuildSrc) {
-      throw new InvalidOperationException(BUILD_SRC_PROJECT_CAN_T_HAVE_CHANGELOG);
+      throw new IllegalStateException(BUILD_SRC_PROJECT_CAN_T_HAVE_CHANGELOG);
     }
     return changeLog;
   }
@@ -89,7 +88,7 @@ public final class RootProjectConvention extends AbstractExtension {
    */
   public Provider<Writable> getChangeLogTxt() {
     if (isBuildSrc) {
-      throw new InvalidOperationException(BUILD_SRC_PROJECT_CAN_T_HAVE_CHANGELOG);
+      throw new IllegalStateException(BUILD_SRC_PROJECT_CAN_T_HAVE_CHANGELOG);
     }
     return changeLogTxt;
   }
@@ -117,7 +116,7 @@ public final class RootProjectConvention extends AbstractExtension {
    */
   public RootProjectConvention(final Project project) {
     if (project != project.getRootProject()) {
-      throw new InvalidOperationException("RootProjectConvention can only be added to root project");
+      throw new IllegalStateException("RootProjectConvention can only be added to root project");
     }
 
     @SuppressWarnings({"LocalVariableHidesMemberVariable", "checkstyle:hiddenfield"})

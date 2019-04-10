@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import lombok.Getter;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
-import org.fidata.exceptions.InvalidOperationException;
 import org.fidata.gradle.internal.AbstractExtension;
 import org.fidata.gradle.utils.PathDirector;
 import org.gradle.api.Project;
@@ -119,7 +118,7 @@ public final class ProjectConvention extends AbstractExtension {
    */
   public boolean getPublicReleases() {
     if (isBuildSrc) {
-      throw new InvalidOperationException(BUILD_SRC_PROJECT_CAN_T_HAVE_RELEASES_AT_ALL);
+      throw new IllegalStateException(BUILD_SRC_PROJECT_CAN_T_HAVE_RELEASES_AT_ALL);
     }
     return publicReleases;
   }
@@ -131,7 +130,7 @@ public final class ProjectConvention extends AbstractExtension {
    */
   public void setPublicReleases(final boolean newValue) {
     if (isBuildSrc) {
-      throw new InvalidOperationException(BUILD_SRC_PROJECT_CAN_T_HAVE_RELEASES_AT_ALL);
+      throw new IllegalStateException(BUILD_SRC_PROJECT_CAN_T_HAVE_RELEASES_AT_ALL);
     }
     final boolean oldValue = publicReleases;
     publicReleases = newValue;

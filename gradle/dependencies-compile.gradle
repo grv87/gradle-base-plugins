@@ -25,9 +25,6 @@ import org.fidata.gradle.utils.PluginDependeeExclusion
 apply from: new File(ext.rootDir, 'gradle/dependencies-dependencyUtils-compile.gradle')
 
 dependencies {
-  exceptionsImplementation/*exceptionsApi*/ localGroovy()
-  implementation sourceSets.exceptions.output
-
   Closure addDependencies = { Map<String, PluginDependee> pluginDependees ->
     pluginDependees.findAll { !it.key.startsWith('org.gradle.') }.each { Map.Entry<String, PluginDependee> entry ->
       entry.value.with {
