@@ -1,6 +1,7 @@
 #!/usr/bin/env groovy
 /*
- * Specification for org.fidata.project.groovy Gradle plugin
+ * Specification for org.fidata.project Gradle plugin
+ * for extra properties
  * Copyright © 2018  Basil Peace
  *
  * This file is part of gradle-base-plugins.
@@ -24,15 +25,18 @@ package org.fidata.gradle
 import static org.fidata.testfixtures.TestFixtures.initEmptyGitRepository
 import com.google.common.collect.ImmutableMap
 import org.gradle.api.Project
+import org.gradle.api.internal.plugins.PluginApplicationException
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
+import spock.lang.Unroll
 
 /**
- * Specification for {@link GroovyProjectPlugin} class
+ * Specification for {@link ProjectPlugin} class
+ * for extra properties
  */
-class GroovyProjectPluginSpecification extends Specification {
+class ProjectPluginExtraPropertiesFunctionalSpec extends Specification {
   // fields
   @Rule
   final TemporaryFolder testProjectDir = new TemporaryFolder()
@@ -57,9 +61,6 @@ class GroovyProjectPluginSpecification extends Specification {
   void setup() {
     initEmptyGitRepository(testProjectDir.root)
     project = ProjectBuilder.builder().withProjectDir(testProjectDir.root).build()
-    EXTRA_PROPERTIES.each { String key, String value ->
-      project.ext.setProperty key, value
-    }
   }
 
   // run after every feature method
@@ -69,10 +70,14 @@ class GroovyProjectPluginSpecification extends Specification {
   // void cleanupSpec() { }
 
   // feature methods
+  void 'works when all extra properties are set'() {
+    given: 'all properties are set'
+    EXTRA_PROPERTIES.each { String key, String value ->
+      project.ext.setProperty key, value
+    }
 
-  void 'can be applied'() {
     when: 'plugin is being applied'
-    project.apply plugin: 'org.fidata.project.groovy'
+    project.apply plugin: 'org.fidata.project'
 
     then: 'no exception is thrown'
     noExceptionThrown()
@@ -82,6 +87,25 @@ class GroovyProjectPluginSpecification extends Specification {
 
     then: 'no exception is thrown'
     noExceptionThrown()
+  }
+
+  @Unroll
+  void 'requires extra property #property'() {
+    given: 'all properties except #property are set'
+    EXTRA_PROPERTIES.findAll { key, value -> key != property }.each { String key, String value ->
+      project.ext.setProperty key, value
+    }
+
+    when: 'plugin is applied'
+    project.apply plugin: 'org.fidata.project'
+    and: 'project is being evaluated'
+    project.evaluate()
+
+    then: 'PluginApplicationException is thrown'
+    thrown(PluginApplicationException)
+
+    where:
+    property << EXTRA_PROPERTIES.keySet()
   }
 
   // helper methods

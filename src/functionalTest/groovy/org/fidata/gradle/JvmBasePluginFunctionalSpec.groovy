@@ -1,7 +1,6 @@
 #!/usr/bin/env groovy
 /*
- * Specification for org.fidata.project Gradle plugin
- * for extra properties
+ * Specification for org.fidata.base.jvm Gradle plugin
  * Copyright © 2018  Basil Peace
  *
  * This file is part of gradle-base-plugins.
@@ -25,18 +24,16 @@ package org.fidata.gradle
 import static org.fidata.testfixtures.TestFixtures.initEmptyGitRepository
 import com.google.common.collect.ImmutableMap
 import org.gradle.api.Project
-import org.gradle.api.internal.plugins.PluginApplicationException
+import org.gradle.api.Task
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
-import spock.lang.Unroll
 
 /**
- * Specification for {@link ProjectPlugin} class
- * for extra properties
+ * Specification for {@link JvmBasePlugin} class
  */
-class ProjectPluginExtraPropertiesSpecification extends Specification {
+class JvmBasePluginFunctionalSpec extends Specification {
   // fields
   @Rule
   final TemporaryFolder testProjectDir = new TemporaryFolder()
@@ -61,6 +58,9 @@ class ProjectPluginExtraPropertiesSpecification extends Specification {
   void setup() {
     initEmptyGitRepository(testProjectDir.root)
     project = ProjectBuilder.builder().withProjectDir(testProjectDir.root).build()
+    EXTRA_PROPERTIES.each { String key, String value ->
+      project.ext.setProperty key, value
+    }
   }
 
   // run after every feature method
@@ -70,42 +70,34 @@ class ProjectPluginExtraPropertiesSpecification extends Specification {
   // void cleanupSpec() { }
 
   // feature methods
-  void 'works when all extra properties are set'() {
-    given: 'all properties are set'
-    EXTRA_PROPERTIES.each { String key, String value ->
-      project.ext.setProperty key, value
-    }
 
-    when: 'plugin is being applied'
-    project.apply plugin: 'org.fidata.project'
+  void 'adds functionalTest task'() {
+    when: 'plugin is applied'
+    project.apply plugin: 'org.fidata.base.jvm'
 
-    then: 'no exception is thrown'
-    noExceptionThrown()
+    then: 'functionalTest task exists'
+    Task functionalTest = project.tasks.getByName('functionalTest')
 
-    when: 'project is being evaluated'
+    when: 'project is evaluated'
     project.evaluate()
 
-    then: 'no exception is thrown'
-    noExceptionThrown()
+    then: 'functionalTest should be run after test task'
+    functionalTest.shouldRunAfter.getDependencies(functionalTest).contains(project.tasks.getByName('test'))
   }
 
-  @Unroll
-  void 'requires extra property #property'() {
-    given: 'all properties except #property are set'
-    EXTRA_PROPERTIES.findAll { key, value -> key != property }.each { String key, String value ->
-      project.ext.setProperty key, value
-    }
-
+  void 'provides mavenJava publication'() {
     when: 'plugin is applied'
-    project.apply plugin: 'org.fidata.project'
-    and: 'project is being evaluated'
+    project.apply plugin: 'org.fidata.base.jvm'
+    and: 'project evaluated'
     project.evaluate()
 
-    then: 'PluginApplicationException is thrown'
-    thrown(PluginApplicationException)
+    then: 'mavenJava publication exists'
+    project.publishing.publications.getByName('mavenJava')
+    and: 'mavenJava task exists'
+    project.tasks.getByName(taskName)
 
     where:
-    property << EXTRA_PROPERTIES.keySet()
+    taskName << ['generateMetadataFileForMavenJavaPublication', 'generatePomFileForMavenJavaPublication']
   }
 
   // helper methods

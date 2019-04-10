@@ -35,7 +35,7 @@ import spock.lang.Unroll
 /**
  * Specification for {@link GradlePluginPlugin} class
  */
-class GradlePluginPluginSpecification extends Specification {
+class GradlePluginPluginFunctionalSpecification extends Specification {
   // fields
   @Rule
   final TemporaryFolder testProjectDir = new TemporaryFolder()

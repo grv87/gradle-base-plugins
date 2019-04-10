@@ -1,6 +1,7 @@
 #!/usr/bin/env groovy
 /*
- * Specification for org.fidata.base.jvm Gradle plugin
+ * Specification for org.fidata.project Gradle plugin
+ * for buildSrc project
  * Copyright © 2018  Basil Peace
  *
  * This file is part of gradle-base-plugins.
@@ -27,20 +28,26 @@ import org.gradle.testkit.runner.GradleRunner
 import spock.lang.Specification
 
 /**
- * Specification for {@link JvmBasePlugin} class
+ * Specification for {@link ProjectPlugin} class
+ * for buildSrc project
  */
-class JvmBasePluginSpecification extends Specification {
+class ProjectPluginBuildSrcCompatSpec extends Specification {
   // fields
   boolean success = false
 
   final File testProjectDir = File.createTempDir('compatTest', '-project')
 
   File buildFile = new File(testProjectDir, 'build.gradle')
-  File propertiesFile = new File(testProjectDir, 'gradle.properties')
+
+  final File buildSrcTestProjectDir = new File(testProjectDir, 'buildSrc')
+
+  File buildSrcBuildFile = new File(buildSrcTestProjectDir, 'build.gradle')
+
+  File buildSrcPropertiesFile = new File(buildSrcTestProjectDir, 'gradle.properties')
 
   static final Map<String, String> EXTRA_PROPERTIES = ImmutableMap.copyOf([
-    'artifactoryUser'    : 'dummyArtifactoryUser',
-    'artifactoryPassword': 'dummyArtifactoryPassword',
+    'artifactoryUser'    : System.getProperty('org.fidata.compatTest.artifactoryUser'),
+    'artifactoryPassword': System.getProperty('org.fidata.compatTest.artifactoryPassword'),
     'gitUsername': 'dummyGitUser',
     'gitPassword': 'dummyGitPassword',
     'ghToken': 'dummyGhToken',
@@ -56,13 +63,20 @@ class JvmBasePluginSpecification extends Specification {
   void setup() {
     initEmptyGitRepository(testProjectDir)
 
-    buildFile << '''\
+    assert buildFile.createNewFile()
+
+    assert buildSrcTestProjectDir.mkdir()
+    buildSrcBuildFile << '''\
       plugins {
-        id 'org.fidata.base.jvm'
+        id 'org.fidata.project'
+      }
+
+      afterEvaluate {
+        assert tasks.findByName('codenarcBuildSrc') == null
       }
     '''.stripIndent()
 
-    propertiesFile.withPrintWriter { PrintWriter printWriter ->
+    buildSrcPropertiesFile.withPrintWriter { PrintWriter printWriter ->
       EXTRA_PROPERTIES.each { String key, String value ->
         printWriter.println "$key=$value"
       }
@@ -87,60 +101,20 @@ class JvmBasePluginSpecification extends Specification {
 
   // feature methods
 
-  void 'sets Java encoding to UTF-8'() {
-    given:
-    buildFile << '''\
-      sourceSets.main.java.srcDirs = ['src']
-      apply plugin: 'java'
-    '''
-    and:
-    File srcDir = new File(testProjectDir, 'src')
-    srcDir.mkdir()
-    new File(srcDir, 'EncodingTest.java').bytes = """\
-      public final class EncodingTest {
-        public static final String utf8String() {
-          return "${ Character.toChars(codepoint) }";
-        }
-      }
-    """.stripIndent().getBytes('UTF-8')
+  void 'can be applied to buildSrc project'() {
+    given: 'buildSrc does\'t have its own gradle.properties'
 
-    when:
+    when: 'Gradle task is being run for main project'
     GradleRunner.create()
       .withGradleVersion(System.getProperty('compat.gradle.version'))
       .withProjectDir(testProjectDir)
-      .withArguments('compileJava', '-Dfile.encoding=Windows-1251', '--full-stacktrace')
+      .withArguments('--full-stacktrace')
       .withPluginClasspath()
       .forwardOutput()
       .build()
 
-    then:
-    ClassLoader cl = new URLClassLoader(new File(testProjectDir, 'build/classes/java/main').toURI().toURL())
-    Class c = cl.loadClass('EncodingTest')
-    String result = c.getMethod('utf8String').invoke(null)
-    result.length() == 2
-    and:
-    result.codePointAt(0) == codepoint
-
-    where:
-    codepoint = 0x1D54B // U+1D54B Double-Struck Capital T
-  }
-
-  void 'copies license file into resources META-INF directory'() {
-    given: 'license file'
-    String license = 'LICENSE'
-    new File(testProjectDir, license).text = 'Dummy license file'
-
-    when:
-    GradleRunner.create()
-      .withGradleVersion(System.getProperty('compat.gradle.version'))
-      .withProjectDir(testProjectDir)
-      .withArguments('processResources', '--full-stacktrace')
-      .withPluginClasspath()
-      .forwardOutput()
-      .build()
-
-    then: 'resources META-INF directory contains license file'
-    new File(testProjectDir, "build/resources/main/META-INF/$license").text == 'Dummy license file' // TODO
+    then: 'no exception is thrown'
+    noExceptionThrown()
 
     (success = true) != null
   }
