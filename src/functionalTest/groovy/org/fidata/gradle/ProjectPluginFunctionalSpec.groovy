@@ -1,7 +1,7 @@
 #!/usr/bin/env groovy
 /*
  * Specification for org.fidata.project Gradle plugin
- * Copyright © 2017-2018  Basil Peace
+ * Copyright ©  Basil Peace
  *
  * This file is part of gradle-base-plugins.
  *

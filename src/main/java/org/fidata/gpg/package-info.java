@@ -1,6 +1,6 @@
 /*
  * org.fidata.gpg Package Info
- * Copyright © 2018  Basil Peace
+ * Copyright ©  Basil Peace
  *
  * This file is part of gradle-base-plugins.
  *
