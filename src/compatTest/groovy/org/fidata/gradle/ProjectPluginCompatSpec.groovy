@@ -30,7 +30,7 @@ import spock.lang.Unroll
 /**
  * Specification for {@link ProjectPlugin} class
  */
-class ProjectPluginSpecification extends Specification {
+class ProjectPluginCompatSpec extends Specification {
   // fields
   boolean success = false
 

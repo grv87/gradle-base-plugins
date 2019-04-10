@@ -1,6 +1,6 @@
 #!/usr/bin/env groovy
 /*
- * Specification for org.fidata.base.jvm Gradle plugin
+ * Specification for org.fidata.project.java Gradle plugin
  * Copyright © 2018  Basil Peace
  *
  * This file is part of gradle-base-plugins.
@@ -31,9 +31,9 @@ import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
 
 /**
- * Specification for {@link JvmBasePlugin} class
+ * Specification for {@link JavaProjectPlugin} class
  */
-class JvmBasePluginSpecification extends Specification {
+class JavaProjectPluginFunctionalSpecification extends Specification {
   // fields
   @Rule
   final TemporaryFolder testProjectDir = new TemporaryFolder()
@@ -57,6 +57,9 @@ class JvmBasePluginSpecification extends Specification {
   // run before every feature method
   void setup() {
     initEmptyGitRepository(testProjectDir.root)
+    testProjectDir.newFile('settings.gradle') << '''\
+      enableFeaturePreview('STABLE_PUBLISHING')
+    '''.stripIndent()
     project = ProjectBuilder.builder().withProjectDir(testProjectDir.root).build()
     EXTRA_PROPERTIES.each { String key, String value ->
       project.ext.setProperty key, value
@@ -71,33 +74,23 @@ class JvmBasePluginSpecification extends Specification {
 
   // feature methods
 
-  void 'adds functionalTest task'() {
+  void 'provides checkstyle task'() {
     when: 'plugin is applied'
-    project.apply plugin: 'org.fidata.base.jvm'
+    project.apply plugin: 'org.fidata.project.java'
 
-    then: 'functionalTest task exists'
-    Task functionalTest = project.tasks.getByName('functionalTest')
+    then: 'checkstyle task exists'
+    Task checkstyle = project.tasks.getByName('checkstyle')
 
-    when: 'project is evaluated'
-    project.evaluate()
+    and: 'lint task depends on checkstyle task'
+    Task lint = project.tasks.getByName('lint')
+    lint.taskDependencies.getDependencies(lint).contains(checkstyle)
 
-    then: 'functionalTest should be run after test task'
-    functionalTest.shouldRunAfter.getDependencies(functionalTest).contains(project.tasks.getByName('test'))
-  }
+    when: 'java plugin is applied'
+    project.apply plugin: 'java'
 
-  void 'provides mavenJava publication'() {
-    when: 'plugin is applied'
-    project.apply plugin: 'org.fidata.base.jvm'
-    and: 'project evaluated'
-    project.evaluate()
-
-    then: 'mavenJava publication exists'
-    project.publishing.publications.getByName('mavenJava')
-    and: 'mavenJava task exists'
-    project.tasks.getByName(taskName)
-
-    where:
-    taskName << ['generateMetadataFileForMavenJavaPublication', 'generatePomFileForMavenJavaPublication']
+    then: 'checkstyle task depends on checkstyleMain task'
+    Task checkstyleMain = project.tasks.getByName('checkstyleMain')
+    checkstyle.taskDependencies.getDependencies(checkstyle).contains(checkstyleMain)
   }
 
   // helper methods

@@ -38,7 +38,7 @@ import spock.lang.Unroll
 /**
  * Specification for {@link ProjectPlugin} class
  */
-class ProjectPluginSpecification extends Specification {
+class ProjectPluginFunctionalSpec extends Specification {
   // fields
   @Rule
   final TemporaryFolder testProjectDir = new TemporaryFolder()
