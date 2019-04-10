@@ -24,12 +24,15 @@ import static org.fidata.utils.VersionUtils.SNAPSHOT_SUFFIX;
 import com.github.zafarkhaja.semver.Version;
 import de.gliderpilot.gradle.semanticrelease.SemanticReleaseChangeLogService;
 import de.gliderpilot.gradle.semanticrelease.SemanticReleasePluginExtension;
+import groovy.lang.Closure;
 import groovy.lang.Writable;
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.Callable;
 import lombok.Getter;
 import org.ajoberstar.gradle.git.release.base.ReleasePluginExtension;
 import org.ajoberstar.gradle.git.release.base.ReleaseVersion;
+import org.ajoberstar.grgit.Commit;
 import org.fidata.gradle.internal.AbstractExtension;
 import org.gradle.api.Project;
 import org.gradle.api.provider.Property;
@@ -145,19 +148,15 @@ public final class RootProjectConvention extends AbstractExtension {
       changeLog = project.provider(new Callable<Writable>() {
         @Override
         public Writable call() {
-          final SemanticReleaseChangeLogService changeLogService = project.getExtensions().getByType(SemanticReleasePluginExtension.class).getChangeLog();
-          final Object version = project.getVersion();
-          final ReleaseVersion inferredVersion = ((ReleasePluginExtension.DelayedVersion)version).getInferredVersion();
-          return changeLogService.getChangeLog().call(changeLogService.commits(Version.valueOf(inferredVersion.getPreviousVersion())), inferredVersion);
+          final SemanticReleaseChangeLogService changeLogService = getChangeLogService(project);
+          return callChangeLog(project, changeLogService, changeLogService.getChangeLog());
         }
       });
       changeLogTxt = project.provider(new Callable<Writable>() {
         @Override
         public Writable call() {
-          final SemanticReleaseChangeLogService changeLogService = project.getExtensions().getByType(SemanticReleasePluginExtension.class).getChangeLog();
-          final Object version = project.getVersion();
-          final ReleaseVersion inferredVersion = ((ReleasePluginExtension.DelayedVersion)version).getInferredVersion();
-          return changeLogService.getChangeLogTxt().call(changeLogService.commits(Version.valueOf(inferredVersion.getPreviousVersion())), inferredVersion);
+          final SemanticReleaseChangeLogService changeLogService = getChangeLogService(project);
+          return callChangeLog(project, changeLogService, changeLogService.getChangeLogTxt());
         }
       });
 
@@ -178,5 +177,18 @@ public final class RootProjectConvention extends AbstractExtension {
       vcsUrl = null;
       issuesUrl = null;
     }
+  }
+
+  private SemanticReleaseChangeLogService getChangeLogService(final Project project) {
+    return project.getExtensions().getByType(SemanticReleasePluginExtension.class).getChangeLog();
+  }
+
+  private Writable callChangeLog(final Project project, final SemanticReleaseChangeLogService changeLogService, final Closure<Writable> changeLogClosure) {
+    final ReleasePluginExtension.DelayedVersion version = (ReleasePluginExtension.DelayedVersion)project.getVersion();
+    final ReleaseVersion inferredVersion = version.getInferredVersion();
+    final String previousVersionString = inferredVersion.getPreviousVersion();
+    final Version previousVersion = Version.valueOf(previousVersionString);
+    final List<Commit> commits = changeLogService.commits(previousVersion);
+    return changeLogClosure.call(commits, inferredVersion);
   }
 }
