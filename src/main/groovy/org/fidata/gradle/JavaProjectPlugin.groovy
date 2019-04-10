@@ -179,8 +179,8 @@ final class JavaProjectPlugin extends AbstractProjectPlugin {
   }
 
   private void configureArtifacts() {
-    project.plugins.getPlugin(JvmBasePlugin).defaultJavadocJarProvider.configure { Jar defaultJavadocJar ->
-      defaultJavadocJar.from project.tasks.withType(Javadoc).named(JAVADOC_TASK_NAME)
+    project.plugins.getPlugin(JvmBasePlugin).javadocJarProvider.configure { Jar javadocJar ->
+      javadocJar.from project.tasks.withType(Javadoc).named(JAVADOC_TASK_NAME)
     }
   }
 }

@@ -28,7 +28,6 @@ import org.fidata.gradle.internal.AbstractProjectPlugin
 import org.fidata.gradle.utils.PluginDependeesUtils
 import org.gradle.api.NamedDomainObjectProvider
 import org.gradle.api.artifacts.Configuration
-import org.gradle.api.provider.Property
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.compile.GroovyCompile
@@ -100,34 +99,20 @@ final class GroovyBasePlugin extends AbstractProjectPlugin {
    */
   public static final String GROOVYDOC_JAR_ARTIFACT_CLASSIFIER = 'groovydoc'
 
-  private TaskProvider<Jar> defaultGroovydocJarProvider
+  private TaskProvider<Jar> groovydocJarProvider
 
   @PackageScope
-  TaskProvider<Jar> getDefaultGroovydocJarProvider() {
-    this.@defaultGroovydocJarProvider
-  }
-
-  @PackageScope
-  private Property<Jar> groovydocJar
-
-  @PackageScope
-  Property<Jar> getGroovydocJar() {
-    this.@groovydocJar
+  TaskProvider<Jar> getGroovydocJarProvider() {
+    this.@groovydocJarProvider
   }
 
   private void configureArtifacts() {
-    this.@defaultGroovydocJarProvider = project.tasks.register(GROOVYDOC_JAR_TASK_NAME, Jar) { Jar defaultGroovydocJar ->
-      defaultGroovydocJar.archiveClassifier.set GROOVYDOC_JAR_ARTIFACT_CLASSIFIER
+    groovydocJarProvider = project.tasks.register(GROOVYDOC_JAR_TASK_NAME, Jar) { Jar groovydocJar ->
+      groovydocJar.archiveClassifier.set GROOVYDOC_JAR_ARTIFACT_CLASSIFIER
     }
-    this.@groovydocJar = project.objects.property(Jar).convention(defaultGroovydocJarProvider)
 
     project.afterEvaluate {
-      defaultGroovydocJarProvider.configure { Jar defaultGroovydocJar ->
-        defaultGroovydocJar.enabled = groovydocJar.get() == defaultGroovydocJar
-        null
-      }
-
-      project.plugins.getPlugin(JvmBasePlugin).mainPublication.artifact groovydocJar.get()
+      project.plugins.getPlugin(JvmBasePlugin).mainPublication.artifact groovydocJarProvider.get()
     }
   }
 }

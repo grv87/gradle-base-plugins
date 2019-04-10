@@ -91,8 +91,11 @@ final class GroovyProjectPlugin extends AbstractProjectPlugin {
   }
 
   private void configureArtifacts() {
-    project.plugins.getPlugin(GroovyBasePlugin).defaultGroovydocJarProvider.configure { Jar defaultGroovydocJar ->
-      defaultGroovydocJar.from project.tasks.withType(Groovydoc).named(GROOVYDOC_TASK_NAME)
+    project.plugins.getPlugin(JvmBasePlugin).javadocJarProvider.configure { Jar javadocJar ->
+      javadocJar.enabled = false
+    }
+    project.plugins.getPlugin(GroovyBasePlugin).groovydocJarProvider.configure { Jar groovydocJar ->
+      groovydocJar.from project.tasks.withType(Groovydoc).named(GROOVYDOC_TASK_NAME)
     }
   }
 }
