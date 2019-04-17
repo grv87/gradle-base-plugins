@@ -695,7 +695,9 @@ final class JvmBasePlugin extends AbstractProjectPlugin implements PropertyChang
   }
 
   private void configureReleases() {
-    configureArtifactory()
+    if (project.name != 'buildSrc') {
+      configureArtifactory()
+    }
 
     configurePublicReleases()
   }

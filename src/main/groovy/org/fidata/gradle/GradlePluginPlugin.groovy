@@ -212,7 +212,9 @@ final class GradlePluginPlugin extends AbstractProjectPlugin implements Property
 
   private void configureReleases() {
     GString repository = "plugins-${ project.rootProject.convention.getPlugin(RootProjectConvention).isRelease.get() ? 'release' : 'snapshot' }"
-    project.convention.getPlugin(ArtifactoryPluginConvention).clientConfig.publisher.repoKey = "$repository-local"
+    if (project.name != 'buildSrc') {
+      project.convention.getPlugin(ArtifactoryPluginConvention).clientConfig.publisher.repoKey = "$repository-local"
+    }
     project.repositories.maven { MavenArtifactRepository mavenArtifactRepository ->
       mavenArtifactRepository.with {
         /*
