@@ -648,7 +648,7 @@ final class JvmBasePlugin extends AbstractProjectPlugin implements PropertyChang
   }
 
   private void configureGithubReleases() {
-    GitRepo repo = project.extensions.getByType(SemanticReleasePluginExtension).repo
+    GitRepo repo = project.rootProject.extensions.getByType(SemanticReleasePluginExtension).repo
     project.afterEvaluate {
       /**
        * CRED:
