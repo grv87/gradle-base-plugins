@@ -19,7 +19,7 @@
  */
 //noinspection GroovyUnusedAssignment
 @SuppressWarnings(['UnusedVariable', 'NoDef', 'VariableTypeRequired'])
-@Library('jenkins-pipeline-shared-library@v3.0.0') dummy
+@Library('jenkins-pipeline-shared-library@v3.0.1') dummy
 
 defaultJvmPipeline(
   publicReleases: Boolean.FALSE,

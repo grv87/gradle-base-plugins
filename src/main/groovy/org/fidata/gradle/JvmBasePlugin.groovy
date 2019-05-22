@@ -493,65 +493,45 @@ final class JvmBasePlugin extends AbstractProjectPlugin implements PropertyChang
     mainPublication
   }
 
-  private TaskProvider<Jar> defaultSourcesJarProvider
+  private TaskProvider<Jar> sourcesJarProvider
 
   @PackageScope
-  TaskProvider<Jar> getDefaultSourcesJarProvider() {
-    this.@defaultSourcesJarProvider
+  TaskProvider<Jar> getSourcesJarProvider() {
+    this.@sourcesJarProvider
   }
 
-  private Property<Jar> sourcesJar
+  private TaskProvider<Jar> javadocJarProvider
 
   @PackageScope
-  Property<Jar> getSourcesJar() {
-    this.@sourcesJar
-  }
-
-  private TaskProvider<Jar> defaultJavadocJarProvider
-
-  @PackageScope
-  TaskProvider<Jar> getDefaultJavadocJarProvider() {
-    this.@defaultJavadocJarProvider
-  }
-
-  @PackageScope
-  private Property<Jar> javadocJar
-
-  @PackageScope
-  Property<Jar> getJavadocJar() {
-    this.@javadocJar
+  TaskProvider<Jar> getJavadocJarProvider() {
+    this.@javadocJarProvider
   }
 
   private void configureArtifacts() {
     this.@mainPublicationName = project.objects.property(String).convention(MAVEN_JAVA_PUBLICATION_NAME)
 
-    this.@defaultSourcesJarProvider = project.tasks.register(SOURCES_JAR_TASK_NAME, Jar) { Jar defaultSourceJar ->
-      defaultSourceJar.with {
+    this.@sourcesJarProvider = project.tasks.register(SOURCES_JAR_TASK_NAME, Jar) { Jar sourcesJar ->
+      sourcesJar.with {
         from project.convention.getPlugin(JavaPluginConvention).sourceSets.getByName(MAIN_SOURCE_SET_NAME).allSource
         // dependsOn
         archiveClassifier.set SOURCES_JAR_ARTIFACT_CLASSIFIER
       }
     }
-    this.@sourcesJar = project.objects.property(Jar).convention(defaultSourcesJarProvider)
 
-    this.@defaultJavadocJarProvider = project.tasks.register(JAVADOC_JAR_TASK_NAME, Jar) { Jar defaultJavadocJar ->
-      defaultJavadocJar.archiveClassifier.set JAVADOC_JAR_ARTIFACT_CLASSIFIER
+    this.@javadocJarProvider = project.tasks.register(JAVADOC_JAR_TASK_NAME, Jar) { Jar javadocJar ->
+      javadocJar.archiveClassifier.set JAVADOC_JAR_ARTIFACT_CLASSIFIER
     }
-    this.@javadocJar = project.objects.property(Jar).convention(defaultJavadocJarProvider)
 
     project.afterEvaluate {
-      defaultSourcesJarProvider.configure { Jar defaultSourcesJar ->
-        defaultSourcesJar.enabled = sourcesJar.get() == defaultSourcesJar
-        null
-      }
-      defaultJavadocJarProvider.configure { Jar defaultJavadocJar ->
-        defaultJavadocJar.enabled = javadocJar.get() == defaultJavadocJar
-        null
-      }
-
       mainPublication.with {
-        artifact sourcesJar.get()
-        artifact javadocJar.get()
+        Jar sourcesJar = sourcesJarProvider.get()
+        if (sourcesJar.enabled) {
+          artifact sourcesJar
+        }
+        Jar javadocJar = javadocJarProvider.get()
+        if (javadocJar.enabled) {
+          artifact javadocJar
+        }
       }
     }
 
@@ -668,7 +648,7 @@ final class JvmBasePlugin extends AbstractProjectPlugin implements PropertyChang
   }
 
   private void configureGithubReleases() {
-    GitRepo repo = project.extensions.getByType(SemanticReleasePluginExtension).repo
+    GitRepo repo = project.rootProject.extensions.getByType(SemanticReleasePluginExtension).repo
     project.afterEvaluate {
       /**
        * CRED:
@@ -715,7 +695,9 @@ final class JvmBasePlugin extends AbstractProjectPlugin implements PropertyChang
   }
 
   private void configureReleases() {
-    configureArtifactory()
+    if (project.name != 'buildSrc') {
+      configureArtifactory()
+    }
 
     configurePublicReleases()
   }

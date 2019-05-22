@@ -748,6 +748,8 @@ final class ProjectPlugin extends AbstractProjectPlugin {
       createGenerateChangelogTasks()
     }
 
-    configureArtifactory()
+    if (project.name != 'buildSrc') {
+      configureArtifactory()
+    }
   }
 }

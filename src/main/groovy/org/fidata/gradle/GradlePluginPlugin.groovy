@@ -52,7 +52,6 @@ import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.TaskProvider
-import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.testing.Test
 import org.gradle.plugin.devel.GradlePluginDevelopmentExtension
 import org.gradle.plugin.devel.tasks.ValidateTaskProperties
@@ -179,16 +178,6 @@ final class GradlePluginPlugin extends AbstractProjectPlugin implements Property
 
   private void configureArtifacts() {
     project.plugins.findPlugin(JvmBasePlugin)?.mainPublicationName?.set 'pluginMaven' /* Hardcoded in MavenPluginPublishPlugin */
-
-    project.afterEvaluate {
-      if (project.convention.getPlugin(ProjectConvention).publicReleases) {
-        project.plugins.findPlugin(JvmBasePlugin)?.with {
-          sourcesJar.set project.tasks.withType(Jar).named(/*PublishPlugin.SOURCES_JAR_TASK_NAME*/ 'publishPluginJar')
-          javadocJar.set project.tasks.withType(Jar).named(/*PublishPlugin.JAVA_DOCS_TASK_NAME*/ 'publishPluginJavaDocsJar')
-        }
-        project.plugins.findPlugin(GroovyBasePlugin)?.groovydocJar?.set project.tasks.withType(Jar).named(/*PublishPlugin.GROOVY_DOCS_TASK_NAME*/ 'publishPluginGroovyDocsJar')
-      }
-    }
   }
 
   private void configurePublicReleases() {
@@ -211,6 +200,7 @@ final class GradlePluginPlugin extends AbstractProjectPlugin implements Property
         extension.website = projectConvention.websiteUrl.get()
         extension.vcsUrl = rootProjectConvention.vcsUrl.get()
       }
+
       project.tasks.named(/* WORKAROUND: PublishPlugin.BASE_TASK_NAME has private scope <grv87 2018-06-23> */ 'publishPlugins').configure { Task publishPlugins ->
         publishPlugins.onlyIf { rootProjectConvention.isRelease.get() }
       }
@@ -222,7 +212,9 @@ final class GradlePluginPlugin extends AbstractProjectPlugin implements Property
 
   private void configureReleases() {
     GString repository = "plugins-${ project.rootProject.convention.getPlugin(RootProjectConvention).isRelease.get() ? 'release' : 'snapshot' }"
-    project.convention.getPlugin(ArtifactoryPluginConvention).clientConfig.publisher.repoKey = "$repository-local"
+    if (project.name != 'buildSrc') {
+      project.convention.getPlugin(ArtifactoryPluginConvention).clientConfig.publisher.repoKey = "$repository-local"
+    }
     project.repositories.maven { MavenArtifactRepository mavenArtifactRepository ->
       mavenArtifactRepository.with {
         /*
